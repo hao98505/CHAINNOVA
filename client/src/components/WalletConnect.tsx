@@ -1,6 +1,6 @@
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -12,6 +12,7 @@ import {
 import { useSolBalance } from "@/hooks/useChainNova";
 import { Wallet, ChevronDown, Copy, LogOut, RefreshCw } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 function truncateAddress(address: string) {
   return `${address.slice(0, 4)}...${address.slice(-4)}`;
@@ -21,6 +22,7 @@ export function WalletConnect() {
   const { publicKey, connected, disconnect } = useWallet();
   const { setVisible } = useWalletModal();
   const { toast } = useToast();
+  const { t } = useLanguage();
   const address = publicKey?.toBase58();
   const { data: solBalance, isLoading: balanceLoading } = useSolBalance(address);
   const [cnovaBalance] = useState<number>(12_500);
@@ -28,7 +30,7 @@ export function WalletConnect() {
   const copyAddress = () => {
     if (address) {
       navigator.clipboard.writeText(address);
-      toast({ title: "Address copied", description: "Wallet address copied to clipboard" });
+      toast({ title: t.header.copyAddress, description: address.slice(0, 20) + "..." });
     }
   };
 
@@ -46,7 +48,7 @@ export function WalletConnect() {
         }}
       >
         <Wallet className="w-3.5 h-3.5 mr-2" />
-        Connect Wallet
+        {t.header.connectWallet}
       </Button>
     );
   }
@@ -84,7 +86,7 @@ export function WalletConnect() {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <div className="font-orbitron text-[8px] text-muted-foreground/60 uppercase tracking-widest mb-1">
-                SOL Balance
+                {t.header.solBalance}
               </div>
               <div className="font-orbitron text-sm font-bold text-foreground">
                 {balanceLoading ? (
@@ -97,7 +99,7 @@ export function WalletConnect() {
             </div>
             <div>
               <div className="font-orbitron text-[8px] text-muted-foreground/60 uppercase tracking-widest mb-1">
-                $CNOVA
+                {t.header.cnovaBalance}
               </div>
               <div className="font-orbitron text-sm font-bold text-primary">
                 {cnovaBalance.toLocaleString()}
@@ -114,7 +116,7 @@ export function WalletConnect() {
             data-testid="button-copy-address"
           >
             <Copy className="w-3.5 h-3.5 mr-2" />
-            Copy Address
+            {t.header.copyAddress}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem
@@ -123,7 +125,7 @@ export function WalletConnect() {
             data-testid="button-disconnect-wallet"
           >
             <LogOut className="w-3.5 h-3.5 mr-2" />
-            Disconnect
+            {t.header.disconnect}
           </DropdownMenuItem>
         </div>
       </DropdownMenuContent>

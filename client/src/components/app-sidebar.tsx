@@ -21,23 +21,25 @@ import {
   Globe,
   BookOpen,
 } from "lucide-react";
-
-const navItems = [
-  { title: "HOME", url: "/", icon: Home, description: "Overview & stats" },
-  { title: "MARKETPLACE", url: "/marketplace", icon: Store, description: "Buy & rent agents" },
-  { title: "MY AGENTS", url: "/my-agents", icon: Bot, description: "Your NFT agents" },
-  { title: "STAKE", url: "/stake", icon: Coins, description: "$CNOVA staking" },
-  { title: "BRIDGE", url: "/bridge", icon: ArrowLeftRight, description: "Cross-chain bridge" },
-];
-
-const externalLinks = [
-  { title: "DOCS", url: "#", icon: BookOpen },
-  { title: "EXPLORER", url: "#", icon: ExternalLink },
-  { title: "GOVERNANCE", url: "#", icon: Globe },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function AppSidebar() {
   const [location] = useLocation();
+  const { t } = useLanguage();
+
+  const navItems = [
+    { titleKey: "home" as const, url: "/", icon: Home, descKey: "Overview & stats" },
+    { titleKey: "marketplace" as const, url: "/marketplace", icon: Store, descKey: "Buy & rent agents" },
+    { titleKey: "myAgents" as const, url: "/my-agents", icon: Bot, descKey: "Your NFT agents" },
+    { titleKey: "stake" as const, url: "/stake", icon: Coins, descKey: "$CNOVA staking" },
+    { titleKey: "bridge" as const, url: "/bridge", icon: ArrowLeftRight, descKey: "Cross-chain bridge" },
+  ] as const;
+
+  const externalLinks = [
+    { titleKey: "docs" as const, url: "#", icon: BookOpen },
+    { titleKey: "explorer" as const, url: "#", icon: ExternalLink },
+    { titleKey: "governance" as const, url: "#", icon: Globe },
+  ] as const;
 
   return (
     <Sidebar>
@@ -66,18 +68,18 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel className="font-orbitron text-[9px] tracking-widest text-muted-foreground/60 uppercase px-3 mb-1">
-            Navigation
+            {t.nav.navigation}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => {
                 const isActive = location === item.url;
                 return (
-                  <SidebarMenuItem key={item.title}>
+                  <SidebarMenuItem key={item.titleKey}>
                     <SidebarMenuButton
                       asChild
                       isActive={isActive}
-                      data-testid={`nav-${item.title.toLowerCase().replace(" ", "-")}`}
+                      data-testid={`nav-${item.titleKey.toLowerCase().replace(/([A-Z])/g, "-$1").toLowerCase()}`}
                     >
                       <Link href={item.url}>
                         <item.icon
@@ -91,10 +93,7 @@ export function AppSidebar() {
                               isActive ? "text-foreground" : "text-muted-foreground"
                             }`}
                           >
-                            {item.title}
-                          </span>
-                          <span className="text-[9px] text-muted-foreground/60 truncate leading-tight">
-                            {item.description}
+                            {t.nav[item.titleKey]}
                           </span>
                         </div>
                         {isActive && (
@@ -111,17 +110,17 @@ export function AppSidebar() {
 
         <SidebarGroup className="mt-2">
           <SidebarGroupLabel className="font-orbitron text-[9px] tracking-widest text-muted-foreground/60 uppercase px-3 mb-1">
-            Resources
+            {t.nav.resources}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {externalLinks.map((item) => (
-                <SidebarMenuItem key={item.title}>
+                <SidebarMenuItem key={item.titleKey}>
                   <SidebarMenuButton asChild>
                     <a href={item.url} target="_blank" rel="noopener noreferrer">
                       <item.icon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                       <span className="font-orbitron text-[10px] tracking-wider text-muted-foreground">
-                        {item.title}
+                        {t.nav[item.titleKey]}
                       </span>
                     </a>
                   </SidebarMenuButton>
@@ -138,16 +137,16 @@ export function AppSidebar() {
           <div className="flex items-center gap-2 mb-2">
             <div className="w-2 h-2 rounded-full bg-green-400 status-dot flex-shrink-0" />
             <span className="font-orbitron text-[9px] text-green-400 tracking-widest uppercase">
-              Network Online
+              {t.nav.networkOnline}
             </span>
           </div>
           <div className="grid grid-cols-2 gap-2 text-[9px]">
             <div>
-              <div className="text-muted-foreground/60 uppercase tracking-wider mb-0.5">TPS</div>
+              <div className="text-muted-foreground/60 uppercase tracking-wider mb-0.5">{t.nav.networkTPS}</div>
               <div className="text-foreground font-orbitron font-semibold">65,234</div>
             </div>
             <div>
-              <div className="text-muted-foreground/60 uppercase tracking-wider mb-0.5">Agents</div>
+              <div className="text-muted-foreground/60 uppercase tracking-wider mb-0.5">{t.nav.networkAgents}</div>
               <div className="text-foreground font-orbitron font-semibold">1,842</div>
             </div>
           </div>

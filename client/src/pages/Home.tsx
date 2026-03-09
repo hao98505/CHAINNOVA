@@ -5,29 +5,27 @@ import { AgentCard } from "@/components/AgentCard";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
 import { ParticleBackground } from "@/components/ParticleBackground";
 import { useAgents } from "@/hooks/useChainNova";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
-import { useWallet } from "@solana/wallet-adapter-react";
-import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import {
   Zap, Bot, ArrowRight, TrendingUp, Users, Activity, Shield,
   Plus, Store, Coins
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const STATS = [
-  { label: "Total Agents", value: "1,842", change: "+12.4%", icon: Bot, color: "text-primary" },
-  { label: "Total Volume", value: "$4.2M", change: "+8.7%", icon: TrendingUp, color: "text-green-400" },
-  { label: "Active Users", value: "28,493", change: "+23.1%", icon: Users, color: "text-blue-400" },
-  { label: "Tasks/Day", value: "142K", change: "+31.5%", icon: Activity, color: "text-yellow-400" },
-];
-
 export default function Home() {
   const { data: agents, isLoading } = useAgents();
   const [createOpen, setCreateOpen] = useState(false);
-  const { connected } = useWallet();
-  const { setVisible } = useWalletModal();
+  const { t } = useLanguage();
 
   const hotAgents = agents?.slice(0, 3) ?? [];
+
+  const STATS = [
+    { labelKey: "statTotalAgents" as const, value: "1,842", change: "+12.4%", icon: Bot, color: "text-primary" },
+    { labelKey: "statVolume" as const, value: "$4.2M", change: "+8.7%", icon: TrendingUp, color: "text-green-400" },
+    { labelKey: "statUsers" as const, value: "28,493", change: "+23.1%", icon: Users, color: "text-blue-400" },
+    { labelKey: "statTasks" as const, value: "142K", change: "+31.5%", icon: Activity, color: "text-yellow-400" },
+  ];
 
   return (
     <div className="min-h-full">
@@ -50,19 +48,18 @@ export default function Home() {
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded border border-primary/30 bg-primary/10 mb-6">
               <div className="w-1.5 h-1.5 rounded-full bg-green-400 status-dot" />
               <span className="font-orbitron text-[9px] text-primary tracking-widest uppercase">
-                Live on Solana Devnet
+                {t.home.liveBadge}
               </span>
             </div>
 
             <h1 className="font-orbitron text-4xl md:text-6xl font-black uppercase tracking-wider mb-4 leading-tight">
-              <span className="gradient-text">Decentralized</span>
+              <span className="gradient-text">{t.home.heroTitle1}</span>
               <br />
-              <span className="text-foreground neon-glow-text">AI Agent Market</span>
+              <span className="text-foreground neon-glow-text">{t.home.heroTitle2}</span>
             </h1>
 
             <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto mb-8 leading-relaxed">
-              Mint, trade, and deploy autonomous AI agents as NFTs on Solana.
-              Earn $CNOVA by contributing compute power to the network.
+              {t.home.heroDesc}
             </p>
 
             <div className="flex flex-wrap items-center justify-center gap-3">
@@ -74,7 +71,7 @@ export default function Home() {
                 style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)", border: "1px solid rgba(167,139,250,0.4)" }}
               >
                 <Plus className="w-4 h-4" />
-                Deploy Agent
+                {t.home.deployAgent}
               </Button>
               <Button
                 size="lg"
@@ -84,7 +81,7 @@ export default function Home() {
               >
                 <Link href="/marketplace">
                   <Store className="w-4 h-4" />
-                  Browse Market
+                  {t.home.browseMarket}
                 </Link>
               </Button>
             </div>
@@ -110,12 +107,12 @@ export default function Home() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {STATS.map((stat, i) => (
               <motion.div
-                key={stat.label}
+                key={stat.labelKey}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
                 className="glass-card rounded-md border border-primary/15 p-4"
-                data-testid={`card-stat-${stat.label.toLowerCase().replace(" ", "-")}`}
+                data-testid={`card-stat-${stat.labelKey}`}
               >
                 <div className="flex items-center justify-between mb-3">
                   <stat.icon className={`w-4 h-4 ${stat.color}`} />
@@ -127,7 +124,7 @@ export default function Home() {
                   {stat.value}
                 </div>
                 <div className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-widest">
-                  {stat.label}
+                  {t.home[stat.labelKey]}
                 </div>
               </motion.div>
             ))}
@@ -140,10 +137,10 @@ export default function Home() {
           <div className="flex items-center justify-between mb-6">
             <div>
               <h2 className="font-orbitron text-lg font-bold uppercase tracking-wider text-foreground neon-glow-text">
-                Hot Agents
+                {t.home.hotAgents}
               </h2>
               <p className="font-orbitron text-[9px] text-muted-foreground/60 tracking-widest uppercase mt-1">
-                Top performing agents this week
+                {t.home.hotAgentsDesc}
               </p>
             </div>
             <Button
@@ -153,7 +150,7 @@ export default function Home() {
               asChild
             >
               <Link href="/marketplace">
-                View All <ArrowRight className="w-3 h-3" />
+                {t.home.viewAll} <ArrowRight className="w-3 h-3" />
               </Link>
             </Button>
           </div>
@@ -179,18 +176,16 @@ export default function Home() {
           <div className="glass-card rounded-md border border-primary/20 p-8 relative overflow-hidden">
             <div className="absolute inset-0 cyber-grid opacity-20" />
             <div className="absolute top-0 right-0 w-64 h-64 orb bg-primary/10" />
-
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
                 <div className="font-orbitron text-[9px] text-primary tracking-widest uppercase mb-2">
-                  Earn Passive Income
+                  {t.home.earnPassive}
                 </div>
                 <h2 className="font-orbitron text-2xl font-black uppercase tracking-wider text-foreground mb-2">
-                  Stake $CNOVA
+                  {t.home.earnTitle}
                 </h2>
                 <p className="text-muted-foreground text-sm max-w-md">
-                  Lock your $CNOVA tokens to earn up to 24.5% APY while helping secure the network.
-                  Rewards compound automatically.
+                  {t.home.earnDesc}
                 </p>
               </div>
               <div className="flex flex-col items-center gap-3">
@@ -206,7 +201,7 @@ export default function Home() {
                 >
                   <Link href="/stake">
                     <Coins className="w-4 h-4" />
-                    Start Staking
+                    {t.home.startStaking}
                   </Link>
                 </Button>
               </div>

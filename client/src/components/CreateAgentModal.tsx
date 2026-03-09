@@ -9,6 +9,7 @@ import { useChainNova } from "@/hooks/useChainNova";
 import { useToast } from "@/hooks/use-toast";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { Bot, Upload, Cpu, DollarSign, FileText, Sparkles, CheckCircle, RotateCcw } from "lucide-react";
 
 interface CreateAgentModalProps {
@@ -23,6 +24,7 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
   const { setVisible } = useWalletModal();
   const { mintAgent, isLoading } = useChainNova();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const [step, setStep] = useState<Step>("details");
   const [name, setName] = useState("");
@@ -66,15 +68,18 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
       });
       setTxSignature(result.signature);
       setStep("success");
-      toast({ title: "Agent Minted!", description: `${name} has been deployed to the network.` });
-    } catch (e) {
-      toast({ title: "Minting Failed", description: "Transaction rejected or failed.", variant: "destructive" });
+      toast({ title: t.createAgent.agentMinted, description: `${name} ${t.createAgent.agentMintedDesc}` });
+    } catch {
+      toast({ title: t.createAgent.mintFailed, description: t.createAgent.mintFailedDesc, variant: "destructive" });
     }
   };
 
   const simulateFileUpload = () => {
     setMetadataFile("agent_metadata_" + Date.now() + ".json");
   };
+
+  const stepLabels = [t.createAgent.step1, t.createAgent.step2, t.createAgent.step3];
+  const stepKeys: Step[] = ["details", "metadata", "confirm"];
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -86,27 +91,27 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
                 <Sparkles className="w-4 h-4 text-primary" />
               </div>
               <DialogTitle className="font-orbitron text-sm font-bold tracking-wider uppercase text-foreground">
-                Deploy AI Agent
+                {t.createAgent.title}
               </DialogTitle>
             </div>
           </DialogHeader>
 
           <div className="flex items-center gap-2 mt-4">
-            {(["details", "metadata", "confirm"] as Step[]).map((s, i) => (
+            {stepKeys.map((s, i) => (
               <div key={s} className="flex items-center gap-2">
                 <div
                   className={`w-6 h-6 rounded-full flex items-center justify-center font-orbitron text-[9px] font-bold transition-all ${
                     step === s || (step === "success" && i < 3)
                       ? "bg-primary text-primary-foreground"
-                      : ["details", "metadata", "confirm"].indexOf(step) > i
+                      : stepKeys.indexOf(step) > i
                       ? "bg-primary/40 text-primary"
                       : "bg-muted text-muted-foreground"
                   }`}
                 >
-                  {["details", "metadata", "confirm"].indexOf(step) > i || step === "success" ? "✓" : i + 1}
+                  {stepKeys.indexOf(step) > i || step === "success" ? "✓" : i + 1}
                 </div>
                 <span className={`font-orbitron text-[8px] uppercase tracking-wider ${step === s ? "text-primary" : "text-muted-foreground/50"}`}>
-                  {s}
+                  {stepLabels[i]}
                 </span>
                 {i < 2 && <div className="w-6 h-px bg-border/50 mx-1" />}
               </div>
@@ -126,12 +131,12 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
               >
                 <div>
                   <Label className="font-orbitron text-[9px] uppercase tracking-widest text-muted-foreground/70 mb-2 block">
-                    Agent Name *
+                    {t.createAgent.nameLabel}
                   </Label>
                   <Input
                     value={name}
                     onChange={(e) => setName(e.target.value)}
-                    placeholder="e.g. NEXUS-7"
+                    placeholder={t.createAgent.namePlaceholder}
                     className="cyber-input font-orbitron text-sm tracking-wider"
                     data-testid="input-agent-name"
                   />
@@ -139,12 +144,12 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
 
                 <div>
                   <Label className="font-orbitron text-[9px] uppercase tracking-widest text-muted-foreground/70 mb-2 block">
-                    Task Description *
+                    {t.createAgent.descLabel}
                   </Label>
                   <Textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Describe what your AI agent does..."
+                    placeholder={t.createAgent.descPlaceholder}
                     className="cyber-input font-sans text-sm resize-none"
                     rows={3}
                     data-testid="input-agent-description"
@@ -154,7 +159,7 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label className="font-orbitron text-[9px] uppercase tracking-widest text-muted-foreground/70 mb-2 block">
-                      <Cpu className="w-3 h-3 inline mr-1" />TFLOPS
+                      <Cpu className="w-3 h-3 inline mr-1" />{t.createAgent.tflopsLabel}
                     </Label>
                     <Input
                       type="number"
@@ -167,7 +172,7 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
                   </div>
                   <div>
                     <Label className="font-orbitron text-[9px] uppercase tracking-widest text-muted-foreground/70 mb-2 block">
-                      <DollarSign className="w-3 h-3 inline mr-1" />Price ($CNOVA)
+                      <DollarSign className="w-3 h-3 inline mr-1" />{t.createAgent.priceLabel}
                     </Label>
                     <Input
                       type="number"
@@ -182,7 +187,7 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
 
                 <div>
                   <Label className="font-orbitron text-[9px] uppercase tracking-widest text-muted-foreground/70 mb-2 block">
-                    Category
+                    {t.createAgent.categoryLabel}
                   </Label>
                   <div className="flex flex-wrap gap-2">
                     {categories.map((cat) => (
@@ -209,7 +214,7 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
                   data-testid="button-next-metadata"
                   style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)" }}
                 >
-                  Next: Metadata
+                  {t.createAgent.nextMetadata}
                 </Button>
               </motion.div>
             )}
@@ -224,11 +229,10 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
               >
                 <div>
                   <Label className="font-orbitron text-[9px] uppercase tracking-widest text-muted-foreground/70 mb-2 block">
-                    <FileText className="w-3 h-3 inline mr-1" />Upload Metadata JSON
+                    <FileText className="w-3 h-3 inline mr-1" />{t.createAgent.uploadLabel}
                   </Label>
                   <div
                     className="border-2 border-dashed border-primary/30 rounded-md p-6 text-center cursor-pointer transition-all"
-                    style={{ borderStyle: "dashed" }}
                     onClick={simulateFileUpload}
                     data-testid="button-upload-metadata"
                   >
@@ -236,15 +240,15 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
                       <div className="space-y-2">
                         <CheckCircle className="w-8 h-8 text-green-400 mx-auto" />
                         <div className="font-orbitron text-[10px] text-green-400 tracking-wider">{metadataFile}</div>
-                        <div className="text-[10px] text-muted-foreground">File uploaded</div>
+                        <div className="text-[10px] text-muted-foreground">{t.createAgent.fileUploaded}</div>
                       </div>
                     ) : (
                       <div className="space-y-2">
                         <Upload className="w-8 h-8 text-muted-foreground/40 mx-auto" />
                         <div className="font-orbitron text-[10px] text-muted-foreground tracking-wider uppercase">
-                          Click to upload metadata
+                          {t.createAgent.uploadText}
                         </div>
-                        <div className="text-[9px] text-muted-foreground/50">JSON format • Max 1MB</div>
+                        <div className="text-[9px] text-muted-foreground/50">{t.createAgent.uploadSub}</div>
                       </div>
                     )}
                   </div>
@@ -252,7 +256,7 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
 
                 <div className="p-3 rounded-md bg-primary/5 border border-primary/15 space-y-2">
                   <div className="font-orbitron text-[9px] text-muted-foreground/70 uppercase tracking-widest mb-2">
-                    Metadata Preview
+                    {t.createAgent.metadataPreview}
                   </div>
                   <div className="font-mono text-[10px] text-muted-foreground space-y-1">
                     <div><span className="text-primary/70">"name":</span> <span className="text-green-300">"{name}"</span></div>
@@ -265,7 +269,7 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
 
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1 font-orbitron text-[9px] tracking-wider uppercase" onClick={() => setStep("details")}>
-                    Back
+                    {t.createAgent.back}
                   </Button>
                   <Button
                     className="flex-1 font-orbitron text-[9px] tracking-wider uppercase"
@@ -273,7 +277,7 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
                     data-testid="button-next-confirm"
                     style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)" }}
                   >
-                    Review & Mint
+                    {t.createAgent.reviewMint}
                   </Button>
                 </div>
               </motion.div>
@@ -289,15 +293,15 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
               >
                 <div className="p-4 rounded-md bg-primary/5 border border-primary/20 space-y-3">
                   <div className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-widest">
-                    Deployment Summary
+                    {t.createAgent.deploymentSummary}
                   </div>
                   {[
-                    { label: "Name", value: name },
-                    { label: "Category", value: category },
-                    { label: "TFLOPS", value: `${tflops || "100"} TFLOPS` },
-                    { label: "Listing Price", value: `${price || "500"} $CNOVA` },
-                    { label: "Program ID", value: "CNovAGENT...1111" },
-                    { label: "Network", value: "Solana Devnet" },
+                    { label: t.createAgent.name, value: name },
+                    { label: t.createAgent.category, value: category },
+                    { label: t.createAgent.tflops, value: `${tflops || "100"} TFLOPS` },
+                    { label: t.createAgent.listingPrice, value: `${price || "500"} $CNOVA` },
+                    { label: t.createAgent.programID, value: "CNovAGENT...1111" },
+                    { label: t.createAgent.network, value: "Solana Devnet" },
                   ].map(({ label, value }) => (
                     <div key={label} className="flex justify-between items-center">
                       <span className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-wider">{label}</span>
@@ -314,7 +318,7 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
 
                 <div className="flex gap-2">
                   <Button variant="outline" className="flex-1 font-orbitron text-[9px] tracking-wider uppercase" onClick={() => setStep("metadata")}>
-                    Back
+                    {t.createAgent.back}
                   </Button>
                   <Button
                     className="flex-1 font-orbitron text-[9px] tracking-wider uppercase"
@@ -324,9 +328,9 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
                     style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)" }}
                   >
                     {isLoading ? (
-                      <><RotateCcw className="w-3 h-3 mr-1 animate-spin" />Minting...</>
+                      <><RotateCcw className="w-3 h-3 mr-1 animate-spin" />{t.createAgent.minting}</>
                     ) : (
-                      <><Sparkles className="w-3 h-3 mr-1" />Mint Agent</>
+                      <><Sparkles className="w-3 h-3 mr-1" />{t.createAgent.mint}</>
                     )}
                   </Button>
                 </div>
@@ -350,16 +354,16 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
                 </motion.div>
                 <div>
                   <div className="font-orbitron text-lg font-bold text-foreground uppercase tracking-wider mb-1">
-                    Agent Deployed!
+                    {t.createAgent.agentDeployed}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    {name} has been minted and is now live on the network.
+                    {name} {t.createAgent.agentDeployedDesc}
                   </div>
                 </div>
                 {txSignature && (
                   <div className="p-3 rounded-md bg-primary/5 border border-primary/15">
                     <div className="font-orbitron text-[8px] text-muted-foreground/60 uppercase tracking-widest mb-1">
-                      Transaction
+                      {t.createAgent.transaction}
                     </div>
                     <div className="font-mono text-[9px] text-primary break-all">{txSignature}</div>
                   </div>
@@ -370,7 +374,7 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
                   data-testid="button-close-success"
                   style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)" }}
                 >
-                  View My Agents
+                  {t.createAgent.viewMyAgents}
                 </Button>
               </motion.div>
             )}

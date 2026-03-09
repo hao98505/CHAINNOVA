@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useChainNova, useStakeInfo } from "@/hooks/useChainNova";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { useToast } from "@/hooks/use-toast";
@@ -14,13 +15,6 @@ import {
 
 const STAKE_PRESETS = [100, 500, 1000, 5000];
 
-const STATS_INFO = [
-  { label: "Total Staked", value: "42.8M", sub: "$CNOVA", icon: Coins, color: "text-primary" },
-  { label: "Current APY", value: "24.5%", sub: "Variable", icon: TrendingUp, color: "text-green-400" },
-  { label: "Stakers", value: "8,241", sub: "Active", icon: Shield, color: "text-blue-400" },
-  { label: "Lock Period", value: "7 Days", sub: "Minimum", icon: Clock, color: "text-yellow-400" },
-];
-
 export default function Stake() {
   const { connected, publicKey } = useWallet();
   const { setVisible } = useWalletModal();
@@ -28,9 +22,17 @@ export default function Stake() {
   const { data: stakeInfo, isLoading } = useStakeInfo(address);
   const { stakeTokens, unstakeTokens, isLoading: txLoading } = useChainNova();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const [stakeAmount, setStakeAmount] = useState("");
   const [activeTab, setActiveTab] = useState<"stake" | "unstake">("stake");
+
+  const STATS_INFO = [
+    { labelKey: "totalStaked" as const, value: "42.8M", sub: t.stake.variable, icon: Coins, color: "text-primary" },
+    { labelKey: "currentAPY" as const, value: "24.5%", sub: t.stake.variable, icon: TrendingUp, color: "text-green-400" },
+    { labelKey: "stakers" as const, value: "8,241", sub: t.stake.active, icon: Shield, color: "text-blue-400" },
+    { labelKey: "lockPeriod" as const, value: `7 ${t.stake.days}`, sub: t.stake.minimum, icon: Clock, color: "text-yellow-400" },
+  ];
 
   const dailyReward = stakeInfo
     ? ((stakeInfo.staked * stakeInfo.apy) / 100 / 365).toFixed(2)
@@ -42,15 +44,15 @@ export default function Stake() {
   const handleStake = async () => {
     if (!connected) { setVisible(true); return; }
     if (!stakeAmount || parseFloat(stakeAmount) <= 0) {
-      toast({ title: "Invalid Amount", description: "Please enter a valid amount.", variant: "destructive" });
+      toast({ title: t.stake.invalidAmount, description: t.stake.invalidAmountDesc, variant: "destructive" });
       return;
     }
     try {
       await stakeTokens(parseFloat(stakeAmount));
-      toast({ title: "Staking Initiated", description: `Staking ${stakeAmount} $CNOVA...` });
+      toast({ title: t.stake.stakingInitiated, description: `${t.stake.stakingDesc.replace("$CNOVA", `${stakeAmount} $CNOVA`)}` });
       setStakeAmount("");
     } catch {
-      toast({ title: "Error", description: "Transaction failed.", variant: "destructive" });
+      toast({ title: t.stake.error, description: t.stake.txFailed, variant: "destructive" });
     }
   };
 
@@ -58,9 +60,9 @@ export default function Stake() {
     if (!connected) { setVisible(true); return; }
     try {
       await unstakeTokens();
-      toast({ title: "Unstaking Initiated", description: "Your tokens will be returned after the lock period." });
+      toast({ title: t.stake.unstakingInitiated, description: t.stake.unstakingDesc });
     } catch {
-      toast({ title: "Error", description: "Transaction failed.", variant: "destructive" });
+      toast({ title: t.stake.error, description: t.stake.txFailed, variant: "destructive" });
     }
   };
 
@@ -69,17 +71,17 @@ export default function Stake() {
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
           <h1 className="font-orbitron text-2xl font-black uppercase tracking-wider text-foreground neon-glow-text mb-1">
-            Stake $CNOVA
+            {t.stake.title}
           </h1>
           <p className="font-orbitron text-[9px] text-muted-foreground/60 tracking-widest uppercase">
-            Earn passive rewards by securing the network
+            {t.stake.subtitle}
           </p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {STATS_INFO.map((stat, i) => (
             <motion.div
-              key={stat.label}
+              key={stat.labelKey}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.07 }}
@@ -88,7 +90,7 @@ export default function Stake() {
               <stat.icon className={`w-4 h-4 ${stat.color} mb-2`} />
               <div className={`font-orbitron text-lg font-black ${stat.color}`}>{stat.value}</div>
               <div className="font-orbitron text-[8px] text-muted-foreground/50 uppercase tracking-wider">{stat.sub}</div>
-              <div className="font-orbitron text-[8px] text-muted-foreground/60 uppercase tracking-widest mt-1">{stat.label}</div>
+              <div className="font-orbitron text-[8px] text-muted-foreground/60 uppercase tracking-widest mt-1">{t.stake[stat.labelKey]}</div>
             </motion.div>
           ))}
         </div>
@@ -107,7 +109,9 @@ export default function Stake() {
                       : "text-muted-foreground/60"
                   }`}
                 >
-                  {tab === "stake" ? <><Lock className="w-3 h-3 inline mr-1" />Stake</> : <><Unlock className="w-3 h-3 inline mr-1" />Unstake</>}
+                  {tab === "stake"
+                    ? <><Lock className="w-3 h-3 inline mr-1" />{t.stake.stakeTab}</>
+                    : <><Unlock className="w-3 h-3 inline mr-1" />{t.stake.unstakeTab}</>}
                 </button>
               ))}
             </div>
@@ -117,7 +121,7 @@ export default function Stake() {
                 <div className="space-y-4">
                   <div>
                     <label className="font-orbitron text-[9px] uppercase tracking-widest text-muted-foreground/70 block mb-2">
-                      Amount ($CNOVA)
+                      {t.stake.amountLabel}
                     </label>
                     <Input
                       type="number"
@@ -155,11 +159,11 @@ export default function Stake() {
                       className="p-3 rounded-md bg-green-400/5 border border-green-400/20 space-y-2"
                     >
                       <div className="flex justify-between">
-                        <span className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-wider">Est. Daily Reward</span>
+                        <span className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-wider">{t.stake.estDailyReward}</span>
                         <span className="font-orbitron text-xs text-green-400 font-bold">{estimatedReward} $CNOVA</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-wider">APY</span>
+                        <span className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-wider">{t.stake.apy}</span>
                         <span className="font-orbitron text-xs text-green-400 font-bold">24.5%</span>
                       </div>
                     </motion.div>
@@ -173,11 +177,11 @@ export default function Stake() {
                     style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)" }}
                   >
                     {txLoading ? (
-                      <><RotateCcw className="w-3 h-3 animate-spin" />Processing...</>
+                      <><RotateCcw className="w-3 h-3 animate-spin" />{t.stake.processing}</>
                     ) : !connected ? (
-                      <><Wallet className="w-3 h-3" />Connect to Stake</>
+                      <><Wallet className="w-3 h-3" />{t.stake.connectToStake}</>
                     ) : (
-                      <><Coins className="w-3 h-3" />Stake $CNOVA</>
+                      <><Coins className="w-3 h-3" />{t.stake.stakeButton}</>
                     )}
                   </Button>
                 </div>
@@ -185,20 +189,20 @@ export default function Stake() {
                 <div className="space-y-4">
                   <div className="p-4 rounded-md bg-primary/5 border border-primary/15 space-y-3">
                     <div className="flex justify-between">
-                      <span className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-wider">Currently Staked</span>
+                      <span className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-wider">{t.stake.currentlyStaked}</span>
                       <span className="font-orbitron text-sm font-bold text-foreground">
                         {isLoading ? "..." : `${(stakeInfo?.staked ?? 0).toLocaleString()} $CNOVA`}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-wider">Pending Rewards</span>
+                      <span className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-wider">{t.stake.pendingRewards}</span>
                       <span className="font-orbitron text-sm font-bold text-green-400">
                         {isLoading ? "..." : `${stakeInfo?.rewards ?? 0} $CNOVA`}
                       </span>
                     </div>
                     <div className="h-px bg-border/30" />
                     <div className="flex justify-between">
-                      <span className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-wider">Total Return</span>
+                      <span className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-wider">{t.stake.totalReturn}</span>
                       <span className="font-orbitron text-sm font-bold text-primary">
                         {isLoading ? "..." : `${((stakeInfo?.staked ?? 0) + (stakeInfo?.rewards ?? 0)).toLocaleString()} $CNOVA`}
                       </span>
@@ -208,7 +212,7 @@ export default function Stake() {
                   <div className="flex items-start gap-2 p-3 rounded-md bg-yellow-500/5 border border-yellow-500/20">
                     <Info className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0 mt-0.5" />
                     <p className="font-orbitron text-[9px] text-yellow-400/80 leading-relaxed tracking-wide">
-                      Unstaking will start a 7-day unlock period. Rewards stop accruing during this time.
+                      {t.stake.unstakeWarning}
                     </p>
                   </div>
 
@@ -220,9 +224,9 @@ export default function Stake() {
                     data-testid="button-unstake"
                   >
                     {txLoading ? (
-                      <><RotateCcw className="w-3 h-3 animate-spin" />Processing...</>
+                      <><RotateCcw className="w-3 h-3 animate-spin" />{t.stake.processing}</>
                     ) : (
-                      <><Unlock className="w-3 h-3" />Unstake All</>
+                      <><Unlock className="w-3 h-3" />{t.stake.unstakeAll}</>
                     )}
                   </Button>
                 </div>
@@ -238,7 +242,7 @@ export default function Stake() {
                 className="glass-card rounded-md border border-primary/20 p-5"
               >
                 <div className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-widest mb-4">
-                  Your Position
+                  {t.stake.yourPosition}
                 </div>
                 {isLoading ? (
                   <div className="space-y-3">
@@ -248,7 +252,7 @@ export default function Stake() {
                   <div className="space-y-4">
                     <div>
                       <div className="flex justify-between mb-1.5">
-                        <span className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-wider">Staked</span>
+                        <span className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-wider">{t.stake.currentlyStaked}</span>
                         <span className="font-orbitron text-xs font-bold text-foreground">
                           {(stakeInfo?.staked ?? 0).toLocaleString()} $CNOVA
                         </span>
@@ -263,11 +267,11 @@ export default function Stake() {
                     <div className="grid grid-cols-2 gap-3 text-center">
                       <div className="p-3 rounded-md bg-primary/5 border border-primary/15">
                         <div className="font-orbitron text-lg font-black text-green-400">{stakeInfo?.rewards ?? 0}</div>
-                        <div className="font-orbitron text-[8px] text-muted-foreground/60 uppercase tracking-wider">$CNOVA Earned</div>
+                        <div className="font-orbitron text-[8px] text-muted-foreground/60 uppercase tracking-wider">{t.stake.cnovaEarned}</div>
                       </div>
                       <div className="p-3 rounded-md bg-primary/5 border border-primary/15">
                         <div className="font-orbitron text-lg font-black text-primary">{dailyReward}</div>
-                        <div className="font-orbitron text-[8px] text-muted-foreground/60 uppercase tracking-wider">Daily Reward</div>
+                        <div className="font-orbitron text-[8px] text-muted-foreground/60 uppercase tracking-wider">{t.stake.dailyReward}</div>
                       </div>
                     </div>
                   </div>
@@ -277,7 +281,7 @@ export default function Stake() {
 
             <div className="glass-card rounded-md border border-primary/15 p-5">
               <div className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-widest mb-4">
-                Reward Tiers
+                {t.stake.rewardTiers}
               </div>
               <div className="space-y-3">
                 {[

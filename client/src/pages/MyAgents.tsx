@@ -4,10 +4,11 @@ import { Button } from "@/components/ui/button";
 import { AgentCard } from "@/components/AgentCard";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
 import { useMyAgents } from "@/hooks/useChainNova";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Bot, Plus, Wallet, TrendingUp, Zap, Activity, DollarSign } from "lucide-react";
+import { Bot, Plus, Wallet, Zap, Activity, DollarSign } from "lucide-react";
 
 function truncate(addr: string) {
   return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
@@ -19,6 +20,7 @@ export default function MyAgents() {
   const address = publicKey?.toBase58();
   const { data: agents, isLoading } = useMyAgents(address);
   const [createOpen, setCreateOpen] = useState(false);
+  const { t } = useLanguage();
 
   if (!connected) {
     return (
@@ -32,10 +34,10 @@ export default function MyAgents() {
             <Wallet className="w-8 h-8 text-primary/60" />
           </div>
           <h2 className="font-orbitron text-lg font-bold uppercase tracking-wider text-foreground mb-2">
-            Connect Wallet
+            {t.myAgents.connectTitle}
           </h2>
           <p className="text-muted-foreground text-sm mb-6">
-            Connect your Phantom or Solflare wallet to view your AI agent NFTs.
+            {t.myAgents.connectDesc}
           </p>
           <Button
             className="font-orbitron text-[10px] tracking-wider uppercase w-full"
@@ -44,7 +46,7 @@ export default function MyAgents() {
             style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)" }}
           >
             <Wallet className="w-3.5 h-3.5 mr-2" />
-            Connect Wallet
+            {t.myAgents.connectTitle}
           </Button>
         </motion.div>
       </div>
@@ -63,7 +65,7 @@ export default function MyAgents() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="font-orbitron text-2xl font-black uppercase tracking-wider text-foreground neon-glow-text">
-              My Agents
+              {t.myAgents.title}
             </h1>
             <div className="font-orbitron text-[9px] text-muted-foreground/60 tracking-widest mt-1">
               {address ? truncate(address) : ""}
@@ -76,16 +78,16 @@ export default function MyAgents() {
             style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)", border: "1px solid rgba(167,139,250,0.4)" }}
           >
             <Plus className="w-3.5 h-3.5" />
-            Deploy Agent
+            {t.myAgents.deployAgent}
           </Button>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
           {[
-            { label: "Owned NFTs", value: isLoading ? "..." : String(agents?.length ?? 0), icon: Bot, color: "text-primary" },
-            { label: "Portfolio Value", value: isLoading ? "..." : `${totalValue.toLocaleString()} $CNOVA`, icon: DollarSign, color: "text-green-400" },
-            { label: "Total Tasks", value: isLoading ? "..." : totalTasks.toLocaleString(), icon: Zap, color: "text-yellow-400" },
-            { label: "Avg Uptime", value: isLoading ? "..." : `${avgUptime}%`, icon: Activity, color: "text-blue-400" },
+            { label: t.myAgents.ownedNFTs, value: isLoading ? "..." : String(agents?.length ?? 0), icon: Bot, color: "text-primary" },
+            { label: t.myAgents.portfolioValue, value: isLoading ? "..." : `${totalValue.toLocaleString()} $CNOVA`, icon: DollarSign, color: "text-green-400" },
+            { label: t.myAgents.totalTasks, value: isLoading ? "..." : totalTasks.toLocaleString(), icon: Zap, color: "text-yellow-400" },
+            { label: t.myAgents.avgUptime, value: isLoading ? "..." : `${avgUptime}%`, icon: Activity, color: "text-blue-400" },
           ].map((stat, i) => (
             <motion.div
               key={stat.label}
@@ -93,7 +95,7 @@ export default function MyAgents() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.08 }}
               className="glass-card rounded-md border border-primary/15 p-4"
-              data-testid={`stat-${stat.label.toLowerCase().replace(/ /g, "-")}`}
+              data-testid={`stat-${i}`}
             >
               <stat.icon className={`w-4 h-4 ${stat.color} mb-2`} />
               <div className={`font-orbitron text-sm font-bold ${stat.color} mb-0.5`}>
@@ -120,10 +122,10 @@ export default function MyAgents() {
           >
             <Bot className="w-12 h-12 text-muted-foreground/20 mx-auto mb-4" />
             <div className="font-orbitron text-sm text-muted-foreground uppercase tracking-wider mb-2">
-              No Agents Yet
+              {t.myAgents.noAgentsTitle}
             </div>
             <p className="text-muted-foreground/60 text-sm mb-6">
-              Deploy your first AI agent NFT to get started.
+              {t.myAgents.noAgentsDesc}
             </p>
             <Button
               className="font-orbitron text-[10px] tracking-wider uppercase gap-2"
@@ -132,14 +134,14 @@ export default function MyAgents() {
               style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)" }}
             >
               <Plus className="w-3.5 h-3.5" />
-              Deploy First Agent
+              {t.myAgents.deployFirst}
             </Button>
           </motion.div>
         ) : (
           <>
             <div className="mb-3">
               <span className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-widest">
-                {agents.length} agent{agents.length !== 1 ? "s" : ""} in collection
+                {agents.length} {agents.length !== 1 ? t.myAgents.agentsInCollectionPlural : t.myAgents.agentsInCollection}
               </span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

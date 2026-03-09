@@ -12,6 +12,7 @@ import { clusterApiUrl } from "@solana/web3.js";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/app-sidebar";
 import { WalletConnect } from "@/components/WalletConnect";
+import { LanguageProvider, useLanguage } from "@/contexts/LanguageContext";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import Marketplace from "@/pages/Marketplace";
@@ -35,7 +36,25 @@ function Router() {
   );
 }
 
+function LanguageToggle() {
+  const { lang, toggleLang } = useLanguage();
+  return (
+    <button
+      onClick={toggleLang}
+      data-testid="button-language-toggle"
+      title={lang === "en" ? "切换中文" : "Switch to English"}
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-primary/30 bg-primary/10 transition-all font-orbitron text-[10px] tracking-wider text-foreground"
+      style={{ minWidth: 64 }}
+    >
+      <span className={lang === "en" ? "text-primary font-bold" : "text-muted-foreground"}>EN</span>
+      <span className="text-muted-foreground/40">/</span>
+      <span className={lang === "zh" ? "text-primary font-bold" : "text-muted-foreground"}>中文</span>
+    </button>
+  );
+}
+
 function AppLayout() {
+  const { t } = useLanguage();
   const sidebarStyle = {
     "--sidebar-width": "15rem",
     "--sidebar-width-icon": "3.5rem",
@@ -55,11 +74,12 @@ function AppLayout() {
               <div className="hidden md:flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-green-400 status-dot" />
                 <span className="font-orbitron text-xs text-muted-foreground tracking-widest uppercase">
-                  Solana Devnet
+                  {t.header.network}
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <LanguageToggle />
               <WalletConnect />
             </div>
           </header>
@@ -72,7 +92,7 @@ function AppLayout() {
   );
 }
 
-export default function App() {
+function AppInner() {
   const endpoint = useMemo(() => clusterApiUrl(NETWORK), []);
   const wallets = useMemo(
     () => [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
@@ -92,5 +112,13 @@ export default function App() {
         </WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
+  );
+}
+
+export default function App() {
+  return (
+    <LanguageProvider>
+      <AppInner />
+    </LanguageProvider>
   );
 }
