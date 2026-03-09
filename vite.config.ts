@@ -19,17 +19,33 @@ export default defineConfig({
         ]
       : []),
   ],
+  define: {
+    "process.env": {},
+    global: "globalThis",
+  },
   resolve: {
     alias: {
       "@": path.resolve(import.meta.dirname, "client", "src"),
       "@shared": path.resolve(import.meta.dirname, "shared"),
       "@assets": path.resolve(import.meta.dirname, "attached_assets"),
+      stream: "stream-browserify",
+    },
+  },
+  optimizeDeps: {
+    include: ["buffer", "@solana/web3.js", "@coral-xyz/anchor"],
+    esbuildOptions: {
+      define: {
+        global: "globalThis",
+      },
     },
   },
   root: path.resolve(import.meta.dirname, "client"),
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    commonjsOptions: {
+      transformMixedEsModules: true,
+    },
   },
   server: {
     fs: {
