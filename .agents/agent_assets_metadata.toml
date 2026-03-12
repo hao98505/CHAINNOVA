@@ -1,0 +1,14 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "0Vga3cCaw6-UiDngZXzB4"
+uri = "file://attached_assets/generated_images/chainnova_logo.png"
+type = "image"
+title = "ChainNova AI — Logo (1:1)"
+
+[[outputs]]
+id = "2Xafk8_b7KrPaB-RMp91n"
+uri = "file://attached_assets/generated_images/chainnova_twitter_banner.png"
+type = "image"
+title = "ChainNova AI — Twitter/X 背景图 (16:9)"
