@@ -12,3 +12,9 @@ id = "2Xafk8_b7KrPaB-RMp91n"
 uri = "file://attached_assets/generated_images/chainnova_twitter_banner.png"
 type = "image"
 title = "ChainNova AI — Twitter/X 背景图 (16:9)"
+
+[[outputs]]
+id = "4Qs4beykFaZ2tzplxkQCr"
+uri = "file://attached_assets/generated_images/chainnova_twitter_banner_v2.png"
+type = "image"
+title = "ChainNova Agents V2 — Twitter/X 背景图（含项目名称）"
