@@ -35,6 +35,23 @@ A decentralized AI agent marketplace built on Solana blockchain. Users can mint,
 - `useStakeInfo()` — Fetch staking position
 - `useSolBalance()` — Live SOL balance from RPC
 - `lib/anchor.ts` — Anchor provider setup + placeholder IDL
+- `lib/wormhole.ts` — Wormhole cross-chain bridge service (Token Bridge protocol)
+- `lib/i18n.ts` — EN/ZH translation strings
+- `contexts/LanguageContext.tsx` — Language toggle provider
+
+### Cross-Chain Bridge (Wormhole)
+The bridge uses the Wormhole Token Bridge protocol for Solana → EVM cross-chain transfers.
+- **Service**: `client/src/lib/wormhole.ts` — WormholeBridgeService class
+- **Chains**: Solana (devnet), BNB Chain, Arbitrum, Ethereum (all testnet)
+- **Flow**: Approve → Transfer (lock on Solana) → Confirm → VAA generation → Redeem on target
+- **Current mode**: Simulation (falls back gracefully until $CNOVA SPL token is deployed)
+- **To activate real bridging**: Deploy $CNOVA SPL token, attest via Wormhole, update CNOVA_MINT_DEVNET in wormhole.ts
+- **Dependencies**: @wormhole-foundation/sdk, @wormhole-foundation/sdk-solana, @wormhole-foundation/sdk-evm, @wormhole-foundation/sdk-solana-tokenbridge, @wormhole-foundation/sdk-evm-tokenbridge
+
+### i18n (Chinese/English)
+- Toggle button in header (EN / 中文)
+- All pages, components, sidebar fully translated
+- Language persisted to localStorage key `chainnova_lang`
 
 ## Configuration
 
