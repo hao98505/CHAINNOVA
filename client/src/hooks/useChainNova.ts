@@ -267,6 +267,7 @@ export function useChainNova() {
       fromChain: string;
       toChain: string;
       recipientAddress?: string;
+      slippage?: number;
     }) => {
       if (!publicKey) throw new Error("Wallet not connected");
       setIsLoading(true);
@@ -275,11 +276,6 @@ export function useChainNova() {
         type WormholeChainId = import("@/lib/wormhole").WormholeChainId;
 
         const bridge = new WormholeBridgeService(connection, "Testnet");
-        const quote = getBridgeQuote(
-          params.amount,
-          params.fromChain as WormholeChainId,
-          params.toChain as WormholeChainId
-        );
 
         const result = await bridge.initTransfer(
           {
@@ -288,6 +284,7 @@ export function useChainNova() {
             toChain: params.toChain as WormholeChainId,
             senderAddress: publicKey.toBase58(),
             recipientAddress: params.recipientAddress || publicKey.toBase58(),
+            slippage: params.slippage,
           },
           async (tx) => {
             const signed = await window.solana?.signTransaction?.(tx);
@@ -296,14 +293,7 @@ export function useChainNova() {
         );
 
         console.log("[Bridge] Result:", result);
-        return {
-          signature: result.signature,
-          vaaId: result.vaaId,
-          explorerUrl: result.explorerUrl,
-          status: result.status,
-          estimatedTime: result.estimatedTime,
-          fee: result.fee,
-        };
+        return result;
       } catch (error: any) {
         if (error?.message?.includes("User rejected") || error?.code === 4001) {
           throw error;
@@ -314,7 +304,8 @@ export function useChainNova() {
         const quote = getBridgeQuote(
           params.amount,
           params.fromChain as WormholeChainId,
-          params.toChain as WormholeChainId
+          params.toChain as WormholeChainId,
+          params.slippage
         );
         const simSig = `wormhole_sim_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
         return {
@@ -324,6 +315,11 @@ export function useChainNova() {
           status: "simulated" as const,
           estimatedTime: quote.estimatedTime,
           fee: quote.fee,
+          receiveAmount: quote.receiveAmount,
+          timestamp: Date.now(),
+          fromChain: params.fromChain as WormholeChainId,
+          toChain: params.toChain as WormholeChainId,
+          amount: params.amount,
         };
       } finally {
         setIsLoading(false);
