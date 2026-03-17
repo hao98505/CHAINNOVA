@@ -1,0 +1,27 @@
+请帮我完成以下修改：
+
+1. 打开 server/storage.ts，在 getAgents() 方法里，如果数据库没有数据，返回以下 mock 数据：
+
+[
+  { id: 1, name: "NEXUS-7", category: "Security", description: "Military-grade cryptographic AI agent specialized in zero-knowledge proofs and on-chain security auditing.", tflops: 12.4, price: 2800, rentPerHr: 45, uptime: 99.8, tasks: 3241, status: "active", mintAddress: "demo1111111111111111111111111111" },
+  { id: 2, name: "AURORA-V", category: "Creative", description: "Generative AI agent for NFT artwork creation, style migration and large-scale digital media production.", tflops: 8.2, price: 1500, rentPerHr: 28, uptime: 97.5, tasks: 1842, status: "active", mintAddress: "demo2222222222222222222222222222" },
+  { id: 3, name: "QUANT-DAO", category: "Finance", description: "High-frequency trading and DeFi optimization AI. Processes 50,000+ transactions per second with ML-driven arbitrage.", tflops: 18.7, price: 4200, rentPerHr: 72, uptime: 99.9, tasks: 8934, status: "active", mintAddress: "demo3333333333333333333333333333" },
+  { id: 4, name: "ATLAS-9", category: "Analytics", description: "On-chain data analytics agent. Tracks whale wallets, monitors smart contract activity and generates market intelligence reports.", tflops: 6.8, price: 980, rentPerHr: 18, uptime: 98.2, tasks: 2156, status: "idle", mintAddress: "demo4444444444444444444444444444" },
+  { id: 5, name: "CIPHER-X", category: "Security", description: "Real-time threat detection agent for DeFi protocols. Monitors for rug pulls, flash loan attacks and abnormal contract behavior.", tflops: 9.5, price: 2100, rentPerHr: 35, uptime: 99.1, tasks: 4782, status: "active", mintAddress: "demo5555555555555555555555555555" },
+  { id: 6, name: "SIGMA-3", category: "Trading", description: "Autonomous liquidity management agent for DEX pools. Optimizes fee tiers and rebalances positions using predictive modeling.", tflops: 14.2, price: 3500, rentPerHr: 58, uptime: 99.6, tasks: 6103, status: "active", mintAddress: "demo6666666666666666666666666666" },
+  { id: 7, name: "NOVA-AI", category: "Research", description: "Scientific research agent trained on blockchain whitepapers and crypto economics. Generates investment research reports.", tflops: 5.1, price: 750, rentPerHr: 12, uptime: 96.8, tasks: 934, status: "idle", mintAddress: "demo7777777777777777777777777777" },
+  { id: 8, name: "VORTEX-1", category: "Trading", description: "Cross-chain arbitrage agent. Monitors price discrepancies across 15+ DEXs on Solana, Ethereum and BSC simultaneously.", tflops: 22.3, price: 5800, rentPerHr: 95, uptime: 99.7, tasks: 12847, status: "active", mintAddress: "demo8888888888888888888888888888" }
+]
+
+2. 打开 server/routes.ts，确保 GET /api/agents 路由正确调用 storage.getAgents() 并返回数据。
+
+3. 打开 server/routes.ts，确保 GET /api/stake 返回以下数据：
+{ totalStaked: 8420000, currentAPY: 24.5, stakers: 1284, lockPeriod: 7 }
+
+4. 打开 vite.config.ts 或 vite.config.js，在 build 配置里加入代码压缩并移除 console.log：
+build: {
+  minify: 'terser',
+  terserOptions: { compress: { drop_console: true, drop_debugger: true } }
+}
+
+完成后重新运行项目。

@@ -6,11 +6,15 @@ export async function registerRoutes(
   httpServer: Server,
   app: Express
 ): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
+  app.get("/api/agents", async (_req, res) => {
+    const agents = await storage.getAgents();
+    res.json(agents);
+  });
 
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+  app.get("/api/stake", async (_req, res) => {
+    const stats = await storage.getStakeStats();
+    res.json(stats);
+  });
 
   return httpServer;
 }
