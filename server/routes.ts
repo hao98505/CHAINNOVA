@@ -18,7 +18,7 @@ export async function registerRoutes(
 
   app.use((req: Request, res: Response, next: NextFunction) => {
     if (req.path.startsWith("/api/")) {
-      res.status(404).json({ error: "Not found" });
+      res.status(404).json({ error: "API endpoint not found" });
     } else {
       next();
     }
