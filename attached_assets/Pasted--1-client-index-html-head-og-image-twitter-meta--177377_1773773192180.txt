@@ -1,0 +1,45 @@
+上次的修改好像没有生效，请帮我确认并重新执行：
+
+1. 检查 client/index.html，确认 <head> 里有没有 og:image 和 twitter: 开头的 meta 标签，如果没有就加上：
+   <meta property="og:image" content="https://nova-agents-market.replit.app/og-banner.png" />
+   <meta property="og:type" content="website" />
+   <meta name="twitter:card" content="summary_large_image" />
+   <meta name="twitter:image" content="https://nova-agents-market.replit.app/og-banner.png" />
+
+2. 检查 client/public/ 目录，确认有没有 og-banner.png 这个文件。
+   如果没有，用以下 Node.js 脚本生成一个（在 Shell 里运行）：
+   
+   node -e "
+   const {createCanvas} = require('canvas');
+   const fs = require('fs');
+   const c = createCanvas(1200,630);
+   const ctx = c.getContext('2d');
+   ctx.fillStyle='#0a0a1a';
+   ctx.fillRect(0,0,1200,630);
+   ctx.fillStyle='#a78bfa';
+   ctx.font='bold 72px sans-serif';
+   ctx.textAlign='center';
+   ctx.fillText('ChainNova Agents V2',600,260);
+   ctx.fillStyle='#ffffff';
+   ctx.font='36px sans-serif';
+   ctx.fillText('Decentralized AI Agent Marketplace on Solana',600,340);
+   fs.writeFileSync('client/public/og-banner.png', c.toBuffer());
+   console.log('done');
+   "
+   
+   如果 canvas 模块没有，改用 sharp：
+   node -e "
+   const sharp = require('sharp');
+   const svg = Buffer.from('<svg width=\"1200\" height=\"630\" xmlns=\"http://www.w3.org/2000/svg\"><rect width=\"1200\" height=\"630\" fill=\"#0a0a1a\"/><text x=\"600\" y=\"280\" font-size=\"72\" font-weight=\"bold\" fill=\"#a78bfa\" text-anchor=\"middle\" font-family=\"sans-serif\">ChainNova Agents V2</text><text x=\"600\" y=\"360\" font-size=\"36\" fill=\"white\" text-anchor=\"middle\" font-family=\"sans-serif\">Decentralized AI Agent Marketplace</text></svg>');
+   sharp(svg).png().toFile('client/public/og-banner.png', (e,i) => console.log(e||i));
+   "
+
+3. 检查 server/routes.ts 最后有没有 API 404 处理，如果没有就加：
+   app.use('/api/*', (req, res) => {
+     res.status(404).json({ error: 'API endpoint not found' });
+   });
+
+4. 检查 server/static.ts，在 /assets/ 的静态文件服务里加缓存头：
+   'Cache-Control': 'public, max-age=31536000, immutable'
+
+完成后点击 Run 重新启动。
