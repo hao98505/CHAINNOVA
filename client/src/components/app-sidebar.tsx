@@ -17,9 +17,6 @@ import {
   Bot,
   Coins,
   ArrowLeftRight,
-  ExternalLink,
-  Globe,
-  BookOpen,
 } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
@@ -35,11 +32,6 @@ export function AppSidebar() {
     { titleKey: "bridge" as const, url: "/bridge", icon: ArrowLeftRight, descKey: "Cross-chain bridge" },
   ] as const;
 
-  const externalLinks = [
-    { titleKey: "docs" as const, url: "#", icon: BookOpen },
-    { titleKey: "explorer" as const, url: "#", icon: ExternalLink },
-    { titleKey: "governance" as const, url: "#", icon: Globe },
-  ] as const;
 
   return (
     <Sidebar>
