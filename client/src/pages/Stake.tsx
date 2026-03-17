@@ -41,6 +41,15 @@ export default function Stake() {
     ? ((parseFloat(stakeAmount) * 24.5) / 100 / 365).toFixed(2)
     : "0";
 
+  const getTxErrorMessage = (error: any): string => {
+    const msg = error?.message || "";
+    if (msg.includes("insufficient") || msg.includes("balance")) return t.stake.errInsufficientBalance || "Insufficient SOL or $CNOVA balance";
+    if (msg.includes("User rejected") || error?.code === 4001) return t.stake.errUserRejected || "You rejected the wallet signature";
+    if (msg.includes("timeout") || msg.includes("block height")) return t.stake.errTimeout || "Transaction timed out, network congested";
+    if (msg.includes("0x1")) return t.stake.errContractFailed || "Contract execution failed";
+    return t.stake.txFailed;
+  };
+
   const handleStake = async () => {
     if (!connected) { setVisible(true); return; }
     if (!stakeAmount || parseFloat(stakeAmount) <= 0) {
@@ -51,8 +60,8 @@ export default function Stake() {
       await stakeTokens(parseFloat(stakeAmount));
       toast({ title: t.stake.stakingInitiated, description: `${t.stake.stakingDesc.replace("$CNOVA", `${stakeAmount} $CNOVA`)}` });
       setStakeAmount("");
-    } catch {
-      toast({ title: t.stake.error, description: t.stake.txFailed, variant: "destructive" });
+    } catch (error: any) {
+      toast({ title: t.stake.error, description: getTxErrorMessage(error), variant: "destructive" });
     }
   };
 
@@ -61,8 +70,8 @@ export default function Stake() {
     try {
       await unstakeTokens();
       toast({ title: t.stake.unstakingInitiated, description: t.stake.unstakingDesc });
-    } catch {
-      toast({ title: t.stake.error, description: t.stake.txFailed, variant: "destructive" });
+    } catch (error: any) {
+      toast({ title: t.stake.error, description: getTxErrorMessage(error), variant: "destructive" });
     }
   };
 

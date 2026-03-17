@@ -69,8 +69,14 @@ export function CreateAgentModal({ open, onOpenChange }: CreateAgentModalProps) 
       setTxSignature(result.signature);
       setStep("success");
       toast({ title: t.createAgent.agentMinted, description: `${name} ${t.createAgent.agentMintedDesc}` });
-    } catch {
-      toast({ title: t.createAgent.mintFailed, description: t.createAgent.mintFailedDesc, variant: "destructive" });
+    } catch (error: any) {
+      const msg = error?.message || "";
+      let description = t.createAgent.mintFailedDesc;
+      if (msg.includes("insufficient") || msg.includes("balance")) description = t.createAgent.errInsufficientBalance || "Insufficient SOL or $CNOVA balance";
+      else if (msg.includes("User rejected") || error?.code === 4001) description = t.createAgent.errUserRejected || "You rejected the wallet signature";
+      else if (msg.includes("timeout") || msg.includes("block height")) description = t.createAgent.errTimeout || "Transaction timed out, network congested";
+      else if (msg.includes("0x1")) description = t.createAgent.errContractFailed || "Contract execution failed";
+      toast({ title: t.createAgent.mintFailed, description, variant: "destructive" });
     }
   };
 

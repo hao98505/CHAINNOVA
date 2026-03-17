@@ -112,9 +112,15 @@ export default function Bridge() {
       setHistory(getBridgeHistory());
 
       toast({ title: t.bridge.bridgeComplete, description: `${amount} $CNOVA ${t.bridge.bridgeCompleteToast} ${toChainConfig.name}` });
-    } catch {
+    } catch (error: any) {
       setStatus("idle");
-      toast({ title: t.bridge.bridgeFailed, description: t.bridge.bridgeFailedDesc, variant: "destructive" });
+      const msg = error?.message || "";
+      let description = t.bridge.bridgeFailedDesc;
+      if (msg.includes("insufficient") || msg.includes("balance")) description = t.bridge.errInsufficientBalance || "Insufficient SOL or $CNOVA balance";
+      else if (msg.includes("User rejected") || error?.code === 4001) description = t.bridge.errUserRejected || "You rejected the wallet signature";
+      else if (msg.includes("timeout") || msg.includes("block height")) description = t.bridge.errTimeout || "Transaction timed out, network congested";
+      else if (msg.includes("0x1")) description = t.bridge.errContractFailed || "Contract execution failed";
+      toast({ title: t.bridge.bridgeFailed, description, variant: "destructive" });
     }
   };
 

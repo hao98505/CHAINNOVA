@@ -59,13 +59,22 @@ export function AgentCard({ agent, index = 0, compact = false }: AgentCardProps)
     rented: t.agentCard.rented,
   };
 
+  const getTxErrorMessage = (error: any): string => {
+    const msg = error?.message || "";
+    if (msg.includes("insufficient") || msg.includes("balance")) return t.agentCard.errInsufficientBalance || "Insufficient SOL or $CNOVA balance";
+    if (msg.includes("User rejected") || error?.code === 4001) return t.agentCard.errUserRejected || "You rejected the wallet signature";
+    if (msg.includes("timeout") || msg.includes("block height")) return t.agentCard.errTimeout || "Transaction timed out, network congested";
+    if (msg.includes("0x1")) return t.agentCard.errContractFailed || "Contract execution failed";
+    return t.agentCard.txFailed;
+  };
+
   const handleBuy = async () => {
     if (!connected) { setVisible(true); return; }
     try {
       await buyAgent(agent.id);
       toast({ title: t.agentCard.purchaseInitiated, description: `${t.agentCard.purchaseDesc} ${agent.name}...` });
-    } catch {
-      toast({ title: t.agentCard.error, description: t.agentCard.txFailed, variant: "destructive" });
+    } catch (error: any) {
+      toast({ title: t.agentCard.error, description: getTxErrorMessage(error), variant: "destructive" });
     }
   };
 
@@ -75,8 +84,8 @@ export function AgentCard({ agent, index = 0, compact = false }: AgentCardProps)
       await rentAgent(agent.id, rentHours);
       toast({ title: t.agentCard.rentalInitiated, description: `${t.agentCard.rentalDesc} ${agent.name} ${rentHours}${t.agentCard.hours}...` });
       setShowRentModal(false);
-    } catch {
-      toast({ title: t.agentCard.error, description: t.agentCard.txFailed, variant: "destructive" });
+    } catch (error: any) {
+      toast({ title: t.agentCard.error, description: getTxErrorMessage(error), variant: "destructive" });
     }
   };
 

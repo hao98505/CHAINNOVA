@@ -125,7 +125,27 @@ export default function Marketplace() {
         {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Skeleton key={i} className="h-80 rounded-md bg-card/50" />
+              <div key={i} className="glass-card rounded-md border border-primary/15 overflow-hidden">
+                <Skeleton className="h-32 w-full rounded-none bg-primary/5" />
+                <div className="p-4 space-y-3">
+                  <Skeleton className="h-5 w-32 bg-card/50" />
+                  <Skeleton className="h-4 w-full bg-card/50" />
+                  <Skeleton className="h-4 w-3/4 bg-card/50" />
+                  <div className="grid grid-cols-3 gap-2 pt-2">
+                    <Skeleton className="h-10 bg-card/50" />
+                    <Skeleton className="h-10 bg-card/50" />
+                    <Skeleton className="h-10 bg-card/50" />
+                  </div>
+                  <div className="flex justify-between pt-2">
+                    <Skeleton className="h-8 w-24 bg-card/50" />
+                    <Skeleton className="h-8 w-24 bg-card/50" />
+                  </div>
+                  <div className="flex gap-2 pt-1">
+                    <Skeleton className="h-9 flex-1 bg-card/50" />
+                    <Skeleton className="h-9 flex-1 bg-card/50" />
+                  </div>
+                </div>
+              </div>
             ))}
           </div>
         ) : filtered.length === 0 ? (
