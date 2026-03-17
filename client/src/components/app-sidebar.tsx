@@ -108,27 +108,7 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        <SidebarGroup className="mt-2">
-          <SidebarGroupLabel className="font-orbitron text-[9px] tracking-widest text-muted-foreground/60 uppercase px-3 mb-1">
-            {t.nav.resources}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {externalLinks.map((item) => (
-                <SidebarMenuItem key={item.titleKey}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url} target="_blank" rel="noopener noreferrer">
-                      <item.icon className="w-4 h-4 text-muted-foreground flex-shrink-0" />
-                      <span className="font-orbitron text-[10px] tracking-wider text-muted-foreground">
-                        {t.nav[item.titleKey]}
-                      </span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {/* Resources section hidden — Docs, Explorer, Governance pages not yet implemented */}
       </SidebarContent>
 
       <SidebarFooter className="px-4 py-3">

@@ -48,6 +48,17 @@ export default defineConfig({
       compress: {
         drop_console: true,
         drop_debugger: true,
+        pure_funcs: ["console.log", "console.warn", "console.error"],
+      },
+    },
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          "vendor-solana": ["@solana/web3.js"],
+          "vendor-wallet": ["@solana/wallet-adapter-react"],
+          "vendor-react": ["react", "react-dom"],
+          "vendor-ui": ["framer-motion"],
+        },
       },
     },
     commonjsOptions: {

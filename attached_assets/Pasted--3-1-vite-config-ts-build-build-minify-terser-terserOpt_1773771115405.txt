@@ -1,0 +1,42 @@
+请帮我做以下3项修改：
+
+1. 打开 vite.config.ts，在 build 配置里添加：
+build: {
+  minify: 'terser',
+  terserOptions: {
+    compress: {
+      drop_console: true,
+      drop_debugger: true,
+      pure_funcs: ['console.log', 'console.warn', 'console.error']
+    }
+  },
+  rollupOptions: {
+    output: {
+      manualChunks: {
+        'vendor-solana': ['@solana/web3.js'],
+        'vendor-wallet': ['@solana/wallet-adapter-react', '@solana/wallet-adapter-wallets'],
+        'vendor-react': ['react', 'react-dom'],
+        'vendor-ui': ['framer-motion']
+      }
+    }
+  }
+}
+
+2. 打开 server/routes.ts，添加以下真实的 API 路由（替换或补充现有内容）：
+
+GET /api/agents 返回：
+[
+  {id:"agent-001",name:"NEXUS-7",description:"Advanced quantum reasoning engine optimized for complex multi-step problem solving.",tflops:142.5,price:1200,rentPrice:45,owner:"7vFx...3kLm",category:"Research",status:"active",uptime:99.2,tasks:4821},
+  {id:"agent-002",name:"CIPHER-X",description:"Military-grade cryptographic AI for zero-knowledge proofs and security auditing.",tflops:89.3,price:850,rentPrice:28,owner:"9kPr...8wNq",category:"Security",status:"active",uptime:98.7,tasks:2156},
+  {id:"agent-003",name:"AURORA-V",description:"Generative AI for NFT art creation, style transfer and digital media production.",tflops:204.1,price:2100,rentPrice:72,owner:"3mZt...5rKj",category:"Creative",status:"rented",uptime:97.5,tasks:8934},
+  {id:"agent-004",name:"QUANT-DAO",description:"High-frequency trading and DeFi optimization AI processing 50k+ TPS.",tflops:317.8,price:3500,rentPrice:120,owner:"5hQs...2vBx",category:"Finance",status:"active",uptime:99.8,tasks:15672},
+  {id:"agent-005",name:"ORACLE-9",description:"Cross-chain oracle AI providing real-time data feeds across 15+ blockchain networks.",tflops:76.4,price:720,rentPrice:22,owner:"2nRw...7pXc",category:"Oracle",status:"idle",uptime:95.1,tasks:3421},
+  {id:"agent-006",name:"VERTEX-AI",description:"NLP AI for smart contract auditing, documentation and DAO governance analysis.",tflops:155.2,price:1650,rentPrice:55,owner:"8fLm...4dTy",category:"Governance",status:"active",uptime:98.3,tasks:6783}
+]
+
+GET /api/stake 返回：
+{totalStaked:8420000,currentAPY:24.5,stakers:1284,lockPeriod:7}
+
+3. 在导航栏里，把 "DOCS"、"EXPLORER"、"GOVERNANCE" 这三个暂时没有对应页面的链接隐藏掉（设为 hidden 或者注释掉），避免用户点击后跳到无效页面。
+
+完成后重新 build 并运行。
