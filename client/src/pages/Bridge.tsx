@@ -48,7 +48,24 @@ import {
 type BridgeStatus = "idle" | "switching" | "approving" | "bridging" | "complete";
 
 const AMOUNT_PRESETS = [100, 500, 1000, 5000];
-const SOLANA_MINT_SHORT = "6ZcR1K...ppump";
+
+const SOLANA_MINT_FULL = "6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump";
+const BSC_TOKEN_FULL = "0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff";
+
+function getSourceTokenDisplay(chain: ChainKey): { label: string; address: string; short: string } | null {
+  if (chain === "solana") {
+    return { label: "Solana Mint", address: SOLANA_MINT_FULL, short: "6ZcR1K...pump" };
+  }
+  if (chain === "bsc") {
+    return { label: "BSC Token", address: BSC_TOKEN_FULL, short: "0x3e9f...ffff" };
+  }
+  const wrapped = getWrappedTokenForChain(chain);
+  if (wrapped) {
+    const chainLabel = chain === "arbitrum" ? "ARB Token" : "ETH Token";
+    return { label: chainLabel, address: wrapped, short: `${wrapped.slice(0, 8)}...${wrapped.slice(-4)}` };
+  }
+  return null;
+}
 
 export default function Bridge() {
   const { toast } = useToast();
@@ -88,6 +105,8 @@ export default function Bridge() {
   );
 
   const canBridge = connected && parsedAmount > 0 && !insufficientBalance && !needsApproval && status === "idle" && !!direction;
+
+  const sourceTokenInfo = useMemo(() => getSourceTokenDisplay(sourceChain), [sourceChain]);
 
   useEffect(() => {
     if (!validTargets.includes(targetChain)) {
@@ -249,7 +268,7 @@ export default function Bridge() {
           <h1 className="font-orbitron text-2xl font-black uppercase tracking-wider text-foreground neon-glow-text mb-1" data-testid="text-bridge-title">
             Bridge v3 · Solana ↔ EVM
           </h1>
-          <p className="font-orbitron text-[9px] text-muted-foreground/60 tracking-widest uppercase">
+          <p className="text-sm text-muted-foreground tracking-wide">
             ForgAI 跨链桥 — Solana / BSC / Arbitrum / Ethereum
           </p>
         </div>
@@ -263,20 +282,23 @@ export default function Bridge() {
             <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
               className="glass-card rounded-md border border-primary/15 p-3 text-center">
               <item.icon className={`w-4 h-4 ${item.color} mx-auto mb-1`} />
-              <div className="font-orbitron text-[8px] text-muted-foreground/70 uppercase tracking-widest">{item.label}</div>
+              <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{item.label}</div>
             </motion.div>
           ))}
         </div>
 
         <div className="glass-card rounded-md border border-primary/20 p-3 mb-4 flex items-start gap-2">
           <Info className="w-4 h-4 text-primary/70 flex-shrink-0 mt-0.5" />
-          <div className="text-xs text-muted-foreground leading-relaxed">
-            <span className="text-primary font-semibold">Bridge v3</span> 支持 Solana 原生 ForgAI 与 EVM 三链 (BSC / Arbitrum / Ethereum) 双向桥接。
-            Solana Mint：
-            <button onClick={() => copyToClipboard(SOLANA_MINT.toBase58())}
-              className="font-mono text-[10px] text-primary/80 ml-1 hover:text-primary transition-colors" data-testid="button-copy-mint">
-              {SOLANA_MINT_SHORT} <Copy className="w-3 h-3 inline" />
-            </button>
+          <div className="text-sm text-muted-foreground leading-relaxed">
+            <span className="text-primary font-semibold">Bridge v3</span> 支持 Solana ↔ EVM 双向桥接。当前源链测试代币：
+            {sourceTokenInfo ? (
+              <button onClick={() => copyToClipboard(sourceTokenInfo.address)}
+                className="font-mono text-xs text-primary/90 ml-1 hover:text-primary transition-colors inline-flex items-center gap-1" data-testid="button-copy-token">
+                {sourceTokenInfo.label}：{sourceTokenInfo.short} <Copy className="w-3 h-3 inline" />
+              </button>
+            ) : (
+              <span className="text-yellow-400 text-xs ml-1">未配置</span>
+            )}
           </div>
         </div>
 
@@ -285,12 +307,12 @@ export default function Bridge() {
             <div className="glass-card rounded-md border border-primary/20 p-4">
               <div className="flex items-center gap-3 mb-4 p-3 rounded-md bg-primary/5 border border-primary/10">
                 <div className="flex-1">
-                  <div className="font-orbitron text-[8px] text-muted-foreground/50 uppercase tracking-widest mb-1.5 text-center">Source</div>
+                  <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 text-center">Source</div>
                   <div className="flex flex-wrap gap-1.5 justify-center">
                     {allChainKeys.map((chain) => (
                       <button key={chain} onClick={() => setSourceChain(chain)} data-testid={`button-source-${chain}`}
-                        className={`px-2.5 py-1.5 rounded border font-orbitron text-[9px] tracking-wider uppercase transition-all ${
-                          sourceChain === chain ? "bg-primary/30 border-primary/60 text-primary" : "border-border/40 text-muted-foreground/60"
+                        className={`px-3 py-1.5 rounded border text-xs font-semibold tracking-wide uppercase transition-all ${
+                          sourceChain === chain ? "bg-primary/30 border-primary/60 text-primary" : "border-border/40 text-muted-foreground/80 hover:border-primary/30"
                         }`}>
                         {ALL_CHAINS[chain].shortName}
                       </button>
@@ -299,12 +321,12 @@ export default function Bridge() {
                 </div>
                 <ArrowRight className="w-5 h-5 text-primary flex-shrink-0" />
                 <div className="flex-1">
-                  <div className="font-orbitron text-[8px] text-muted-foreground/50 uppercase tracking-widest mb-1.5 text-center">Target</div>
+                  <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 text-center">Target</div>
                   <div className="flex flex-wrap gap-1.5 justify-center">
                     {validTargets.map((chain) => (
                       <button key={chain} onClick={() => setTargetChain(chain)} data-testid={`button-target-${chain}`}
-                        className={`px-2.5 py-1.5 rounded border font-orbitron text-[9px] tracking-wider uppercase transition-all ${
-                          targetChain === chain ? "bg-primary/30 border-primary/60 text-primary" : "border-border/40 text-muted-foreground/60"
+                        className={`px-3 py-1.5 rounded border text-xs font-semibold tracking-wide uppercase transition-all ${
+                          targetChain === chain ? "bg-primary/30 border-primary/60 text-primary" : "border-border/40 text-muted-foreground/80 hover:border-primary/30"
                         }`}>
                         {ALL_CHAINS[chain].shortName}
                       </button>
@@ -313,19 +335,29 @@ export default function Bridge() {
                 </div>
               </div>
 
+              {sourceTokenInfo && (
+                <div className="mb-3 px-3 py-2 rounded bg-primary/5 border border-primary/10 flex items-center justify-between">
+                  <span className="text-xs text-muted-foreground">{sourceTokenInfo.label}</span>
+                  <button onClick={() => copyToClipboard(sourceTokenInfo.address)}
+                    className="font-mono text-xs text-primary/90 hover:text-primary transition-colors flex items-center gap-1">
+                    {sourceTokenInfo.short} <Copy className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+
               {!connected && (
                 <div className="text-center py-6">
                   <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-3">
                     <Wallet className="w-7 h-7 text-primary/60" />
                   </div>
                   {isSolanaSource ? (
-                    <p className="text-muted-foreground text-xs mb-3">请使用顶部钱包按钮连接 Phantom / Solflare</p>
+                    <p className="text-muted-foreground text-sm mb-3">请使用顶部钱包按钮连接 Phantom / Solflare</p>
                   ) : (
                     <>
-                      <p className="text-muted-foreground text-xs mb-3">使用 MetaMask 连接到 {ALL_CHAINS[sourceChain].name}</p>
-                      <Button onClick={handleConnectEvm} className="font-orbitron text-[10px] tracking-wider uppercase gap-2"
+                      <p className="text-muted-foreground text-sm mb-3">使用 MetaMask 连接到 {ALL_CHAINS[sourceChain].name}</p>
+                      <Button onClick={handleConnectEvm} className="text-sm tracking-wide uppercase gap-2"
                         data-testid="button-connect-evm" style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)" }}>
-                        <Wallet className="w-3.5 h-3.5" /> Connect EVM Wallet
+                        <Wallet className="w-4 h-4" /> Connect EVM Wallet
                       </Button>
                     </>
                   )}
@@ -335,46 +367,46 @@ export default function Bridge() {
               {connected && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-widest">Connected</span>
-                    <span className="font-mono text-[10px] text-primary">
+                    <span className="text-xs text-muted-foreground uppercase tracking-wide">Connected</span>
+                    <span className="font-mono text-xs text-primary">
                       {isSolanaSource ? truncAddr(solanaWallet.publicKey!.toBase58()) : truncAddr(evmAddress!)}
                     </span>
                   </div>
                   <div>
                     <div className="flex justify-between mb-1.5">
-                      <label className="font-orbitron text-[9px] uppercase tracking-widest text-muted-foreground/70">Amount (ForgAI)</label>
-                      <span className="font-orbitron text-[9px] text-muted-foreground/50">
+                      <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Amount (ForgAI)</label>
+                      <span className="text-xs text-muted-foreground">
                         Balance: {loadingMeta ? "..." : parseFloat(balance).toLocaleString()}
                       </span>
                     </div>
                     <Input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="0"
-                      className="cyber-input font-orbitron text-lg tracking-wider text-center" data-testid="input-bridge-amount" />
+                      className="cyber-input text-lg tracking-wider text-center" data-testid="input-bridge-amount" />
                     <div className="flex flex-wrap gap-2 mt-2">
                       {AMOUNT_PRESETS.map((p) => (
                         <button key={p} onClick={() => setAmount(String(p))} data-testid={`button-amount-${p}`}
-                          className="px-2.5 py-1 border border-border/50 rounded font-orbitron text-[9px] tracking-wider text-muted-foreground/70 transition-all hover:border-primary/40">
+                          className="px-3 py-1 border border-border/50 rounded text-xs font-medium tracking-wide text-muted-foreground/80 transition-all hover:border-primary/40 hover:text-primary/80">
                           {p.toLocaleString()}
                         </button>
                       ))}
                       <button onClick={() => setAmount(balance)} data-testid="button-amount-max"
-                        className="px-2.5 py-1 border border-primary/30 rounded font-orbitron text-[9px] tracking-wider text-primary transition-all">MAX</button>
+                        className="px-3 py-1 border border-primary/30 rounded text-xs font-semibold tracking-wide text-primary transition-all hover:bg-primary/10">MAX</button>
                     </div>
                   </div>
 
                   {insufficientBalance && parsedAmount > 0 && (
                     <div className="flex items-center gap-2 p-2 rounded-md bg-red-500/10 border border-red-500/30">
                       <AlertTriangle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
-                      <span className="font-orbitron text-[9px] text-red-400">余额不足</span>
+                      <span className="text-sm text-red-400 font-medium">余额不足</span>
                     </div>
                   )}
 
                   <div>
-                    <label className="font-orbitron text-[9px] uppercase tracking-widest text-muted-foreground/70 block mb-1.5">
+                    <label className="text-xs font-medium uppercase tracking-wide text-muted-foreground block mb-1.5">
                       {isSolanaSource ? "目标 EVM 地址 (必填)" : "目标 Solana 地址 (必填)"}
                     </label>
                     <Input value={recipient} onChange={(e) => setRecipient(e.target.value)}
                       placeholder={isSolanaSource ? "0x..." : "Base58 Solana address"}
-                      className="cyber-input font-mono text-xs" data-testid="input-bridge-recipient" />
+                      className="cyber-input font-mono text-sm" data-testid="input-bridge-recipient" />
                   </div>
                 </div>
               )}
@@ -383,7 +415,7 @@ export default function Bridge() {
             {quote && parsedAmount > 0 && connected && (
               <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
                 className="glass-card rounded-md border border-primary/15 p-4 space-y-2">
-                <div className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-widest mb-2">Quote</div>
+                <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Quote</div>
                 {[
                   { label: "You Send", value: `${parsedAmount} ForgAI` },
                   { label: "You Receive", value: `≈ ${quote.receiveAmount} ForgAI` },
@@ -392,8 +424,8 @@ export default function Bridge() {
                   { label: "ETA", value: quote.eta },
                 ].map(({ label, value }) => (
                   <div key={label} className="flex justify-between">
-                    <span className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-wider">{label}</span>
-                    <span className="font-orbitron text-[10px] text-foreground font-semibold">{value}</span>
+                    <span className="text-xs text-muted-foreground uppercase tracking-wide">{label}</span>
+                    <span className="text-sm text-foreground font-semibold">{value}</span>
                   </div>
                 ))}
               </motion.div>
@@ -402,7 +434,7 @@ export default function Bridge() {
             {needsApproval && parsedAmount > 0 && !insufficientBalance && (
               <div className="flex items-start gap-2 p-3 rounded-md bg-yellow-500/5 border border-yellow-500/20">
                 <Info className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0 mt-0.5" />
-                <p className="font-orbitron text-[9px] text-yellow-400/80 leading-relaxed tracking-wide">
+                <p className="text-sm text-yellow-400/90 leading-relaxed">
                   需要先授权 (Approve) Bridge 合约使用你的 wrapped token。
                 </p>
               </div>
@@ -412,16 +444,16 @@ export default function Bridge() {
               <div className="flex gap-2">
                 {needsApproval && parsedAmount > 0 && !insufficientBalance && (
                   <Button onClick={handleApprove} disabled={status !== "idle" && status !== "approving"}
-                    className="flex-1 font-orbitron text-[10px] tracking-wider uppercase gap-2" data-testid="button-approve"
+                    className="flex-1 text-sm tracking-wide uppercase gap-2" data-testid="button-approve"
                     style={{ background: "linear-gradient(135deg, #b45309, #92400e)" }}>
-                    {status === "approving" ? <><RotateCcw className="w-3 h-3 animate-spin" />Approving...</> : <><CheckCircle className="w-3 h-3" />Approve</>}
+                    {status === "approving" ? <><RotateCcw className="w-4 h-4 animate-spin" />Approving...</> : <><CheckCircle className="w-4 h-4" />Approve</>}
                   </Button>
                 )}
                 <Button onClick={handleBridge} disabled={!canBridge}
-                  className="flex-1 font-orbitron text-[10px] tracking-wider uppercase gap-2" data-testid="button-bridge"
+                  className="flex-1 text-sm tracking-wide uppercase gap-2" data-testid="button-bridge"
                   style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)" }}>
-                  {status === "bridging" ? <><RotateCcw className="w-3 h-3 animate-spin" />Bridging...</> :
-                    <><ArrowDownUp className="w-3 h-3" />Bridge to {ALL_CHAINS[targetChain].shortName}</>}
+                  {status === "bridging" ? <><RotateCcw className="w-4 h-4 animate-spin" />Bridging...</> :
+                    <><ArrowDownUp className="w-4 h-4" />Bridge to {ALL_CHAINS[targetChain].shortName}</>}
                 </Button>
               </div>
             )}
@@ -438,30 +470,30 @@ export default function Bridge() {
             <div>
               <div className="font-orbitron text-lg font-bold text-foreground uppercase tracking-wider mb-1">Bridge Initiated!</div>
               <p className="text-sm text-muted-foreground">{amount} ForgAI → {ALL_CHAINS[targetChain].name}</p>
-              <p className="text-xs text-muted-foreground/60 mt-1">Relayer 将在几分钟内完成目标链铸币/释放</p>
+              <p className="text-xs text-muted-foreground/80 mt-1">Relayer 将在几分钟内完成目标链铸币/释放</p>
             </div>
             <div className="p-3 rounded-md bg-primary/5 border border-primary/15 space-y-2 text-left">
               <div className="flex justify-between items-center">
-                <span className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-widest">Tx Hash</span>
+                <span className="text-xs text-muted-foreground uppercase tracking-wide">Tx Hash</span>
                 <button onClick={() => copyToClipboard(bridgeResult.txHash)} className="flex items-center gap-1" data-testid="button-copy-tx">
-                  <span className="font-mono text-[9px] text-primary">{truncAddr(bridgeResult.txHash)}</span>
+                  <span className="font-mono text-xs text-primary">{truncAddr(bridgeResult.txHash)}</span>
                   <Copy className="w-3 h-3 text-primary/60" />
                 </button>
               </div>
               <a href={bridgeResult.explorerUrl} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-1 text-[9px] text-primary/70 hover:text-primary transition-colors font-orbitron tracking-wider">
+                className="flex items-center gap-1 text-xs text-primary/80 hover:text-primary transition-colors tracking-wide">
                 <ExternalLink className="w-3 h-3" /> View on Explorer
               </a>
             </div>
-            <Button onClick={resetBridge} className="w-full font-orbitron text-[10px] tracking-wider uppercase gap-2"
+            <Button onClick={resetBridge} className="w-full text-sm tracking-wide uppercase gap-2"
               data-testid="button-bridge-again" style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)" }}>
-              <ArrowDownUp className="w-3 h-3" /> Bridge Again
+              <ArrowDownUp className="w-4 h-4" /> Bridge Again
             </Button>
           </motion.div>
         )}
 
         <div className="mt-6 glass-card rounded-md border border-primary/10 p-4">
-          <div className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-widest mb-3">Supported Routes</div>
+          <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">Supported Routes</div>
           <div className="space-y-2">
             {[
               { from: "Solana", to: "BSC", mode: "Custodial", eta: "~2-5 min" },
@@ -474,11 +506,11 @@ export default function Bridge() {
               <div key={i} className="flex items-center justify-between py-2 border-b border-border/20 last:border-0">
                 <div className="flex items-center gap-2">
                   <Link2 className="w-3 h-3 text-primary/60" />
-                  <span className="font-orbitron text-[10px] text-foreground">{route.from} → {route.to}</span>
+                  <span className="text-sm text-foreground">{route.from} → {route.to}</span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="font-orbitron text-[8px] text-muted-foreground/50 uppercase">{route.mode}</span>
-                  <span className="font-orbitron text-[8px] text-green-400">{route.eta}</span>
+                  <span className="text-xs text-muted-foreground uppercase">{route.mode}</span>
+                  <span className="text-xs text-green-400 font-medium">{route.eta}</span>
                 </div>
               </div>
             ))}
@@ -487,7 +519,7 @@ export default function Bridge() {
 
         <div className="mt-4 glass-card rounded-md border border-yellow-500/20 p-3 flex items-start gap-2">
           <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
-          <p className="text-[10px] text-yellow-400/70 leading-relaxed">
+          <p className="text-xs text-yellow-400/80 leading-relaxed">
             当前为 Custodial MVP 版本，资金由项目方 Vault 托管。请仅用于测试用途，不要桥接大额资金。
           </p>
         </div>

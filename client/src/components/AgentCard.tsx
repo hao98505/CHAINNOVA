@@ -102,13 +102,13 @@ export function AgentCard({ agent, index = 0, compact = false }: AgentCardProps)
         <div className={`h-32 rounded-t-md bg-gradient-to-br ${gradient} relative overflow-hidden flex items-center justify-center border-b border-primary/10`}>
           <div className="absolute inset-0 cyber-grid opacity-30" />
           <div className="absolute top-3 left-3">
-            <span className={`text-[9px] font-orbitron tracking-widest uppercase px-2 py-0.5 rounded border ${categoryStyle}`}>
+            <span className={`text-xs font-semibold tracking-wide uppercase px-2 py-0.5 rounded border ${categoryStyle}`}>
               {agent.category}
             </span>
           </div>
           <div className="absolute top-3 right-3 flex items-center gap-1.5">
             <div className={`w-1.5 h-1.5 rounded-full ${STATUS_COLORS[agent.status]} status-dot`} />
-            <span className="font-orbitron text-[8px] text-white/70 tracking-widest uppercase">
+            <span className="text-xs text-white/80 tracking-wide uppercase">
               {statusLabel[agent.status] || agent.status}
             </span>
           </div>
@@ -135,27 +135,27 @@ export function AgentCard({ agent, index = 0, compact = false }: AgentCardProps)
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-0.5">
                 <Cpu className="w-3 h-3 text-primary/70" />
-                <span className="font-orbitron text-[8px] text-muted-foreground/60 uppercase tracking-wider">{t.agentCard.tflops}</span>
+                <span className="text-xs text-muted-foreground/80 uppercase tracking-wide">{t.agentCard.tflops}</span>
               </div>
-              <span className="font-orbitron text-xs font-bold text-foreground" data-testid={`text-tflops-${agent.id}`}>
+              <span className="text-xs font-bold text-foreground" data-testid={`text-tflops-${agent.id}`}>
                 {agent.tflops}
               </span>
             </div>
             <div className="text-center border-x border-border/30">
               <div className="flex items-center justify-center gap-1 mb-0.5">
                 <Activity className="w-3 h-3 text-green-400/70" />
-                <span className="font-orbitron text-[8px] text-muted-foreground/60 uppercase tracking-wider">{t.agentCard.uptime}</span>
+                <span className="text-xs text-muted-foreground/80 uppercase tracking-wide">{t.agentCard.uptime}</span>
               </div>
-              <span className="font-orbitron text-xs font-bold text-green-400">
+              <span className="text-xs font-bold text-green-400">
                 {agent.uptime}%
               </span>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 mb-0.5">
                 <Zap className="w-3 h-3 text-yellow-400/70" />
-                <span className="font-orbitron text-[8px] text-muted-foreground/60 uppercase tracking-wider">{t.agentCard.tasks}</span>
+                <span className="text-xs text-muted-foreground/80 uppercase tracking-wide">{t.agentCard.tasks}</span>
               </div>
-              <span className="font-orbitron text-xs font-bold text-foreground">
+              <span className="text-xs font-bold text-foreground">
                 {agent.tasks.toLocaleString()}
               </span>
             </div>
@@ -164,15 +164,15 @@ export function AgentCard({ agent, index = 0, compact = false }: AgentCardProps)
           {!compact && (
             <div className="flex items-center justify-between mb-3 p-2 rounded-md bg-primary/5 border border-primary/10">
               <div>
-                <div className="font-orbitron text-[8px] text-muted-foreground/60 uppercase tracking-wider mb-0.5">{t.agentCard.buyPrice}</div>
-                <div className="font-orbitron text-sm font-bold text-foreground" data-testid={`text-price-${agent.id}`}>
-                  {agent.price.toLocaleString()} <span className="text-primary text-[10px]">$CNOVA</span>
+                <div className="text-xs text-muted-foreground/80 uppercase tracking-wide mb-0.5">{t.agentCard.buyPrice}</div>
+                <div className="text-sm font-bold text-foreground" data-testid={`text-price-${agent.id}`}>
+                  {agent.price.toLocaleString()} <span className="text-primary text-xs">$CNOVA</span>
                 </div>
               </div>
               <div className="text-right">
-                <div className="font-orbitron text-[8px] text-muted-foreground/60 uppercase tracking-wider mb-0.5">{t.agentCard.rentPerHr}</div>
-                <div className="font-orbitron text-sm font-bold text-muted-foreground">
-                  {agent.rentPrice} <span className="text-primary/70 text-[10px]">$CNOVA</span>
+                <div className="text-xs text-muted-foreground/80 uppercase tracking-wide mb-0.5">{t.agentCard.rentPerHr}</div>
+                <div className="text-sm font-bold text-muted-foreground">
+                  {agent.rentPrice} <span className="text-primary/70 text-xs">$CNOVA</span>
                 </div>
               </div>
             </div>
@@ -182,7 +182,7 @@ export function AgentCard({ agent, index = 0, compact = false }: AgentCardProps)
             <Button
               size="sm"
               variant="outline"
-              className="flex-1 font-orbitron text-[9px] tracking-wider uppercase border-primary/30"
+              className="flex-1 text-xs font-medium tracking-wide uppercase border-primary/30"
               onClick={() => setShowRentModal(true)}
               disabled={isLoading || agent.status === "rented"}
               data-testid={`button-rent-${agent.id}`}
@@ -192,7 +192,7 @@ export function AgentCard({ agent, index = 0, compact = false }: AgentCardProps)
             </Button>
             <Button
               size="sm"
-              className="flex-1 font-orbitron text-[9px] tracking-wider uppercase"
+              className="flex-1 text-xs font-medium tracking-wide uppercase"
               onClick={handleBuy}
               disabled={isLoading}
               data-testid={`button-buy-${agent.id}`}
@@ -214,12 +214,12 @@ export function AgentCard({ agent, index = 0, compact = false }: AgentCardProps)
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="p-3 rounded-md bg-primary/5 border border-primary/15">
-              <div className="font-orbitron text-[8px] text-muted-foreground/60 uppercase tracking-widest mb-1">{t.agentCard.agent}</div>
-              <div className="font-orbitron text-xs text-foreground font-semibold">{agent.name}</div>
+              <div className="text-xs text-muted-foreground/80 uppercase tracking-wide mb-1">{t.agentCard.agent}</div>
+              <div className="text-xs text-foreground font-semibold">{agent.name}</div>
             </div>
 
             <div>
-              <label className="font-orbitron text-[9px] text-muted-foreground/70 uppercase tracking-widest block mb-2">
+              <label className="text-xs text-muted-foreground font-medium uppercase tracking-wide block mb-2">
                 {t.agentCard.duration}
               </label>
               <div className="grid grid-cols-4 gap-2">
@@ -228,7 +228,7 @@ export function AgentCard({ agent, index = 0, compact = false }: AgentCardProps)
                     key={h}
                     onClick={() => setRentHours(h)}
                     data-testid={`button-rent-hours-${h}`}
-                    className={`py-2 rounded-md border font-orbitron text-[9px] tracking-wider transition-all ${
+                    className={`py-2 rounded-md border text-xs font-medium tracking-wide transition-all ${
                       rentHours === h
                         ? "bg-primary/30 border-primary/60 text-primary"
                         : "border-border/50 text-muted-foreground"
@@ -242,21 +242,21 @@ export function AgentCard({ agent, index = 0, compact = false }: AgentCardProps)
 
             <div className="p-3 rounded-md bg-primary/5 border border-primary/15 space-y-2">
               <div className="flex justify-between">
-                <span className="font-orbitron text-[9px] text-muted-foreground/70 uppercase tracking-wider">{t.agentCard.rate}</span>
-                <span className="font-orbitron text-xs text-foreground">{agent.rentPrice} $CNOVA/hr</span>
+                <span className="text-xs text-muted-foreground uppercase tracking-wide">{t.agentCard.rate}</span>
+                <span className="text-xs text-foreground">{agent.rentPrice} $CNOVA/hr</span>
               </div>
               <div className="flex justify-between border-t border-border/30 pt-2">
-                <span className="font-orbitron text-[9px] text-muted-foreground/70 uppercase tracking-wider">{t.agentCard.total}</span>
-                <span className="font-orbitron text-sm font-bold text-primary">{agent.rentPrice * rentHours} $CNOVA</span>
+                <span className="text-xs text-muted-foreground uppercase tracking-wide">{t.agentCard.total}</span>
+                <span className="text-sm font-bold text-primary">{agent.rentPrice * rentHours} $CNOVA</span>
               </div>
             </div>
 
             <div className="flex gap-2">
-              <Button variant="outline" className="flex-1 font-orbitron text-[9px] tracking-wider uppercase" onClick={() => setShowRentModal(false)}>
+              <Button variant="outline" className="flex-1 text-xs font-medium tracking-wide uppercase" onClick={() => setShowRentModal(false)}>
                 {t.agentCard.cancel}
               </Button>
               <Button
-                className="flex-1 font-orbitron text-[9px] tracking-wider uppercase"
+                className="flex-1 text-xs font-medium tracking-wide uppercase"
                 onClick={handleRent}
                 disabled={isLoading}
                 data-testid="button-confirm-rent"

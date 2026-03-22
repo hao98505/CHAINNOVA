@@ -47,7 +47,7 @@ export default function Home() {
           >
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded border border-primary/30 bg-primary/10 mb-6">
               <div className="w-1.5 h-1.5 rounded-full bg-green-400 status-dot" />
-              <span className="font-orbitron text-[9px] text-primary tracking-widest uppercase">
+              <span className="text-xs font-semibold text-primary tracking-widest uppercase">
                 {t.home.liveBadge}
               </span>
             </div>
@@ -65,7 +65,7 @@ export default function Home() {
             <div className="flex flex-wrap items-center justify-center gap-3">
               <Button
                 size="lg"
-                className="font-orbitron text-[11px] tracking-wider uppercase gap-2"
+                className="text-sm font-semibold tracking-wide uppercase gap-2"
                 onClick={() => setCreateOpen(true)}
                 data-testid="button-hero-deploy"
                 style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)", border: "1px solid rgba(167,139,250,0.4)" }}
@@ -76,7 +76,7 @@ export default function Home() {
               <Button
                 size="lg"
                 variant="outline"
-                className="font-orbitron text-[11px] tracking-wider uppercase gap-2 border-primary/30"
+                className="text-sm font-semibold tracking-wide uppercase gap-2 border-primary/30"
                 asChild
               >
                 <Link href="/marketplace">
@@ -90,7 +90,7 @@ export default function Home() {
               {["Phantom", "Solflare", "Anchor Protocol"].map((item) => (
                 <div key={item} className="flex items-center gap-2">
                   <Shield className="w-3 h-3 text-primary/60" />
-                  <span className="font-orbitron text-[9px] text-muted-foreground/60 tracking-widest uppercase">
+                  <span className="text-xs text-muted-foreground/80 tracking-wide uppercase">
                     {item}
                   </span>
                 </div>
@@ -116,14 +116,14 @@ export default function Home() {
               >
                 <div className="flex items-center justify-between mb-3">
                   <stat.icon className={`w-4 h-4 ${stat.color}`} />
-                  <span className="font-orbitron text-[8px] text-green-400 tracking-wider">
+                  <span className="text-xs text-green-400 font-medium tracking-wide">
                     {stat.change}
                   </span>
                 </div>
                 <div className={`font-orbitron text-2xl font-black ${stat.color} mb-1`}>
                   {stat.value}
                 </div>
-                <div className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-widest">
+                <div className="text-xs text-muted-foreground/80 uppercase tracking-wide">
                   {t.home[stat.labelKey]}
                 </div>
               </motion.div>
@@ -139,14 +139,14 @@ export default function Home() {
               <h2 className="font-orbitron text-lg font-bold uppercase tracking-wider text-foreground neon-glow-text">
                 {t.home.hotAgents}
               </h2>
-              <p className="font-orbitron text-[9px] text-muted-foreground/60 tracking-widest uppercase mt-1">
+              <p className="text-xs text-muted-foreground/80 tracking-wide uppercase mt-1">
                 {t.home.hotAgentsDesc}
               </p>
             </div>
             <Button
               variant="outline"
               size="sm"
-              className="font-orbitron text-[9px] tracking-wider uppercase border-primary/30 gap-1"
+              className="text-xs font-medium tracking-wide uppercase border-primary/30 gap-1"
               asChild
             >
               <Link href="/marketplace">
@@ -178,7 +178,7 @@ export default function Home() {
             <div className="absolute top-0 right-0 w-64 h-64 orb bg-primary/10" />
             <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
-                <div className="font-orbitron text-[9px] text-primary tracking-widest uppercase mb-2">
+                <div className="text-xs font-semibold text-primary tracking-wide uppercase mb-2">
                   {t.home.earnPassive}
                 </div>
                 <h2 className="font-orbitron text-2xl font-black uppercase tracking-wider text-foreground mb-2">
@@ -191,11 +191,11 @@ export default function Home() {
               <div className="flex flex-col items-center gap-3">
                 <div className="text-center">
                   <div className="font-orbitron text-4xl font-black text-primary">24.5%</div>
-                  <div className="font-orbitron text-[9px] text-muted-foreground/60 uppercase tracking-widest">APY</div>
+                  <div className="text-xs text-muted-foreground/80 uppercase tracking-wide">APY</div>
                 </div>
                 <Button
                   size="lg"
-                  className="font-orbitron text-[10px] tracking-wider uppercase gap-2"
+                  className="text-sm font-semibold tracking-wide uppercase gap-2"
                   asChild
                   style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)" }}
                 >

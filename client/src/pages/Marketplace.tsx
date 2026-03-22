@@ -62,12 +62,12 @@ export default function Marketplace() {
             <h1 className="font-orbitron text-2xl font-black uppercase tracking-wider text-foreground neon-glow-text">
               {t.marketplace.title}
             </h1>
-            <p className="font-orbitron text-[9px] text-muted-foreground/60 tracking-widest uppercase mt-1">
+            <p className="text-sm text-muted-foreground tracking-wide mt-1">
               {(agents ?? []).length} {t.marketplace.agentsAvailable}
             </p>
           </div>
           <Button
-            className="font-orbitron text-[10px] tracking-wider uppercase gap-2 self-start md:self-auto"
+            className="text-sm font-semibold tracking-wide uppercase gap-2 self-start md:self-auto"
             onClick={() => setCreateOpen(true)}
             data-testid="button-create-agent"
             style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)", border: "1px solid rgba(167,139,250,0.4)" }}
@@ -94,7 +94,7 @@ export default function Marketplace() {
               <select
                 value={sortIndex}
                 onChange={(e) => setSortIndex(Number(e.target.value))}
-                className="cyber-input text-[10px] font-orbitron tracking-wider px-3 py-2 rounded-md"
+                className="cyber-input text-xs tracking-wide px-3 py-2 rounded-md"
                 data-testid="select-sort"
               >
                 {SORT_OPTIONS.map((opt, i) => (
@@ -110,10 +110,10 @@ export default function Marketplace() {
                 key={cat}
                 onClick={() => setCategory(cat)}
                 data-testid={`filter-${cat.toLowerCase()}`}
-                className={`px-3 py-1 rounded border font-orbitron text-[9px] tracking-wider uppercase transition-all ${
+                className={`px-3 py-1 rounded border text-xs font-medium tracking-wide uppercase transition-all ${
                   category === cat
                     ? "bg-primary/30 border-primary/60 text-primary"
-                    : "border-border/40 text-muted-foreground/60"
+                    : "border-border/40 text-muted-foreground/80 hover:border-primary/30"
                 }`}
               >
                 {lang === "zh" ? CATEGORIES_ZH[cat] : cat}

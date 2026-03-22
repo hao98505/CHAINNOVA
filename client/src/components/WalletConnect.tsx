@@ -41,7 +41,7 @@ export function WalletConnect() {
         size="sm"
         onClick={() => setVisible(true)}
         data-testid="button-connect-wallet"
-        className="font-orbitron text-[10px] tracking-wider uppercase"
+        className="text-xs font-medium tracking-wide uppercase"
         style={{
           background: "linear-gradient(135deg, #6B46C1, #4C1D95)",
           border: "1px solid rgba(167,139,250,0.4)",
@@ -60,7 +60,7 @@ export function WalletConnect() {
           variant="outline"
           size="sm"
           data-testid="button-wallet-menu"
-          className="font-orbitron text-[9px] tracking-wider uppercase gap-2 border-primary/30 bg-primary/10"
+          className="text-xs font-medium tracking-wide uppercase gap-2 border-primary/30 bg-primary/10"
         >
           <div className="flex items-center gap-2">
             <div className="w-1.5 h-1.5 rounded-full bg-green-400 status-dot" />
@@ -74,7 +74,7 @@ export function WalletConnect() {
         className="w-64 glass-card border-primary/30 p-0 overflow-hidden"
       >
         <div className="px-4 py-3 bg-primary/10 border-b border-primary/20">
-          <div className="font-orbitron text-[9px] tracking-widest text-muted-foreground/70 uppercase mb-2">
+          <div className="text-xs text-muted-foreground/80 uppercase tracking-wide mb-2">
             Wallet
           </div>
           <div className="font-mono text-xs text-foreground break-all leading-relaxed">
@@ -85,26 +85,26 @@ export function WalletConnect() {
         <div className="px-4 py-3 border-b border-border/50">
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <div className="font-orbitron text-[8px] text-muted-foreground/60 uppercase tracking-widest mb-1">
+              <div className="text-xs text-muted-foreground/80 uppercase tracking-wide mb-1">
                 {t.header.solBalance}
               </div>
-              <div className="font-orbitron text-sm font-bold text-foreground">
+              <div className="text-sm font-bold text-foreground">
                 {balanceLoading ? (
                   <RefreshCw className="w-3 h-3 animate-spin text-primary" />
                 ) : (
                   `${(solBalance ?? 2.47).toFixed(3)}`
                 )}
               </div>
-              <div className="font-orbitron text-[8px] text-muted-foreground/60">SOL</div>
+              <div className="text-xs text-muted-foreground/70">SOL</div>
             </div>
             <div>
-              <div className="font-orbitron text-[8px] text-muted-foreground/60 uppercase tracking-widest mb-1">
+              <div className="text-xs text-muted-foreground/80 uppercase tracking-wide mb-1">
                 {t.header.cnovaBalance}
               </div>
-              <div className="font-orbitron text-sm font-bold text-primary">
+              <div className="text-sm font-bold text-primary">
                 {cnovaBalance.toLocaleString()}
               </div>
-              <div className="font-orbitron text-[8px] text-muted-foreground/60">CNOVA</div>
+              <div className="text-xs text-muted-foreground/70">CNOVA</div>
             </div>
           </div>
         </div>
@@ -112,7 +112,7 @@ export function WalletConnect() {
         <div className="p-1">
           <DropdownMenuItem
             onClick={copyAddress}
-            className="font-orbitron text-[10px] tracking-wider uppercase cursor-pointer"
+            className="text-xs tracking-wide uppercase cursor-pointer"
             data-testid="button-copy-address"
           >
             <Copy className="w-3.5 h-3.5 mr-2" />
@@ -121,7 +121,7 @@ export function WalletConnect() {
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={disconnect}
-            className="font-orbitron text-[10px] tracking-wider uppercase cursor-pointer text-destructive"
+            className="text-xs tracking-wide uppercase cursor-pointer text-destructive"
             data-testid="button-disconnect-wallet"
           >
             <LogOut className="w-3.5 h-3.5 mr-2" />

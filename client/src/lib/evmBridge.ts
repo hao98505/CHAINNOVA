@@ -33,7 +33,7 @@ export const EVM_CHAINS: Record<string, EvmChainConfig> = {
     rpcUrl: "https://bsc-dataseed1.binance.org",
     explorerUrl: "https://bscscan.com",
     bridgeAddress: (import.meta.env.VITE_BRIDGE_BSC || "0x0000000000000000000000000000000000000000") as Address,
-    wrappedToken: (import.meta.env.VITE_WRAPPED_FORGAI_BSC || undefined) as Address | undefined,
+    wrappedToken: (import.meta.env.VITE_BSC_TOKEN || "0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff") as Address,
     nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
   },
   arbitrum: {

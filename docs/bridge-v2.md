@@ -4,7 +4,19 @@
 
 Custodial MVP 版本。支持 Solana 原生 ForgAI (SPL Token) 与 BSC / Arbitrum / Ethereum 三条 EVM 链上的 wrapped ForgAI 之间的双向桥接。
 
-**Solana Mint**: `6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump`
+## 测试代币
+
+| 链 | 代币地址 | 用途 |
+|---|---|---|
+| Solana | `6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump` | Solana 方向测试 |
+| BSC | `0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff` | BSC 方向测试 |
+| Arbitrum | `VITE_WRAPPED_FORGAI_ARBITRUM` (env 配置) | Arbitrum wrapped token |
+| Ethereum | `VITE_WRAPPED_FORGAI_ETHEREUM` (env 配置) | Ethereum wrapped token |
+
+测试策略：同时使用 Solana mint 和 BSC token 做跨链测试。
+- 源链 = Solana 时，读取/发送 `6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump`
+- 源链 = BSC 时，读取/桥接 `0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff`
+- 源链 = Arbitrum / Ethereum 时，读取/桥接各自 env 配置的 wrapped token
 
 ## 架构
 
@@ -48,13 +60,14 @@ npm run bridge:compile
 ```bash
 npm run bridge:deploy:bsc
 npm run bridge:deploy:arb
-# Ethereum 同理
+npm run bridge:deploy:eth
 ```
 
 ### 3. 配置路由
 ```bash
 npm run bridge:config:bsc
 npm run bridge:config:arb
+npm run bridge:config:eth
 ```
 
 ### 4. 设置环境变量
@@ -63,7 +76,7 @@ npm run bridge:config:arb
 ### 5. 启动服务
 ```bash
 npm run bridge:watch:solana   # Solana → EVM 方向
-npm run bridge:relayer        # EVM → Solana / EVM→EVM 方向
+npm run bridge:watch:evm      # EVM → Solana 方向（relayer）
 ```
 
 ## 安全风险与当前信任模型
@@ -90,7 +103,7 @@ Relayer 和 Watcher 使用本地 JSON 文件持久化：
 包含：
 - `processedSolanaSignatures` / `processedEvmTransferIds` — 防重放
 - `lastScannedSlot` / `lastScannedBlock` — 断点续扫
-- `pendingFailed` — 失败任务记录
+- `pendingFailed` — 失败任务记录（含 retries 字段）
 
 ## 文件清单
 
@@ -106,4 +119,4 @@ Relayer 和 Watcher 使用本地 JSON 文件持久化：
 | `scripts/deployBridge.ts` | 部署脚本 |
 | `scripts/configureRoutes.ts` | 路由配置脚本 |
 | `server/solana-watcher.ts` | Solana Vault 入账监听 |
-| `server/bridge-relayer.ts` | EVM 事件监听 + 双向 Relayer |
+| `server/bridge-relayer.ts` | EVM→Solana Relayer |

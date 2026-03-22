@@ -1,0 +1,135 @@
+不要再改产品方向，不要再把 Solana 代币和 BSC 代币当成二选一。
+按我最终要求做“精准修正”，并且全程只用中文回复。
+
+我的测试资产就是这两个，都要保留并用于跨链测试：
+1. Solana mint：
+   6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump
+2. BSC token：
+   0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff
+
+本轮只做两件事：
+A. 按这两个地址修正桥接测试资产映射
+B. 提高官网/桥页面字体清晰度和可读性
+
+====================
+A. 代币映射修正
+====================
+
+不要再把代币逻辑改成只偏向一边。
+我要的是“两个地址都保留，按源链使用对应测试代币”。
+
+只检查并修改这些文件（如果需要）：
+- client/src/pages/Bridge.tsx
+- client/src/lib/evmBridge.ts
+- client/src/lib/solanaBridge.ts
+- client/src/lib/bridgeRouter.ts
+- .env.example
+- docs/bridge-v2.md
+
+要求：
+1. Solana 源链测试代币固定为：
+   6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump
+
+2. BSC 源链测试代币固定为：
+   0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff
+
+3. Arbitrum / Ethereum 继续使用各自的 wrapped token env 配置，不要再把 BSC 地址硬塞给所有 EVM 链。
+
+4. bridgeRouter / evmBridge / solanaBridge 必须保证：
+   - sourceChain = solana 时，读取和发送的是 Solana mint 6ZcR...
+   - sourceChain = bsc 时，读取和桥接的是 BSC token 0x3e9f...
+   - sourceChain = arbitrum / ethereum 时，读取和桥接的是各自 wrapped token
+   - 不允许再出现“用一个地址代表所有链”的逻辑
+
+5. .env.example 要清晰反映这个映射：
+   - VITE_SOLANA_MINT=6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump
+   - VITE_BSC_TOKEN=0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff
+   - VITE_WRAPPED_FORGAI_ARBITRUM=
+   - VITE_WRAPPED_FORGAI_ETHEREUM=
+   - SOLANA_MINT=6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump
+   - SOURCE_TOKEN_BSC=0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff
+   - WRAPPED_FORGAI_ARBITRUM=
+   - WRAPPED_FORGAI_ETHEREUM=
+
+6. Bridge 页面要明确显示当前源链对应的测试代币：
+   - 选 Solana 时显示 Solana Mint：6ZcR1K...pump
+   - 选 BSC 时显示 BSC Token：0x3e9f...ffff
+   - 选 Arbitrum / Ethereum 时显示对应 wrapped token 地址（若未配置则明确提示未配置）
+
+7. docs/bridge-v2.md 要修正成我的真实测试策略：
+   - 我同时使用 Solana mint 和 BSC token 做测试
+   - Solana 方向用 6ZcR...
+   - BSC 方向用 0x3e9f...
+   - Arbitrum / Ethereum 使用 wrapped token
+
+====================
+B. 官网和桥页面字体可读性修正
+====================
+
+我不要“赛博感优先，我看不清”的 UI。
+保持风格，但以“清晰可读”优先。
+
+只允许修改这些地方：
+- client/src/index.css
+- client/src/pages/Bridge.tsx
+- 如果首页/官网主页面有同样的小字体问题，再检查相应页面，但不要大改布局
+
+要求：
+1. 不要再大量使用 Orbitron 作为正文和表单字体
+   - Orbitron 只保留给少量标题
+   - 正文、按钮、表单、说明文字改成更清晰的 sans 字体（沿用现有 font-sans 即可）
+   - 地址、哈希仍可保留 font-mono
+
+2. 统一提升最小字号
+   - 不允许再出现 text-[8px]、text-[9px]、text-[10px]
+   - 最小正文至少 text-sm
+   - 次级说明至少 13px/14px
+   - 按钮文字至少 text-sm
+   - 表单输入至少 text-base
+
+3. 提高对比度
+   - 少用 text-muted-foreground/50、/60 这种太淡的颜色
+   - 关键说明、链选择、quote、状态提示都提高可见度
+   - placeholder 颜色也调清晰一点，但不要刺眼
+
+4. 桥页面重点修正这些区域：
+   - Source / Target 链选择按钮
+   - Amount / Balance / Recipient 标签和输入框
+   - Quote 区
+   - Approve / Bridge 按钮
+   - 成功状态卡片
+   - Solana Mint / BSC Token 地址显示区
+
+5. 全局样式里修正 wallet-adapter-button
+   - 不要再固定 11px Orbitron
+   - 改成更清晰的字号和字重
+   - 保证桌面端和移动端都清楚
+
+6. 不要重做视觉，不要大改配色，不要动布局结构
+   - 只做“更清晰、更容易读”的字体和对比度优化
+
+====================
+验证要求
+====================
+
+只做这几个验证：
+1. 全仓搜索以下内容，确认已移除或显著减少：
+   - text-[8px]
+   - text-[9px]
+   - text-[10px]
+   - font-orbitron（仅标题少量保留）
+2. 搜索并确认：
+   - 6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump 已正确保留
+   - 0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff 已正确保留
+3. 页面本地运行检查：
+   - Bridge 页面显示当前源链对应代币
+   - 字体比之前明显更清晰
+   - 不改坏原有桥接流程
+
+最后只用中文输出这 6 行：
+1. 已修改文件：
+2. Solana/BSC 测试代币映射现状：
+3. 字体与可读性修改点：
+4. 搜索验证结果：
+5. 本地页面检查结果：
+6. 还剩 blocker：

@@ -43,7 +43,7 @@ function LanguageToggle() {
       onClick={toggleLang}
       data-testid="button-language-toggle"
       title={lang === "en" ? "切换中文" : "Switch to English"}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-primary/30 bg-primary/10 transition-all font-orbitron text-[10px] tracking-wider text-foreground"
+      className="flex items-center gap-1.5 px-3 py-1.5 rounded border border-primary/30 bg-primary/10 transition-all text-xs font-medium tracking-wide text-foreground"
       style={{ minWidth: 64 }}
     >
       <span className={lang === "en" ? "text-primary font-bold" : "text-muted-foreground"}>EN</span>
