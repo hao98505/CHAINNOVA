@@ -11,12 +11,15 @@
     "db:push": "drizzle-kit push",
     "bridge:compile": "TS_NODE_PROJECT=tsconfig.hardhat.json hardhat compile",
     "bridge:deploy:bsc": "TS_NODE_PROJECT=tsconfig.hardhat.json hardhat run scripts/deployBridge.ts --network bsc",
-    "bridge:deploy:opbnb": "TS_NODE_PROJECT=tsconfig.hardhat.json hardhat run scripts/deployBridge.ts --network opbnb",
     "bridge:deploy:arb": "TS_NODE_PROJECT=tsconfig.hardhat.json hardhat run scripts/deployBridge.ts --network arbitrum",
     "bridge:config:bsc": "TS_NODE_PROJECT=tsconfig.hardhat.json hardhat run scripts/configureRoutes.ts --network bsc",
-    "bridge:config:opbnb": "TS_NODE_PROJECT=tsconfig.hardhat.json hardhat run scripts/configureRoutes.ts --network opbnb",
     "bridge:config:arb": "TS_NODE_PROJECT=tsconfig.hardhat.json hardhat run scripts/configureRoutes.ts --network arbitrum",
-    "bridge:relayer": "tsx server/bridge-relayer.ts"
+    "bridge:relayer": "tsx server/bridge-relayer.ts",
+    "bridge:deploy:eth": "TS_NODE_PROJECT=tsconfig.hardhat.json hardhat run scripts/deployBridge.ts --network ethereum",
+    "bridge:config:eth": "TS_NODE_PROJECT=tsconfig.hardhat.json hardhat run scripts/configureRoutes.ts --network ethereum",
+    "bridge:watch:solana": "tsx server/solana-watcher.ts",
+    "bridge:watch:evm": "tsx server/bridge-relayer.ts",
+    "bridge:dev": "npx concurrently \"tsx server/solana-watcher.ts\" \"tsx server/bridge-relayer.ts\""
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",
