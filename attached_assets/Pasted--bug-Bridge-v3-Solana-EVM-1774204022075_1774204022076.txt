@@ -1,0 +1,158 @@
+不要改产品方向，先直接做“双向实测 + 异常用例测试”。
+除非测试过程中发现明确 bug，否则不要改代码。先测试，后修复。
+
+目标：
+基于当前 Bridge v3 · Solana ↔ EVM 实现，完成以下两类测试：
+1. 双向实测
+2. 异常用例测试
+
+测试资产与策略：
+- Solana 测试代币：
+  6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump
+- BSC 测试代币：
+  0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff
+- Arbitrum / Ethereum 使用各自 env 配置的 wrapped token
+- 先做小额测试，不要大额
+- 每笔测试都必须记录 tx hash / signature / transferId / 最终结果
+
+本轮先做准备检查：
+A. 检查并确认环境变量是否齐全
+- 前端 VITE_*
+- Solana RPC / Vault / Mint
+- BSC / Arbitrum / Ethereum RPC
+- Bridge 地址
+- Wrapped token 地址
+- 私钥路径
+如果缺失，明确列出缺什么，不要乱填假值
+
+B. 运行基础检查
+- npm run check
+- npm run bridge:compile
+- 启动 watcher / relayer：
+  npm run bridge:watch:solana
+  npm run bridge:watch:evm
+如果适合，也可用 npm run bridge:dev
+要求：
+- 记录启动日志
+- 确认服务无启动报错
+- 确认 state 文件正常生成/读取
+
+====================
+第一组：双向实测
+====================
+
+按这个顺序做真实测试：
+
+1. Solana -> BSC
+- 使用 Solana mint:
+  6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump
+- 小额发起 1 笔
+- 记录：
+  - Solana signature
+  - watcher 是否捕获
+  - memo 解析结果
+  - 目标链 mint tx hash
+  - BSC 到账结果
+
+2. BSC -> Solana
+- 使用 BSC token:
+  0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff
+- 小额发起 1 笔
+- 记录：
+  - approve tx hash
+  - bridgeOut tx hash
+  - relayer 是否捕获
+  - Solana ATA 是否存在/是否创建
+  - Solana 放币 signature
+  - 最终到账结果
+
+3. Solana -> Arbitrum
+- 小额 1 笔
+- 同样记录全链路
+
+4. Arbitrum -> Solana
+- 小额 1 笔
+- 同样记录全链路
+
+5. Solana -> Ethereum
+- 小额 1 笔
+- 同样记录全链路
+
+6. Ethereum -> Solana
+- 小额 1 笔
+- 同样记录全链路
+
+====================
+第二组：异常用例测试
+====================
+
+只做这些异常，不要乱扩展：
+
+1. 非法地址测试
+- Solana -> EVM 时输入非法 EVM 地址
+- EVM -> Solana 时输入非法 Solana 地址
+- 预期：前端或后端拒绝，不能误桥接
+
+2. 余额不足
+- Solana 余额不足发起
+- BSC / ARB / ETH 余额不足发起
+- 预期：前端阻止或链上失败，不能出现错误到账
+
+3. allowance 不足
+- EVM 侧不 approve 直接 bridge
+- 预期：bridge 失败，不应进入错误成功状态
+
+4. vault 余额不足
+- 模拟 Solana Vault SPL 余额不足后执行 EVM -> Solana
+- 预期：进入 pendingFailed，不应标记成功
+
+5. ATA 不存在
+- 用一个没有 ATA 的 Solana 地址做回桥目标
+- 预期：relayer 自动创建 ATA 或明确失败日志
+
+6. watcher / relayer 重启恢复
+- 发起一笔测试后中途重启 bridge:watch:solana 或 bridge:watch:evm
+- 预期：依赖 state 文件继续处理，不重复、不漏单
+
+7. 重放/重复处理
+- 对同一 transferId / 同一 signature 重复触发
+- 预期：只处理一次
+
+====================
+如果发现 bug
+====================
+
+只有在测试明确失败时，才允许修复。
+修复规则：
+- 只修导致当前测试失败的最小范围
+- 每修一个 bug，都要说明：
+  - 失败原因
+  - 改了哪些文件
+  - 修复后复测结果
+- 不要顺手重构
+
+====================
+最终输出格式
+====================
+
+全部完成后，只用中文输出下面结构，不要长篇解释：
+
+1. 环境检查结果
+2. 服务启动结果
+3. 双向实测结果表
+   - 测试项
+   - 是否通过
+   - source tx/signature
+   - target tx/signature
+   - 备注
+4. 异常用例结果表
+   - 用例
+   - 是否通过
+   - 实际结果
+   - 是否需要修复
+5. 发现的 bug
+6. 已修复的 bug
+7. 仍未解决的 blocker
+8. 建议下一步
+
+如果因为缺环境变量、缺测试资产、缺私钥而无法做真实链上测试，必须明确指出缺什么，不要假装已经测试通过。
