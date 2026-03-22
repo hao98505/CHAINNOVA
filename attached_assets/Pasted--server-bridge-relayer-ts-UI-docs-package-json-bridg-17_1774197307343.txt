@@ -1,0 +1,81 @@
+只修一个文件：server/bridge-relayer.ts
+不要改任何其他文件，不要改 UI，不要改 docs，不要改 package.json，不要改合约。
+
+你现在要做的是把 bridge-relayer.ts 真正修成“EVM -> Solana 回桥 relayer”，不要再混合 EVM->EVM 主逻辑。
+
+当前我确认到的现状：
+- 文档写的是 Solana ↔ EVM 双向 Custodial MVP，EVM -> Solana 应该由 bridge-relayer.ts 负责监听 EVM 事件后，从 Solana Vault ATA 向用户释放 SPL Token。
+- 但当前 bridge-relayer.ts 仍然同时保留了 handleEvmToEvmTransfer 和 TARGET_BRIDGE / TARGET_RPC_URL / TARGET_WRAPPED_TOKEN 这套 EVM->EVM 路径，主职责不够收敛。
+- 当前文件虽然已经有 bytes32ToSolanaAddress、ATA 创建、SPL transfer、本地 JSON state，但还缺“启动回补扫描 + 真正依赖 lastScannedBlock + 只聚焦 EVM->Solana”的闭环。
+
+本轮目标：
+把 server/bridge-relayer.ts 改成“只负责 EVM -> Solana”的稳定 MVP。
+
+硬性要求：
+1. 只保留 EVM -> Solana 主路径
+- 删除或停用 handleEvmToEvmTransfer
+- 不再要求 TARGET_RPC_URL / TARGET_BRIDGE / TARGET_WRAPPED_TOKEN 才能启动
+- 启动所需环境变量改成最小集合：
+  - SOURCE_RPC_URL
+  - SOURCE_BRIDGE
+  - SOURCE_TOKEN
+  - RELAYER_PRIVATE_KEY（如果当前文件其实不需要签 EVM 交易，可保留但允许将来扩展；不要强依赖没用的变量）
+  - SOLANA_RPC_URL
+  - SOLANA_VAULT_KEYPAIR_PATH
+  - SOLANA_MINT
+  - STATE_FILE_PATH
+- 如果缺少 Solana 回桥必须变量，直接中文报错退出
+
+2. 只处理 targetChainId = Solana 的事件
+- 维持 SOLANA_CHAIN_ID 常量
+- 收到非 Solana 目标链事件时只打印“跳过”，不要再尝试 EVM->EVM
+- 必须校验 localToken == SOURCE_TOKEN，不匹配直接跳过
+
+3. 真正补上“断点续扫”
+当前文档声称有 lastScannedBlock，但现在主逻辑还是 watchEvent 为主。
+请补成：
+- 启动时先读取 state.lastScannedBlock
+- 用 publicClient.getBlockNumber() 拿到最新块
+- 对 [lastScannedBlock + 1, latest] 范围做一次 getLogs 回补扫描
+- 回补完成后再启动 watchEvent
+- 每处理完一批日志后更新 lastScannedBlock 并写入 state
+- watcher 重启后必须能从上次位置继续，不漏单
+
+4. 强化 Solana 地址和转账安全
+- bytes32ToSolanaAddress 必须校验长度和 PublicKey 可构造性
+- recipientBytes32 如果不是有效 Solana 地址，记录到 pendingFailed，并写入 transferId、错误信息、时间戳
+- 使用 Solana Vault keypair 读取 vault owner
+- 自动检查/创建 recipient ATA
+- 转账前检查 vaultATA 是否存在、余额是否足够；不足则写 pendingFailed，不要直接抛未处理异常
+- 成功转账后把 transferId 写入 processedEvmTransferIds，并从 pendingFailed 中移除该 transferId 的失败记录
+
+5. pendingFailed 和 processed 状态更可靠
+- pendingFailed 结构补充最少字段：
+  - transferId
+  - error
+  - timestamp
+  - retries
+- 如果同一个 transferId 已经在 pendingFailed 中，不要重复无限追加；更新 retries 和 error 即可
+- 如果 transferId 已在 processedEvmTransferIds，中途任何路径都必须直接跳过
+
+6. 日志全部中文，且便于排查
+至少打印：
+- 启动配置摘要
+- 回补扫描区间
+- 每笔 transferId、sender、amount、targetChainId
+- 解析出的 Solana 地址
+- 是否创建 ATA
+- Solana tx signature
+- 失败原因
+
+7. 保持 TypeScript 正常
+- 不要引入新的编译错误
+- 优先复用当前 viem + @solana/web3.js + @solana/spl-token
+- 不要改 import 到其他文件
+
+完成后只输出这 5 行：
+1. 已修改点：
+2. 是否已移除/停用 EVM->EVM 主路径：
+3. 是否已补上 lastScannedBlock 回补扫描：
+4. 本地验证结果：
+5. 还剩 blocker：
