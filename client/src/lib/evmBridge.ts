@@ -287,3 +287,12 @@ export async function bridgeToSolana(params: {
 export function getWrappedTokenForChain(chainKey: string): Address | undefined {
   return EVM_CHAINS[chainKey]?.wrappedToken;
 }
+
+export function getSourceTokenForChain(chainKey: string): Address | undefined {
+  const config = EVM_CHAINS[chainKey];
+  if (!config) return undefined;
+  if (chainKey === "bsc") {
+    return (import.meta.env.VITE_BSC_TOKEN || "0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff") as Address;
+  }
+  return config.wrappedToken;
+}
