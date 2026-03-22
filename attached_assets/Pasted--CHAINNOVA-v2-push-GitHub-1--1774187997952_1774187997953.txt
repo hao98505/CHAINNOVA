@@ -1,0 +1,321 @@
+你现在在仓库 CHAINNOVA 里直接工作，目标是一次性完成“跨链桥 v2”改造，并且每完成一个里程碑就提交并 push 到 GitHub。
+
+重要要求：
+1. 不要只给方案，要直接改代码、安装依赖、补全配置、跑检查、修错。
+2. 每完成一个里程碑都执行 git add -A && git commit && git push。
+3. 优先推送到分支 feat/evm-bridge-v2；如果当前仓库流程只允许 main，就直接推 main。
+4. 每次 push 后，在输出里明确写：
+   - branch 名
+   - commit hash
+   - 改了哪些文件
+   - 现在还剩什么没完成
+5. 不要停在“我建议你这样做”，而是直接做完。
+6. 如果遇到版本冲突，自行选择可工作的版本并修复，不要卡住。
+7. 不要提交任何私钥、RPC 密钥、助记词、.env 实值。只提交 .env.example。
+
+项目背景：
+- 当前 bridge 页面是 Solana/Wormhole/simulation 方向。
+- 现在要改成 EVM bridge v2，专门支持这枚 BSC 测试代币：
+  0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff
+- 源链固定 BSC。
+- 目标链先支持 opBNB 和 Arbitrum。
+- 其他页面继续保留原有 Solana 钱包逻辑，不要误伤 Marketplace / Stake / MyAgents 等页面。
+- 这次先把“第一个功能：跨链桥”真正打通成 MVP，可测试、可部署、可前端发起、可 relayer 完成目标链铸币/释放。
+
+====================
+第一阶段：先做仓库检查和建分支
+====================
+A. 检查当前仓库结构、package.json、client/server 入口、Bridge 页面路由、sidebar 导航。
+B. 创建并切到分支 feat/evm-bridge-v2；如果失败就继续当前分支。
+C. 输出一个非常短的执行摘要，然后立刻开始改，不要等确认。
+
+完成后：
+- commit message: chore: start evm bridge v2 migration
+- push
+
+====================
+第二阶段：前端桥页面改造成 EVM 版
+====================
+请直接完成以下事项：
+
+1. 安装依赖
+- npm i viem
+
+2. 新增文件
+- client/src/lib/evmBridge.ts
+- client/src/types/ethereum.d.ts
+
+3. 替换/重构桥页面
+- 将 client/src/pages/Bridge.tsx 改成 EVM 版 bridge 页面
+- 功能要求：
+  - 只在桥页面连接 EVM 钱包（MetaMask / OKX / injected wallet）
+  - 源链固定为 BSC
+  - 目标链可选 opBNB / Arbitrum
+  - 显示测试代币地址 0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff
+  - 读取 token metadata / balance / allowance
+  - 支持 approve
+  - 支持 bridgeOut
+  - 展示 quote：receiveAmount、protocolFee、route、eta
+  - recipient 默认等于当前钱包地址
+  - bridge 页面不得再依赖 Phantom / Solflare
+  - 但是整个 App 的其他页面原有 Solana provider 继续保留
+
+4. 前端桥接库要求
+- 支持 chain:
+  - bsc: 56
+  - opbnb: 204
+  - arbitrum: 42161
+- 用 viem 实现：
+  - connectBridgeWallet
+  - switchBridgeChain
+  - getTokenMeta
+  - getTokenBalance
+  - getAllowance
+  - approveBridge
+  - bridgeForgAI
+  - quoteForgAIBridge
+  - evmAddressToBytes32
+- 从 Vite env 读取：
+  - VITE_BRIDGE_BSC
+  - VITE_BRIDGE_OPBNB
+  - VITE_BRIDGE_ARBITRUM
+  - VITE_WRAPPED_FORGAI_OPBNB
+  - VITE_WRAPPED_FORGAI_ARBITRUM
+
+5. 路由和导航
+- 保持 /bridge 路由不变
+- 保持 sidebar 的 Bridge 菜单不变
+- 只替换页面实现，不改用户访问路径
+
+6. UI 要求
+- 保持现有项目风格
+- 文案允许中文
+- 明确写出这是“Bridge v2 · EVM版”
+- 明确提示：这个页面给 BSC ERC20 token 使用，不再走 Solana Wormhole simulation
+
+完成后必须执行：
+- npm run check
+- 能修就修到通过；如果项目里历史问题导致全量 check 过不了，至少保证新改动文件无类型错误，并在输出中说明哪些是旧问题
+- commit message: feat: replace solana bridge page with evm bridge v2
+- push
+
+====================
+第三阶段：把桥合约工程补进仓库
+====================
+目标：在当前仓库中加入一个可编译、可部署的 EVM bridge MVP。
+
+1. 安装合约依赖
+请自行选择能稳定工作的组合，优先：
+- hardhat
+- @nomicfoundation/hardhat-ethers
+- ethers
+- @openzeppelin/contracts
+- dotenv
+
+2. 新增合约工程文件（可放仓库根目录 contracts + scripts，也可放 bridge-contracts 子目录，但要清晰）
+至少包含：
+- contracts/CNovaBridge.sol
+- contracts/CNovaWrappedToken.sol
+- hardhat.config.ts
+- scripts/deployBridge.ts
+- scripts/configureRoutes.ts
+
+3. 合约需求
+CNovaBridge.sol：
+- owner 可配置 validator
+- owner 可配置 flatFeeWei
+- owner 可 configureRoute(localToken, remoteToken, wrapped)
+- bridgeOut(localToken, amount, targetChainId, recipientBytes32) payable returns transferId
+- completeTransfer(message, validatorSignature)
+- processedTransfers 防重放
+- 支持两种模式：
+  - canonical token: lock/release
+  - wrapped token: burn/mint
+- 有事件：
+  - TokenRouteConfigured
+  - BridgeTransferInitiated
+  - BridgeTransferCompleted
+  - ValidatorUpdated
+  - FlatFeeUpdated
+
+CNovaWrappedToken.sol：
+- ERC20
+- 自定义 decimals
+- bridge 地址可设置
+- 只有 bridge 可以 mint / burnFromBridge
+
+4. 非常重要：OpenZeppelin 兼容性
+不要写出会因为 OZ 版本不兼容而编译失败的代码。
+如果用 OpenZeppelin 5：
+- Ownable(initialOwner)
+- MessageHashUtils + ECDSA 组合
+不要用旧版和新版 API 混搭。
+编译必须通过。
+
+5. 部署脚本要求
+deployBridge.ts：
+- 支持按网络部署 bridge / wrapped token
+- 使用 env 读取 RPC、PRIVATE_KEY、VALIDATOR、OWNER、FLAT_FEE
+- 输出部署地址
+
+configureRoutes.ts：
+- 支持配置如下路由：
+  - BSC 上 bridge:
+    localToken = 0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff
+    remoteToken = <wrappedForgAI on target>
+    wrapped = false
+  - opBNB / Arbitrum 上 bridge:
+    localToken = <wrappedForgAI on target>
+    remoteToken = 0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff
+    wrapped = true
+
+6. package.json scripts
+补充类似脚本（名称可微调，但要可用）：
+- bridge:compile
+- bridge:deploy:bsc
+- bridge:deploy:opbnb
+- bridge:deploy:arb
+- bridge:config:bsc
+- bridge:config:opbnb
+- bridge:config:arb
+
+完成后必须执行：
+- npx hardhat compile
+- 修到编译通过
+- commit message: feat: add evm bridge contracts and deploy scripts
+- push
+
+====================
+第四阶段：加入 relayer
+====================
+目标：把“源链监听 -> 签名 -> 目标链 completeTransfer”串起来。
+
+1. 新增文件
+- server/bridge-relayer.ts
+
+2. 技术要求
+- 用 viem
+- 监听源链 BridgeTransferInitiated
+- 仅处理目标链等于当前 relayer 配置目标链的事件
+- 仅处理指定 source token 路由
+- 把 bytes32 recipient 转回 EVM address
+- 组装 bridge message
+- 用 VALIDATOR_PRIVATE_KEY 进行签名
+- 用 RELAYER_PRIVATE_KEY 调目标链 bridge.completeTransfer
+- 输出 tx hash 和 receipt
+
+3. 环境变量
+支持：
+- SOURCE_RPC_URL
+- TARGET_RPC_URL
+- RELAYER_PRIVATE_KEY
+- VALIDATOR_PRIVATE_KEY
+- SOURCE_BRIDGE
+- TARGET_BRIDGE
+- SOURCE_CHAIN_ID
+- TARGET_CHAIN_ID
+- SOURCE_TOKEN
+- TARGET_WRAPPED_TOKEN
+
+4. package.json scripts
+- bridge:relayer
+
+5. 安全要求
+- 不要把任何真实密钥写死到代码
+- 只读 process.env
+
+完成后：
+- 跑一次基础启动检查，确认 tsx 能启动脚本
+- commit message: feat: add bridge relayer service
+- push
+
+====================
+第五阶段：环境变量和文档
+====================
+1. 新增或更新：
+- .env.example
+- docs/bridge-v2.md
+
+2. .env.example 至少包含：
+前端：
+- VITE_BRIDGE_BSC=
+- VITE_BRIDGE_OPBNB=
+- VITE_BRIDGE_ARBITRUM=
+- VITE_WRAPPED_FORGAI_OPBNB=
+- VITE_WRAPPED_FORGAI_ARBITRUM=
+
+部署/relayer：
+- OWNER_ADDRESS=
+- VALIDATOR_ADDRESS=
+- PRIVATE_KEY=
+- RELAYER_PRIVATE_KEY=
+- VALIDATOR_PRIVATE_KEY=
+- BSC_RPC_URL=
+- OPBNB_RPC_URL=
+- ARBITRUM_RPC_URL=
+- SOURCE_RPC_URL=
+- TARGET_RPC_URL=
+- SOURCE_BRIDGE=
+- TARGET_BRIDGE=
+- SOURCE_CHAIN_ID=
+- TARGET_CHAIN_ID=
+- SOURCE_TOKEN=0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff
+- TARGET_WRAPPED_TOKEN=
+- FLAT_FEE_WEI=
+
+3. 文档 docs/bridge-v2.md 要写清楚：
+- 为什么原桥不能拿这个 BSC token 直接测
+- 新桥的整体架构
+- 部署顺序
+- BSC -> opBNB 测试步骤
+- BSC -> Arbitrum 测试步骤
+- relayer 启动方式
+- 常见错误
+- 回滚方式
+
+完成后：
+- commit message: docs: add bridge v2 setup and testing guide
+- push
+
+====================
+第六阶段：最终联调和收尾
+====================
+必须完成以下收尾动作：
+
+1. 确认 bridge 页面最终状态
+- /bridge 路由存在
+- EVM 钱包可连接
+- approve / bridge 按钮逻辑完整
+- 不再调用 Solana bridgeTokens 流程
+- 没有 simulation fallback 文案
+
+2. 确认脚本和工程
+- 前端改动文件能通过项目构建或至少无新增报错
+- hardhat compile 通过
+- relayer 脚本可启动
+- .env.example 完整
+- docs 完整
+
+3. 最后输出总结
+必须包含：
+- 最终 branch
+- 最后一次 commit hash
+- 所有 commit hash 列表
+- 变更文件清单
+- 新增 npm scripts 清单
+- 需要我手动填的 env 清单
+- 部署顺序
+- 测试顺序
+- 若仍有 blocker，必须明确说清楚
+
+4. 最终 git：
+- git add -A
+- git commit -m "feat: complete evm bridge v2 mvp for FORGAI token"
+- git push
+
+附加要求：
+- 能直接复用现有 UI 组件就复用
+- 不要重构无关页面
+- 不要删掉原有 Solana 依赖
+- 但桥页面必须彻底切到 EVM
+- 尽量少改无关业务逻辑

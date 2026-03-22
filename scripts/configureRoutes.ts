@@ -1,0 +1,61 @@
+import { ethers } from "hardhat";
+import "dotenv/config";
+
+async function main() {
+  const [deployer] = await ethers.getSigners();
+  const network = await ethers.provider.getNetwork();
+  const chainId = Number(network.chainId);
+
+  console.log(`\n=== Configuring Routes on ${network.name} (chainId: ${chainId}) ===`);
+
+  const FORGAI_BSC = "0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff";
+
+  let bridgeAddress: string;
+  let localToken: string;
+  let remoteToken: string;
+  let wrapped: boolean;
+
+  if (chainId === 56 || chainId === 97) {
+    bridgeAddress = process.env.VITE_BRIDGE_BSC || "";
+    localToken = FORGAI_BSC;
+    const targetWrapped = process.env.TARGET_WRAPPED_TOKEN || "";
+    remoteToken = targetWrapped;
+    wrapped = false;
+    console.log(`  BSC source chain config`);
+  } else if (chainId === 204) {
+    bridgeAddress = process.env.VITE_BRIDGE_OPBNB || "";
+    localToken = process.env.VITE_WRAPPED_FORGAI_OPBNB || "";
+    remoteToken = FORGAI_BSC;
+    wrapped = true;
+    console.log(`  opBNB target chain config`);
+  } else if (chainId === 42161) {
+    bridgeAddress = process.env.VITE_BRIDGE_ARBITRUM || "";
+    localToken = process.env.VITE_WRAPPED_FORGAI_ARBITRUM || "";
+    remoteToken = FORGAI_BSC;
+    wrapped = true;
+    console.log(`  Arbitrum target chain config`);
+  } else {
+    throw new Error(`Unknown chainId: ${chainId}`);
+  }
+
+  if (!bridgeAddress) throw new Error("Bridge address not configured in env");
+  if (!localToken) throw new Error("Local token not configured");
+  if (!remoteToken) throw new Error("Remote token not configured");
+
+  console.log(`  Bridge: ${bridgeAddress}`);
+  console.log(`  Local Token: ${localToken}`);
+  console.log(`  Remote Token: ${remoteToken}`);
+  console.log(`  Wrapped: ${wrapped}`);
+
+  const bridge = await ethers.getContractAt("CNovaBridge", bridgeAddress);
+  const tx = await bridge.configureRoute(localToken, remoteToken, wrapped);
+  await tx.wait();
+
+  console.log(`\n  Route configured ✓`);
+  console.log(`  Tx: ${tx.hash}`);
+}
+
+main().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});
