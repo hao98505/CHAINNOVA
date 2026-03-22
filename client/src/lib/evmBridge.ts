@@ -219,6 +219,7 @@ export async function getAllowance(chainKey: string, tokenAddress: Address, owne
 }
 
 export async function approveBridge(chainKey: string, tokenAddress: Address, spender: Address, amount: string, decimals: number): Promise<Hash> {
+  const config = EVM_CHAINS[chainKey];
   const walletClient = getWalletClient(chainKey);
   const [account] = await walletClient.getAddresses();
   const amountWei = parseUnits(amount, decimals);
@@ -228,6 +229,7 @@ export async function approveBridge(chainKey: string, tokenAddress: Address, spe
     functionName: "approve",
     args: [spender, amountWei],
     account,
+    chain: getViemChain(config),
   });
   return hash;
 }
@@ -238,7 +240,7 @@ export function evmAddressToBytes32(address: Address): `0x${string}` {
 
 export async function getBridgeFee(chainKey: string): Promise<bigint> {
   const config = EVM_CHAINS[chainKey];
-  if (!config || config.bridgeAddress === "0x0000000000000000000000000000000000000000") return 0n;
+  if (!config || config.bridgeAddress === "0x0000000000000000000000000000000000000000") return BigInt(0);
   try {
     const client = getPublicClient(chainKey);
     const fee = await client.readContract({
@@ -248,7 +250,7 @@ export async function getBridgeFee(chainKey: string): Promise<bigint> {
     });
     return fee as bigint;
   } catch {
-    return 0n;
+    return BigInt(0);
   }
 }
 
@@ -282,6 +284,7 @@ export async function bridgeForgAI(params: {
     args: [FORGAI_TOKEN, amountWei, BigInt(toConfig.id), recipientBytes32],
     value: fee,
     account,
+    chain: getViemChain(fromConfig),
   });
 
   return {

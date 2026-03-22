@@ -411,10 +411,10 @@ export default function Bridge() {
             )}
 
             <div className="flex gap-2">
-              {canApprove && (
+              {(needsApproval && parsedAmount > 0 && !insufficientBalance) && (
                 <Button
                   onClick={handleApprove}
-                  disabled={status !== "idle"}
+                  disabled={status !== "idle" && status !== "approving"}
                   className="flex-1 font-orbitron text-[10px] tracking-wider uppercase gap-2"
                   data-testid="button-approve"
                   style={{ background: "linear-gradient(135deg, #b45309, #92400e)" }}

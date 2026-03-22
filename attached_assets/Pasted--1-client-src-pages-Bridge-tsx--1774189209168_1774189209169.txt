@@ -1,0 +1,111 @@
+只做精准补丁，不要再做大规模重构，不要重复解释方案，直接改代码并最后只用中文给我一个极简结果。
+
+本轮只允许检查和修改这几个文件：
+1. client/src/pages/Bridge.tsx
+2. client/src/lib/evmBridge.ts
+3. client/src/types/ethereum.d.ts（如果缺失就创建）
+4. package.json
+5. .env.example
+6. docs/bridge-v2.md（只有在变量名或命令不一致时才修）
+7. server/bridge-relayer.ts（只有在 package.json 脚本或导入不匹配时才修）
+
+禁止改动：
+- 其他页面
+- 合约文件
+- hardhat.config.cts
+- 现有 Solana 相关页面和 provider
+
+本轮目标只有 4 件事，按顺序完成：
+
+A. 彻底检查并修复 /bridge 页面
+要求：
+- /bridge 必须是 EVM 版，不允许再出现这些导入或调用：
+  - useChainNova
+  - getBridgeQuote / WORMHOLE_CHAINS / lib/wormhole
+  - useWallet
+  - useWalletModal
+  - Phantom / Solflare
+  - fromChain = "solana"
+  - simulation fallback 文案
+- 页面保留原路由 /bridge
+- 页面文案可中文
+- 页面必须支持：
+  - 连接 injected EVM 钱包
+  - 源链固定 BSC
+  - 目标链可选 opBNB / Arbitrum
+  - 读取 FORGAI:
+    0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff
+  - 读取 balance / allowance
+  - approve
+  - bridgeOut
+  - quote 展示
+- 如果现有 Bridge.tsx 还是 Solana 旧版，直接完整替换成最小可用 EVM 页面，但尽量复用现有 UI 组件
+
+B. 精准修 package.json
+要求：
+- 不要改无关字段
+- 只补齐缺失的依赖和 scripts
+- 必须确保 package.json 里真的存在：
+  依赖/开发依赖：
+  - viem
+  - hardhat
+  - @nomicfoundation/hardhat-ethers
+  - ethers
+  - @openzeppelin/contracts
+  - dotenv
+  - ts-node（如果 hardhat 用到）
+  scripts：
+  - bridge:compile
+  - bridge:deploy:bsc
+  - bridge:deploy:opbnb
+  - bridge:deploy:arb
+  - bridge:config:bsc
+  - bridge:config:opbnb
+  - bridge:config:arb
+  - bridge:relayer
+- 如果你之前说“不能直接编辑 package.json”，那就用脚本精准修改 package.json 后保存，不要跳过
+
+C. 精准修 .env.example
+要求：
+至少包含并且命名一致：
+- VITE_BRIDGE_BSC=
+- VITE_BRIDGE_OPBNB=
+- VITE_BRIDGE_ARBITRUM=
+- VITE_WRAPPED_FORGAI_OPBNB=
+- VITE_WRAPPED_FORGAI_ARBITRUM=
+- OWNER_ADDRESS=
+- VALIDATOR_ADDRESS=
+- PRIVATE_KEY=
+- RELAYER_PRIVATE_KEY=
+- VALIDATOR_PRIVATE_KEY=
+- BSC_RPC_URL=
+- OPBNB_RPC_URL=
+- ARBITRUM_RPC_URL=
+- SOURCE_RPC_URL=
+- TARGET_RPC_URL=
+- SOURCE_BRIDGE=
+- TARGET_BRIDGE=
+- SOURCE_CHAIN_ID=
+- TARGET_CHAIN_ID=
+- SOURCE_TOKEN=0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff
+- TARGET_WRAPPED_TOKEN=
+- FLAT_FEE_WEI=
+
+D. 只做两项验证，不要做别的
+1. npm run check
+2. TS_NODE_PROJECT=tsconfig.hardhat.json npx hardhat compile
+
+如果报错：
+- 只修和本轮 6 个文件直接相关的错误
+- 不要扩散重构
+
+最后只输出这 5 行，别写长篇解释：
+1. 已修改文件：
+2. check 结果：
+3. hardhat compile 结果：
+4. 还有没有 blocker：
+5. 下一步最小动作：
+
+如果可以本地 git commit，就只提交一次：
+fix: finalize evm bridge page and package wiring
+如果不能 commit，就明确说不能 commit，不要反复解释。

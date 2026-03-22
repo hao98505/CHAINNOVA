@@ -137,6 +137,7 @@ async function processTransferEvent(log: Log) {
       abi: BRIDGE_ABI,
       functionName: "completeTransfer",
       args: [message, signature],
+      chain: null,
     });
 
     console.log(`  Tx submitted: ${hash}`);

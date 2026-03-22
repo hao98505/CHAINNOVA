@@ -128,7 +128,7 @@ To revert the bridge page to the original Solana/Wormhole version:
 | `client/src/types/ethereum.d.ts` | Window.ethereum types |
 | `contracts/CNovaBridge.sol` | Bridge contract |
 | `contracts/CNovaWrappedToken.sol` | Wrapped ERC20 token |
-| `hardhat.config.ts` | Hardhat configuration |
+| `hardhat.config.cts` | Hardhat configuration |
 | `scripts/deployBridge.ts` | Deployment script |
 | `scripts/configureRoutes.ts` | Route configuration script |
 | `server/bridge-relayer.ts` | Event listener + relayer |

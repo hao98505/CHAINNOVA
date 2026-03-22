@@ -8,7 +8,15 @@
     "build": "tsx script/build.ts",
     "start": "NODE_ENV=production node dist/index.cjs",
     "check": "tsc",
-    "db:push": "drizzle-kit push"
+    "db:push": "drizzle-kit push",
+    "bridge:compile": "TS_NODE_PROJECT=tsconfig.hardhat.json npx hardhat compile",
+    "bridge:deploy:bsc": "TS_NODE_PROJECT=tsconfig.hardhat.json npx hardhat run scripts/deployBridge.ts --network bsc",
+    "bridge:deploy:opbnb": "TS_NODE_PROJECT=tsconfig.hardhat.json npx hardhat run scripts/deployBridge.ts --network opbnb",
+    "bridge:deploy:arb": "TS_NODE_PROJECT=tsconfig.hardhat.json npx hardhat run scripts/deployBridge.ts --network arbitrum",
+    "bridge:config:bsc": "TS_NODE_PROJECT=tsconfig.hardhat.json npx hardhat run scripts/configureRoutes.ts --network bsc",
+    "bridge:config:opbnb": "TS_NODE_PROJECT=tsconfig.hardhat.json npx hardhat run scripts/configureRoutes.ts --network opbnb",
+    "bridge:config:arb": "TS_NODE_PROJECT=tsconfig.hardhat.json npx hardhat run scripts/configureRoutes.ts --network arbitrum",
+    "bridge:relayer": "tsx server/bridge-relayer.ts"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",
