@@ -5,8 +5,6 @@ import {
   http,
   formatUnits,
   parseUnits,
-  encodeFunctionData,
-  decodeEventLog,
   pad,
   getAddress,
   type Address,
@@ -15,8 +13,6 @@ import {
   type WalletClient,
   type Hash,
 } from "viem";
-
-export const FORGAI_TOKEN: Address = "0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff";
 
 export interface EvmChainConfig {
   id: number;
@@ -37,16 +33,7 @@ export const EVM_CHAINS: Record<string, EvmChainConfig> = {
     rpcUrl: "https://bsc-dataseed1.binance.org",
     explorerUrl: "https://bscscan.com",
     bridgeAddress: (import.meta.env.VITE_BRIDGE_BSC || "0x0000000000000000000000000000000000000000") as Address,
-    nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
-  },
-  opbnb: {
-    id: 204,
-    name: "opBNB",
-    shortName: "opBNB",
-    rpcUrl: "https://opbnb-mainnet-rpc.bnbchain.org",
-    explorerUrl: "https://opbnbscan.com",
-    bridgeAddress: (import.meta.env.VITE_BRIDGE_OPBNB || "0x0000000000000000000000000000000000000000") as Address,
-    wrappedToken: (import.meta.env.VITE_WRAPPED_FORGAI_OPBNB || undefined) as Address | undefined,
+    wrappedToken: (import.meta.env.VITE_WRAPPED_FORGAI_BSC || undefined) as Address | undefined,
     nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
   },
   arbitrum: {
@@ -57,6 +44,16 @@ export const EVM_CHAINS: Record<string, EvmChainConfig> = {
     explorerUrl: "https://arbiscan.io",
     bridgeAddress: (import.meta.env.VITE_BRIDGE_ARBITRUM || "0x0000000000000000000000000000000000000000") as Address,
     wrappedToken: (import.meta.env.VITE_WRAPPED_FORGAI_ARBITRUM || undefined) as Address | undefined,
+    nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
+  },
+  ethereum: {
+    id: 1,
+    name: "Ethereum",
+    shortName: "ETH",
+    rpcUrl: "https://eth.llamarpc.com",
+    explorerUrl: "https://etherscan.io",
+    bridgeAddress: (import.meta.env.VITE_BRIDGE_ETHEREUM || "0x0000000000000000000000000000000000000000") as Address,
+    wrappedToken: (import.meta.env.VITE_WRAPPED_FORGAI_ETHEREUM || undefined) as Address | undefined,
     nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
   },
 };
@@ -124,37 +121,27 @@ export interface BridgeResult {
   explorerUrl: string;
 }
 
-function getViemChain(config: EvmChainConfig): Chain {
+export function getViemChain(config: EvmChainConfig): Chain {
   return {
     id: config.id,
     name: config.name,
     nativeCurrency: config.nativeCurrency,
-    rpcUrls: {
-      default: { http: [config.rpcUrl] },
-    },
-    blockExplorers: {
-      default: { name: config.shortName, url: config.explorerUrl },
-    },
+    rpcUrls: { default: { http: [config.rpcUrl] } },
+    blockExplorers: { default: { name: config.shortName, url: config.explorerUrl } },
   } as Chain;
 }
 
 export function getPublicClient(chainKey: string): PublicClient {
   const config = EVM_CHAINS[chainKey];
   if (!config) throw new Error(`Unknown chain: ${chainKey}`);
-  return createPublicClient({
-    chain: getViemChain(config),
-    transport: http(config.rpcUrl),
-  });
+  return createPublicClient({ chain: getViemChain(config), transport: http(config.rpcUrl) });
 }
 
 function getWalletClient(chainKey: string): WalletClient {
   const config = EVM_CHAINS[chainKey];
   if (!config) throw new Error(`Unknown chain: ${chainKey}`);
   if (!window.ethereum) throw new Error("No EVM wallet found");
-  return createWalletClient({
-    chain: getViemChain(config),
-    transport: custom(window.ethereum),
-  });
+  return createWalletClient({ chain: getViemChain(config), transport: custom(window.ethereum) });
 }
 
 export async function connectBridgeWallet(): Promise<Address> {
@@ -168,7 +155,6 @@ export async function switchBridgeChain(chainKey: string): Promise<void> {
   const config = EVM_CHAINS[chainKey];
   if (!config) throw new Error(`Unknown chain: ${chainKey}`);
   if (!window.ethereum) throw new Error("No EVM wallet found");
-
   const chainIdHex = `0x${config.id.toString(16)}`;
   try {
     await window.ethereum.request({ method: "wallet_switchEthereumChain", params: [{ chainId: chainIdHex }] });
@@ -176,13 +162,7 @@ export async function switchBridgeChain(chainKey: string): Promise<void> {
     if (err.code === 4902) {
       await window.ethereum.request({
         method: "wallet_addEthereumChain",
-        params: [{
-          chainId: chainIdHex,
-          chainName: config.name,
-          nativeCurrency: config.nativeCurrency,
-          rpcUrls: [config.rpcUrl],
-          blockExplorerUrls: [config.explorerUrl],
-        }],
+        params: [{ chainId: chainIdHex, chainName: config.name, nativeCurrency: config.nativeCurrency, rpcUrls: [config.rpcUrl], blockExplorerUrls: [config.explorerUrl] }],
       });
     } else {
       throw err;
@@ -224,12 +204,8 @@ export async function approveBridge(chainKey: string, tokenAddress: Address, spe
   const [account] = await walletClient.getAddresses();
   const amountWei = parseUnits(amount, decimals);
   const hash = await walletClient.writeContract({
-    address: tokenAddress,
-    abi: ERC20_ABI,
-    functionName: "approve",
-    args: [spender, amountWei],
-    account,
-    chain: getViemChain(config),
+    address: tokenAddress, abi: ERC20_ABI, functionName: "approve",
+    args: [spender, amountWei], account, chain: getViemChain(config),
   });
   return hash;
 }
@@ -238,50 +214,65 @@ export function evmAddressToBytes32(address: Address): `0x${string}` {
   return pad(address, { size: 32 }) as `0x${string}`;
 }
 
+export function solanaAddressToBytes32(solanaAddress: string): `0x${string}` {
+  const alphabet = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+  if (!solanaAddress || solanaAddress.length < 32 || solanaAddress.length > 44) {
+    throw new Error("Invalid Solana address: must be 32-44 characters");
+  }
+  for (const ch of solanaAddress) {
+    if (!alphabet.includes(ch)) throw new Error("Invalid Solana address: invalid base58 character");
+  }
+  let n = BigInt(0);
+  for (const ch of solanaAddress) {
+    n = n * BigInt(58) + BigInt(alphabet.indexOf(ch));
+  }
+  const hexRaw = n.toString(16);
+  if (hexRaw.length > 64) {
+    throw new Error("Invalid Solana address: decoded value exceeds 32 bytes");
+  }
+  return ("0x" + hexRaw.padStart(64, "0")) as `0x${string}`;
+}
+
 export async function getBridgeFee(chainKey: string): Promise<bigint> {
   const config = EVM_CHAINS[chainKey];
   if (!config || config.bridgeAddress === "0x0000000000000000000000000000000000000000") return BigInt(0);
   try {
     const client = getPublicClient(chainKey);
-    const fee = await client.readContract({
-      address: config.bridgeAddress,
-      abi: BRIDGE_ABI,
-      functionName: "flatFeeWei",
-    });
+    const fee = await client.readContract({ address: config.bridgeAddress, abi: BRIDGE_ABI, functionName: "flatFeeWei" });
     return fee as bigint;
   } catch {
     return BigInt(0);
   }
 }
 
-export async function bridgeForgAI(params: {
+export async function bridgeToSolana(params: {
   fromChainKey: string;
-  toChainKey: string;
   amount: string;
   decimals: number;
-  recipient?: Address;
+  recipientSolanaAddress: string;
 }): Promise<BridgeResult> {
   const fromConfig = EVM_CHAINS[params.fromChainKey];
-  const toConfig = EVM_CHAINS[params.toChainKey];
-  if (!fromConfig || !toConfig) throw new Error("Invalid chain configuration");
+  if (!fromConfig) throw new Error("Invalid source chain");
+  if (!fromConfig.wrappedToken) throw new Error("Wrapped token not configured for this chain");
   if (fromConfig.bridgeAddress === "0x0000000000000000000000000000000000000000") {
-    throw new Error("Bridge contract not configured. Set VITE_BRIDGE_BSC in environment.");
+    throw new Error("Bridge contract not configured");
   }
 
   await switchBridgeChain(params.fromChainKey);
 
   const walletClient = getWalletClient(params.fromChainKey);
   const [account] = await walletClient.getAddresses();
-  const recipient = params.recipient || account;
   const amountWei = parseUnits(params.amount, params.decimals);
-  const recipientBytes32 = evmAddressToBytes32(recipient);
+  const recipientBytes32 = solanaAddressToBytes32(params.recipientSolanaAddress);
   const fee = await getBridgeFee(params.fromChainKey);
+
+  const SOLANA_CHAIN_ID = BigInt(999999999);
 
   const hash = await walletClient.writeContract({
     address: fromConfig.bridgeAddress,
     abi: BRIDGE_ABI,
     functionName: "bridgeOut",
-    args: [FORGAI_TOKEN, amountWei, BigInt(toConfig.id), recipientBytes32],
+    args: [fromConfig.wrappedToken, amountWei, SOLANA_CHAIN_ID, recipientBytes32],
     value: fee,
     account,
     chain: getViemChain(fromConfig),
@@ -293,18 +284,6 @@ export async function bridgeForgAI(params: {
   };
 }
 
-export function quoteForgAIBridge(amount: string, fromChainKey: string, toChainKey: string): BridgeQuote {
-  const fromConfig = EVM_CHAINS[fromChainKey];
-  const toConfig = EVM_CHAINS[toChainKey];
-  const parsedAmount = parseFloat(amount) || 0;
-  const feePercent = 0.3;
-  const fee = parsedAmount * (feePercent / 100);
-  const receive = Math.max(parsedAmount - fee, 0);
-
-  return {
-    receiveAmount: receive.toFixed(4),
-    protocolFee: `${fee.toFixed(4)} FORGAI + gas`,
-    route: `${fromConfig?.shortName || fromChainKey} → CNovaBridge → ${toConfig?.shortName || toChainKey}`,
-    eta: toChainKey === "opbnb" ? "~1 min" : "~2-5 min",
-  };
+export function getWrappedTokenForChain(chainKey: string): Address | undefined {
+  return EVM_CHAINS[chainKey]?.wrappedToken;
 }

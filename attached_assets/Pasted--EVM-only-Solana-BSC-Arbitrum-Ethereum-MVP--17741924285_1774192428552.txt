@@ -1,0 +1,225 @@
+不要再继续扩展当前 EVM-only 桥。现在开始做一次明确的架构重构，但只围绕“Solana ↔ BSC / Arbitrum / Ethereum 双向桥 MVP”这一件事，禁止改无关页面，禁止大范围重构。
+
+目标：
+把当前 Bridge 页面从“BSC ERC20 单向桥”改成“Solana 原生 ForgAI <-> EVM 三链双向桥 MVP”。
+
+关键代币：
+- Solana 原生 mint：
+  6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump
+- EVM 三条链目标：
+  - BSC
+  - Arbitrum One
+  - Ethereum Mainnet
+
+重要约束：
+1. 不要再写 opBNB 相关逻辑，目标链改成 BSC / Arbitrum / Ethereum。
+2. 不要再把前端 token 写死成 0x3e9fc4...ffff。
+3. 不要删除现有代码，优先在当前基础上精准替换 Bridge 和桥接服务。
+4. 不要重构 Marketplace / Stake / MyAgents 等无关页面。
+5. 每完成一个阶段，只输出中文极简结果，不写长篇解释。
+6. 如果无法直接 git push，不要反复解释限制，只说明“已写入工作区，需手动提交”。
+
+本次分 4 个阶段，按顺序执行：
+
+====================
+阶段 1：先做架构切换，不碰无关功能
+====================
+
+只允许先检查并修改这些位置：
+- client/src/pages/Bridge.tsx
+- client/src/lib/evmBridge.ts
+- 新增 client/src/lib/solanaBridge.ts
+- 新增 client/src/lib/bridgeRouter.ts
+- server/bridge-relayer.ts
+- docs/bridge-v2.md
+- .env.example
+- 必要时新增 server/solana-watcher.ts
+- 必要时新增 contracts 中的 EVM wrapped token/bridge 相关配置文件
+- 必要时补 package.json scripts，但不要改无关脚本
+
+先完成这件事：
+A. 把 Bridge 页面从 “Bridge v2 · EVM / BSC ERC20” 改成真正的多链桥页面
+要求：
+- 标题改成：Bridge v3 · Solana ↔ EVM
+- 源链可选：Solana / BSC / Arbitrum / Ethereum
+- 目标链必须是另外三条中的任意一条，不允许源链和目标链相同
+- 当源链为 Solana：
+  - 使用 Phantom / Solflare
+  - 读取 SPL token mint = 6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump
+  - 显示 Solana 余额
+  - 支持输入目标 EVM 地址
+- 当源链为 EVM：
+  - 使用 injected wallet
+  - 支持读取 wrapped token 余额
+  - 支持回桥到 Solana 地址
+- 页面必须支持双向：
+  - Solana -> BSC / Arbitrum / Ethereum
+  - BSC / Arbitrum / Ethereum -> Solana
+- 先不要做高级 UI，优先可用
+
+B. 不允许页面里再出现这些旧表述：
+- “专为 BSC ERC20 代币设计”
+- “源链固定为 BSC”
+- “目标链支持 opBNB 和 Arbitrum”
+- FORGAI_TOKEN = 0x3e9fc4...
+- opBNB 按钮/文案
+
+====================
+阶段 2：桥接服务层重构
+====================
+
+新增两个桥接层：
+
+1. client/src/lib/solanaBridge.ts
+要求：
+- 使用 @solana/web3.js 和 SPL Token 相关库
+- 支持：
+  - connectSolanaWallet
+  - getSolanaTokenBalance
+  - getOrCreateATA helper（前端只做查询/提示，真正创建可交给后端或用户交易）
+  - quoteSolanaToEvm
+  - initiateSolanaDeposit
+- initiateSolanaDeposit 的 MVP 路径：
+  - 用户把 SPL 代币转到项目的 Solana vault ATA
+  - memo 里带目标链和目标地址
+  - 返回 signature
+
+2. client/src/lib/bridgeRouter.ts
+要求：
+- 统一导出：
+  - getBridgeMode
+  - quoteBridge
+  - executeBridge
+- 自动根据 sourceChain 选择走 solanaBridge 或 evmBridge
+- 支持方向：
+  - solana -> bsc
+  - solana -> arbitrum
+  - solana -> ethereum
+  - bsc -> solana
+  - arbitrum -> solana
+  - ethereum -> solana
+
+3. 重构 client/src/lib/evmBridge.ts
+要求：
+- 删除固定 FORGAI_TOKEN = 0x3e9f...ffff 的中心写死逻辑
+- 改成按 chain config 读取 canonical/wrapped token 地址
+- 目标链从 opBNB / Arbitrum 改成 BSC / Arbitrum / Ethereum
+- 支持回桥：
+  - approveWrappedToken
+  - burnWrappedForSolanaRelease
+- 保留已有 viem 能力，但别大拆
+
+====================
+阶段 3：后端 watcher / relayer 改成双向
+====================
+
+目标：做一个可跑通的 custodial MVP，不做复杂 Solana on-chain program。
+
+A. 新增或重构：
+- server/solana-watcher.ts
+- server/bridge-relayer.ts
+
+B. 具体要求：
+
+1. Solana -> EVM
+- 监听 Solana vault ATA 入账
+- 解析 memo，拿到 targetChain 和 recipient EVM address
+- 做基础校验：
+  - mint 必须是 6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump
+  - recipient 必须是合法 EVM 地址
+- 成功后在对应 EVM 目标链调用 bridge / wrapped token mint 流程
+- 记录 source signature，防重复处理
+
+2. EVM -> Solana
+- 监听 EVM bridge burn / bridgeOut 事件
+- 解析目标 Solana 地址
+- 从 Solana vault ATA 向用户地址转出 SPL token
+- 若用户 ATA 不存在，要能自动创建 ATA 或明确失败日志
+- 记录 transferId，防重放
+
+3. 持久化
+- 不要只靠内存 Set
+- 最少做一个本地 JSON state 文件或 sqlite 持久化：
+  - processedSolanaSignatures
+  - processedEvmTransferIds
+  - lastScannedBlock / lastScannedSlot
+
+4. 容错
+- watcher 重启后能从上次位置继续
+- 失败任务要记录为 pending_failed，不要直接吞掉
+- 输出清晰中文日志
+
+====================
+阶段 4：配置、文档、最小验证
+====================
+
+A. .env.example 必须补齐：
+前端：
+- VITE_SOLANA_RPC_URL=
+- VITE_SOLANA_MINT=6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump
+- VITE_SOLANA_VAULT=
+- VITE_BRIDGE_BSC=
+- VITE_BRIDGE_ARBITRUM=
+- VITE_BRIDGE_ETHEREUM=
+- VITE_WRAPPED_FORGAI_BSC=
+- VITE_WRAPPED_FORGAI_ARBITRUM=
+- VITE_WRAPPED_FORGAI_ETHEREUM=
+
+后端：
+- SOLANA_RPC_URL=
+- SOLANA_VAULT_KEYPAIR_PATH=
+- SOLANA_VAULT_OWNER=
+- SOLANA_VAULT_ATA=
+- SOLANA_MINT=6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump
+- BSC_RPC_URL=
+- ARBITRUM_RPC_URL=
+- ETHEREUM_RPC_URL=
+- RELAYER_PRIVATE_KEY=
+- VALIDATOR_PRIVATE_KEY=
+- BSC_BRIDGE=
+- ARBITRUM_BRIDGE=
+- ETHEREUM_BRIDGE=
+- WRAPPED_FORGAI_BSC=
+- WRAPPED_FORGAI_ARBITRUM=
+- WRAPPED_FORGAI_ETHEREUM=
+- STATE_FILE_PATH=
+
+B. 文档 docs/bridge-v2.md 改成：
+- Bridge v3 · Solana ↔ EVM
+- 写清楚这是 custodial MVP
+- 写清楚 Solana -> EVM 和 EVM -> Solana 的流程
+- 写清楚 BSC / Arbitrum / Ethereum 三条链
+- 删掉 opBNB 内容
+- 删掉旧 BSC-only 说明
+- 增加“安全风险与当前信任模型”一节
+
+C. package.json
+只补必要 scripts：
+- bridge:relayer
+- bridge:watch:solana
+- bridge:watch:evm
+- bridge:dev
+如果缺少 Solana 依赖，则补：
+- @solana/web3.js
+- @solana/spl-token
+- bs58（如有需要）
+- viem
+- 其他仅限本任务必需依赖
+
+====================
+最终输出格式
+====================
+
+全部完成后，只用中文输出这 6 行：
+1. 已修改文件：
+2. 已完成功能：
+3. 还未完成功能：
+4. 本轮 blocker：
+5. 本地验证结果：
+6. 下一步最小动作：
+
+注意：
+- 不要写长篇总结
+- 不要擅自扩展功能
+- 不要碰无关页面
+- 本轮目标不是生产级去中心化桥，而是先把 Solana ↔ BSC/Arbitrum/Ethereum 双向 MVP 打通

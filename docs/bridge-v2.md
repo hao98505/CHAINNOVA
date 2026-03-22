@@ -1,134 +1,109 @@
-# Bridge v2 — EVM Cross-Chain Bridge
+# Bridge v3 · Solana ↔ EVM 跨链桥
 
-## Why a New Bridge?
+## 概述
 
-The original bridge used Solana + Wormhole simulation mode. The FORGAI token (`0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff`) lives on BSC as an ERC20, so we need a native EVM bridge that can:
-- Lock tokens on BSC and mint wrapped versions on target chains
-- Burn wrapped tokens on target chains and release originals on BSC
+Custodial MVP 版本。支持 Solana 原生 ForgAI (SPL Token) 与 BSC / Arbitrum / Ethereum 三条 EVM 链上的 wrapped ForgAI 之间的双向桥接。
 
-## Architecture
+**Solana Mint**: `6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump`
+
+## 架构
 
 ```
-BSC (source)                    opBNB / Arbitrum (target)
+Solana                          BSC / Arbitrum / Ethereum
 ┌──────────────┐                ┌──────────────┐
-│ CNovaBridge  │ ──(events)──>  │ CNovaBridge  │
-│  lock FORGAI │                │  mint wFORGAI│
+│ Vault ATA    │                │ CNovaBridge  │
+│ (custodial)  │                │ + wForgAI    │
 └──────────────┘                └──────────────┘
-       ↑                               ↑
-       │                               │
-   Frontend                        Relayer
-   (viem)                    (signs + submits)
+       ↑↓                             ↑↓
+   Solana Watcher              EVM Bridge Relayer
+   (server/solana-watcher.ts)  (server/bridge-relayer.ts)
 ```
 
-### Flow: BSC → Target Chain
-1. User approves FORGAI spending by BSC bridge
-2. User calls `bridgeOut()` on BSC bridge → tokens locked, event emitted
-3. Relayer watches `BridgeTransferInitiated` events on BSC
-4. Relayer signs message with validator key
-5. Relayer calls `completeTransfer()` on target bridge → wrapped tokens minted
+## 流程
 
-### Flow: Target Chain → BSC (reverse)
-1. User calls `bridgeOut()` on target bridge → wrapped tokens burned
-2. Relayer signs and calls `completeTransfer()` on BSC bridge → original tokens released
+### Solana → EVM
+1. 用户连接 Phantom/Solflare
+2. 用户输入目标 EVM 链和 EVM 地址
+3. 前端发起 SPL Token 转账到项目 Vault ATA，memo 带目标链和地址
+4. Solana Watcher 检测到 Vault 入账
+5. Watcher 解析 memo，向目标 EVM 链 bridge 合约调用 `completeTransfer()` 铸币
+6. 用户在目标链收到 wForgAI
 
-## Deployment Sequence
+### EVM → Solana
+1. 用户连接 MetaMask，选择源 EVM 链
+2. 用户 approve wrapped token，然后调用 `bridgeOut()`
+3. EVM Bridge Relayer 检测到 `BridgeTransferInitiated` 事件
+4. Relayer 解析目标 Solana 地址
+5. Relayer 从 Vault ATA 向用户 Solana 地址转出 SPL Token
+6. 如果用户 ATA 不存在，Relayer 自动创建
 
-### 1. Deploy on BSC
+## 部署
+
+### 1. 编译合约
 ```bash
-npx hardhat run scripts/deployBridge.ts --network bsc
+npm run bridge:compile
 ```
-- Deploys CNovaBridge (no wrapped token needed on BSC)
-- Note the bridge address → set `VITE_BRIDGE_BSC`
 
-### 2. Deploy on opBNB
+### 2. 部署到各链
 ```bash
-npx hardhat run scripts/deployBridge.ts --network opbnb
+npm run bridge:deploy:bsc
+npm run bridge:deploy:arb
+# Ethereum 同理
 ```
-- Deploys CNovaBridge + CNovaWrappedToken
-- Sets bridge as minter on wrapped token
-- Note addresses → set `VITE_BRIDGE_OPBNB` and `VITE_WRAPPED_FORGAI_OPBNB`
 
-### 3. Deploy on Arbitrum
+### 3. 配置路由
 ```bash
-npx hardhat run scripts/deployBridge.ts --network arbitrum
+npm run bridge:config:bsc
+npm run bridge:config:arb
 ```
-- Same as opBNB
-- Set `VITE_BRIDGE_ARBITRUM` and `VITE_WRAPPED_FORGAI_ARBITRUM`
 
-### 4. Configure Routes
+### 4. 设置环境变量
+参考 `.env.example` 设置所有 `VITE_*` 和后端变量。
 
-On BSC:
+### 5. 启动服务
 ```bash
-TARGET_WRAPPED_TOKEN=<opbnb wrapped addr> npx hardhat run scripts/configureRoutes.ts --network bsc
+npm run bridge:watch:solana   # Solana → EVM 方向
+npm run bridge:relayer        # EVM → Solana / EVM→EVM 方向
 ```
 
-On opBNB:
-```bash
-npx hardhat run scripts/configureRoutes.ts --network opbnb
-```
+## 安全风险与当前信任模型
 
-On Arbitrum:
-```bash
-npx hardhat run scripts/configureRoutes.ts --network arbitrum
-```
+⚠️ **这是 Custodial MVP，不是去中心化桥。**
 
-## Testing: BSC → opBNB
+- Solana → EVM 方向：用户将 SPL Token 转入项目控制的 Vault ATA，依赖 Relayer 诚实铸币
+- EVM → Solana 方向：用户 burn wrapped token，依赖 Relayer 诚实从 Vault 转出
+- Vault 私钥 = 单点信任，如私钥泄露可导致资金损失
+- 无 on-chain 验证，无多签，无时间锁
+- **仅用于测试/MVP 阶段，不要桥接大额资金**
 
-1. Set env vars in `.env`
-2. Start relayer: `npm run bridge:relayer`
-3. Open the app and navigate to Bridge
-4. Connect MetaMask with BSC network
-5. Enter amount, click Approve, then Bridge
-6. Relayer picks up the event and mints on opBNB
-7. Check opBNB explorer for the wrapped token balance
+未来路线：
+- 引入多签 Vault
+- Solana on-chain program 做 escrow
+- EVM 端增加时间锁和争议机制
 
-## Testing: BSC → Arbitrum
+## 持久化
 
-Same as above but select Arbitrum as target chain.
+Relayer 和 Watcher 使用本地 JSON 文件持久化：
+- `bridge-state.json` — Solana Watcher 状态
+- `bridge-evm-state.json` — EVM Relayer 状态
 
-## Relayer
+包含：
+- `processedSolanaSignatures` / `processedEvmTransferIds` — 防重放
+- `lastScannedSlot` / `lastScannedBlock` — 断点续扫
+- `pendingFailed` — 失败任务记录
 
-```bash
-npm run bridge:relayer
-```
+## 文件清单
 
-Required env vars:
-- `SOURCE_RPC_URL` — BSC RPC
-- `TARGET_RPC_URL` — target chain RPC
-- `RELAYER_PRIVATE_KEY` — pays gas on target chain
-- `VALIDATOR_PRIVATE_KEY` — signs bridge messages
-- `SOURCE_BRIDGE` — bridge contract on BSC
-- `TARGET_BRIDGE` — bridge contract on target chain
-- `SOURCE_TOKEN` — FORGAI address on BSC
-- `TARGET_WRAPPED_TOKEN` — wFORGAI address on target
-
-## Common Errors
-
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `RouteNotActive` | Route not configured | Run `configureRoutes.ts` |
-| `InsufficientFee` | Flat fee not paid | Check `flatFeeWei` setting |
-| `InvalidSignature` | Wrong validator key | Ensure validator address matches key |
-| `TransferAlreadyProcessed` | Duplicate relay | Normal — relayer already processed this |
-| `OnlyBridge` | Wrong bridge on wrapped token | Run `setBridge()` on wrapped token |
-
-## Rollback
-
-To revert the bridge page to the original Solana/Wormhole version:
-1. Check out the previous commit of `client/src/pages/Bridge.tsx`
-2. The old wormhole.ts and bridge history logic is still in the codebase
-3. No other pages were modified
-
-## Files Changed
-
-| File | Purpose |
-|------|---------|
-| `client/src/pages/Bridge.tsx` | EVM bridge UI |
-| `client/src/lib/evmBridge.ts` | viem-based bridge library |
-| `client/src/types/ethereum.d.ts` | Window.ethereum types |
-| `contracts/CNovaBridge.sol` | Bridge contract |
+| 文件 | 用途 |
+|------|------|
+| `client/src/pages/Bridge.tsx` | Bridge v3 双向 UI |
+| `client/src/lib/solanaBridge.ts` | Solana SPL 存款逻辑 |
+| `client/src/lib/evmBridge.ts` | EVM wrapped token 操作 |
+| `client/src/lib/bridgeRouter.ts` | 统一路由层 |
+| `contracts/CNovaBridge.sol` | EVM Bridge 合约 |
 | `contracts/CNovaWrappedToken.sol` | Wrapped ERC20 token |
-| `hardhat.config.cts` | Hardhat configuration |
-| `scripts/deployBridge.ts` | Deployment script |
-| `scripts/configureRoutes.ts` | Route configuration script |
-| `server/bridge-relayer.ts` | Event listener + relayer |
+| `hardhat.config.cts` | Hardhat 配置 |
+| `scripts/deployBridge.ts` | 部署脚本 |
+| `scripts/configureRoutes.ts` | 路由配置脚本 |
+| `server/solana-watcher.ts` | Solana Vault 入账监听 |
+| `server/bridge-relayer.ts` | EVM 事件监听 + 双向 Relayer |
