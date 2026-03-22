@@ -253,7 +253,8 @@ export async function bridgeToSolana(params: {
 }): Promise<BridgeResult> {
   const fromConfig = EVM_CHAINS[params.fromChainKey];
   if (!fromConfig) throw new Error("Invalid source chain");
-  if (!fromConfig.wrappedToken) throw new Error("Wrapped token not configured for this chain");
+  const sourceToken = getSourceTokenForChain(params.fromChainKey);
+  if (!sourceToken) throw new Error("Source token not configured for this chain");
   if (fromConfig.bridgeAddress === "0x0000000000000000000000000000000000000000") {
     throw new Error("Bridge contract not configured");
   }
@@ -272,7 +273,7 @@ export async function bridgeToSolana(params: {
     address: fromConfig.bridgeAddress,
     abi: BRIDGE_ABI,
     functionName: "bridgeOut",
-    args: [fromConfig.wrappedToken, amountWei, SOLANA_CHAIN_ID, recipientBytes32],
+    args: [sourceToken, amountWei, SOLANA_CHAIN_ID, recipientBytes32],
     value: fee,
     account,
     chain: getViemChain(fromConfig),
