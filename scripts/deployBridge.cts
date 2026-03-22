@@ -1,5 +1,5 @@
-import { ethers } from "hardhat";
-import "dotenv/config";
+const { ethers } = require("hardhat");
+require("dotenv/config");
 
 const CHAIN_LABELS: Record<number, string> = {
   56: "BSC",
