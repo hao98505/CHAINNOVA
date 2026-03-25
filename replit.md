@@ -49,10 +49,10 @@ Bidirectional custodial MVP bridge for ForgAI token between Solana and 3 EVM cha
 - **Solana Mint**: `6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump`
 - **EVM Chains**: BSC (56), Arbitrum (42161), Ethereum (1)
 - **Solana Chain ID (EVM placeholder)**: 999999999
-- **Model**: Custodial vault on Solana, lock/mint on EVM
+- **Model**: EVM↔EVM lock/mint bridge (Solana direction disabled — upgrading to wrapped SPL)
 - **Contracts**: `contracts/CNovaBridge.sol`, `contracts/CNovaWrappedToken.sol`
-- **Frontend**: `client/src/pages/Bridge.tsx`, `client/src/lib/solanaBridge.ts`, `client/src/lib/evmBridge.ts`, `client/src/lib/bridgeRouter.ts`
-- **Backend**: `server/solana-watcher.ts` (Solana→EVM), `server/bridge-relayer.ts` (EVM→Solana), `server/evm-evm-relayer.ts` (EVM↔EVM auto-relay)
+- **Frontend**: `client/src/pages/Bridge.tsx`, `client/src/lib/evmBridge.ts`, `client/src/lib/bridgeRouter.ts`
+- **Backend**: `server/evm-evm-relayer.ts` (EVM↔EVM auto-relay); `server/solana-watcher.ts` / `server/bridge-relayer.ts` (disabled, pending Phase 1 rewrite)
 - **Compilation**: `npm run bridge:compile` or `TS_NODE_PROJECT=tsconfig.hardhat.json npx hardhat compile`
 - **Docs**: `docs/bridge-v2.md`
 
