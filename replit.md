@@ -52,9 +52,22 @@ Bidirectional custodial MVP bridge for ForgAI token between Solana and 3 EVM cha
 - **Model**: Custodial vault on Solana, lock/mint on EVM
 - **Contracts**: `contracts/CNovaBridge.sol`, `contracts/CNovaWrappedToken.sol`
 - **Frontend**: `client/src/pages/Bridge.tsx`, `client/src/lib/solanaBridge.ts`, `client/src/lib/evmBridge.ts`, `client/src/lib/bridgeRouter.ts`
-- **Backend**: `server/solana-watcher.ts` (Solana→EVM), `server/bridge-relayer.ts` (EVM→Solana)
+- **Backend**: `server/solana-watcher.ts` (Solana→EVM), `server/bridge-relayer.ts` (EVM→Solana), `server/evm-evm-relayer.ts` (EVM↔EVM auto-relay)
 - **Compilation**: `npm run bridge:compile` or `TS_NODE_PROJECT=tsconfig.hardhat.json npx hardhat compile`
 - **Docs**: `docs/bridge-v2.md`
+
+#### EVM↔EVM Bridge (Verified On-Chain)
+Three-chain EVM bridge fully deployed and tested with real tokens:
+- **Bridge Contract** (all 3 chains): `0x49daa7A1109d061BF67b56676def0Bc439289Cb8`
+- **ARB/ETH Wrapped Token**: `0x1452280dDa6Fa4C815f95B06cc15d429aEb0d917`
+- **BSC ForgAI (native)**: `0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff`
+- **Deployer/Owner/Validator**: `0x31bF8708f2E7Bd9eefa57557be8100057132f3eC`
+- **Relayer**: `server/evm-evm-relayer.ts` — polling-based (10s interval), uses publicnode RPCs for BSC/ETH
+- **Test script**: `scripts/test-bridge-bsc-to-arb.cjs`
+- **Verified**: BSC→ARB automated relay tested with 4 real ForgAI tokens (4.0 Wrapped ForgAI on Arbitrum)
+
+#### BSC↔Solana Bridge (Blocked)
+Solana SPL ForgAI mint authority is destroyed — cannot mint new SPL tokens. Needs a new wrapped SPL model with a fresh mint authority held by a Solana bridge program.
 
 #### Bridge Environment Variables
 Frontend (Vite):
