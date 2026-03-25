@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
-import { useWallet } from "@solana/wallet-adapter-react";
 import {
   connectBridgeWallet,
   switchBridgeChain,
@@ -15,17 +14,13 @@ import {
   getSourceTokenForChain,
 } from "@/lib/evmBridge";
 import {
-  getSolanaTokenBalance,
-  SOLANA_MINT,
-  type SolanaWalletAdapter,
-} from "@/lib/solanaBridge";
-import {
   ALL_CHAINS,
   getBridgeDirection,
   getValidTargets,
+  getSelectableSourceChains,
+  isChainDisabled,
   quoteBridge,
-  executeSolanaBridge,
-  executeEvmToSolanaBridge,
+  executeEvmToEvmBridge,
   type ChainKey,
 } from "@/lib/bridgeRouter";
 import type { Address } from "viem";
@@ -42,20 +37,17 @@ import {
   Info,
   ArrowDownUp,
   Globe,
-  Link2,
+  Construction,
 } from "lucide-react";
 
 type BridgeStatus = "idle" | "switching" | "approving" | "bridging" | "complete";
 
 const AMOUNT_PRESETS = [100, 500, 1000, 5000];
 
-const SOLANA_MINT_FULL = "6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump";
 const BSC_TOKEN_FULL = "0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff";
 
 function getSourceTokenDisplay(chain: ChainKey): { label: string; address: string; short: string } | null {
-  if (chain === "solana") {
-    return { label: "Solana Mint", address: SOLANA_MINT_FULL, short: "6ZcR1K...pump" };
-  }
+  if (isChainDisabled(chain)) return null;
   if (chain === "bsc") {
     return { label: "BSC Token", address: BSC_TOKEN_FULL, short: "0x3e9f...ffff" };
   }
@@ -70,34 +62,30 @@ function getSourceTokenDisplay(chain: ChainKey): { label: string; address: strin
 export default function Bridge() {
   const { toast } = useToast();
   const { t } = useLanguage();
-  const solanaWallet = useWallet();
 
-  const [sourceChain, setSourceChain] = useState<ChainKey>("solana");
-  const [targetChain, setTargetChain] = useState<ChainKey>("bsc");
+  const [sourceChain, setSourceChain] = useState<ChainKey>("bsc");
+  const [targetChain, setTargetChain] = useState<ChainKey>("arbitrum");
   const [amount, setAmount] = useState("");
   const [recipient, setRecipient] = useState("");
   const [status, setStatus] = useState<BridgeStatus>("idle");
   const [bridgeResult, setBridgeResult] = useState<{ txHash: string; explorerUrl: string } | null>(null);
   const [balance, setBalance] = useState("0");
-  const [decimals, setDecimals] = useState(6);
+  const [decimals, setDecimals] = useState(18);
   const [allowance, setAllowance] = useState("0");
   const [evmAddress, setEvmAddress] = useState<Address | null>(null);
   const [loadingMeta, setLoadingMeta] = useState(false);
 
   const direction = getBridgeDirection(sourceChain, targetChain);
-  const isSolanaSource = sourceChain === "solana";
-  const isEvmSource = !isSolanaSource;
-  const solanaConnected = !!solanaWallet.publicKey;
-  const evmConnected = !!evmAddress;
-  const connected = isSolanaSource ? solanaConnected : evmConnected;
+  const connected = !!evmAddress;
 
   const parsedAmount = parseFloat(amount) || 0;
   const parsedBalance = parseFloat(balance) || 0;
   const parsedAllowance = parseFloat(allowance) || 0;
   const insufficientBalance = parsedAmount > parsedBalance;
-  const needsApproval = isEvmSource && parsedAmount > 0 && parsedAmount > parsedAllowance;
+  const needsApproval = parsedAmount > 0 && parsedAmount > parsedAllowance;
 
   const validTargets = getValidTargets(sourceChain);
+  const selectableSources = getSelectableSourceChains();
 
   const quote = useMemo(
     () => (parsedAmount > 0 && direction ? quoteBridge(amount, sourceChain, targetChain) : null),
@@ -110,40 +98,34 @@ export default function Bridge() {
 
   useEffect(() => {
     if (!validTargets.includes(targetChain)) {
-      setTargetChain(validTargets[0]);
+      setTargetChain(validTargets[0] || "arbitrum");
     }
   }, [sourceChain, validTargets, targetChain]);
 
   const loadBalance = useCallback(async () => {
+    if (!evmAddress) return;
     setLoadingMeta(true);
     try {
-      if (isSolanaSource && solanaWallet.publicKey) {
-        const info = await getSolanaTokenBalance(solanaWallet.publicKey);
-        setBalance(info.balance);
-        setDecimals(info.decimals);
-        setAllowance("999999999");
-      } else if (isEvmSource && evmAddress) {
-        const sourceToken = getSourceTokenForChain(sourceChain);
-        if (sourceToken) {
-          const bal = await getEvmTokenBalance(sourceChain, sourceToken, evmAddress);
-          setBalance(bal);
-          setDecimals(18);
-          const config = EVM_CHAINS[sourceChain];
-          if (config) {
-            const allow = await getAllowance(sourceChain, sourceToken, evmAddress, config.bridgeAddress);
-            setAllowance(allow);
-          }
-        } else {
-          setBalance("0");
-          setAllowance("0");
+      const sourceToken = getSourceTokenForChain(sourceChain);
+      if (sourceToken) {
+        const bal = await getEvmTokenBalance(sourceChain, sourceToken, evmAddress);
+        setBalance(bal);
+        setDecimals(18);
+        const config = EVM_CHAINS[sourceChain];
+        if (config) {
+          const allow = await getAllowance(sourceChain, sourceToken, evmAddress, config.bridgeAddress);
+          setAllowance(allow);
         }
+      } else {
+        setBalance("0");
+        setAllowance("0");
       }
     } catch (err: any) {
       console.warn("Failed to load balance:", err.message);
     } finally {
       setLoadingMeta(false);
     }
-  }, [isSolanaSource, isEvmSource, solanaWallet.publicKey, evmAddress, sourceChain]);
+  }, [evmAddress, sourceChain]);
 
   useEffect(() => {
     if (connected) loadBalance();
@@ -203,34 +185,21 @@ export default function Bridge() {
   };
 
   const handleBridge = async () => {
-    if (!direction) return;
+    if (!direction || direction !== "evm-to-evm") return;
+    if (!evmAddress) return;
     setStatus("bridging");
     try {
-      if (direction === "solana-to-evm") {
-        if (!solanaWallet.publicKey) throw new Error("Solana wallet not connected");
-        const recipientAddr = recipient || evmAddress || "";
-        if (!recipientAddr) throw new Error("Please enter a target EVM address");
-        const result = await executeSolanaBridge({
-          wallet: solanaWallet as unknown as SolanaWalletAdapter,
-          amount,
-          decimals,
-          targetChain,
-          recipientEvmAddress: recipientAddr,
-        });
-        setBridgeResult({ txHash: result.txHash, explorerUrl: result.explorerUrl });
-      } else {
-        if (!evmAddress) throw new Error("EVM wallet not connected");
-        const recipientAddr = recipient || (solanaWallet.publicKey?.toBase58() || "");
-        if (!recipientAddr) throw new Error("Please enter a target Solana address");
-        await switchBridgeChain(sourceChain);
-        const result = await executeEvmToSolanaBridge({
-          fromChainKey: sourceChain,
-          amount,
-          decimals,
-          recipientSolanaAddress: recipientAddr,
-        });
-        setBridgeResult({ txHash: result.txHash, explorerUrl: result.explorerUrl });
-      }
+      const recipientAddr = recipient || evmAddress;
+      if (!recipientAddr) throw new Error("Please enter a target EVM address");
+      await switchBridgeChain(sourceChain);
+      const result = await executeEvmToEvmBridge({
+        fromChainKey: sourceChain,
+        toChainKey: targetChain,
+        amount,
+        decimals,
+        recipientEvmAddress: recipientAddr,
+      });
+      setBridgeResult({ txHash: result.txHash, explorerUrl: result.explorerUrl });
       setStatus("complete");
       toast({ title: "Bridge Initiated!", description: `${amount} ForgAI → ${ALL_CHAINS[targetChain].shortName}` });
       await loadBalance();
@@ -266,18 +235,18 @@ export default function Bridge() {
       <div className="max-w-2xl mx-auto">
         <div className="mb-6">
           <h1 className="font-orbitron text-2xl font-black uppercase tracking-wider text-foreground neon-glow-text mb-1" data-testid="text-bridge-title">
-            Bridge v3 · Solana ↔ EVM
+            ForgAI Cross-Chain Bridge
           </h1>
           <p className="text-sm text-muted-foreground tracking-wide">
-            ForgAI 跨链桥 — Solana / BSC / Arbitrum / Ethereum
+            EVM Cross-Chain Bridge — BSC / Arbitrum / Ethereum
           </p>
         </div>
 
         <div className="grid grid-cols-3 gap-3 mb-6">
           {[
-            { icon: Shield, label: "Custodial MVP", color: "text-green-400" },
-            { icon: Zap, label: "Fast Settlement", color: "text-yellow-400" },
-            { icon: Globe, label: "4 Chains", color: "text-blue-400" },
+            { icon: Shield, label: "On-Chain Verified", color: "text-green-400" },
+            { icon: Zap, label: "Auto Relay", color: "text-yellow-400" },
+            { icon: Globe, label: "3 EVM Chains", color: "text-blue-400" },
           ].map((item, i) => (
             <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.08 }}
               className="glass-card rounded-md border border-primary/15 p-3 text-center">
@@ -287,18 +256,23 @@ export default function Bridge() {
           ))}
         </div>
 
+        <div className="glass-card rounded-md border border-yellow-500/30 p-3 mb-4 flex items-start gap-2" data-testid="banner-solana-upgrading">
+          <Construction className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
+          <div className="text-sm text-yellow-400/90 leading-relaxed">
+            <span className="font-semibold">Solana Bridge Upgrading</span> — Solana direction is temporarily disabled while we migrate to the new wrapped SPL (wFORGAI) model. EVM↔EVM bridging remains fully operational.
+          </div>
+        </div>
+
         <div className="glass-card rounded-md border border-primary/20 p-3 mb-4 flex items-start gap-2">
           <Info className="w-4 h-4 text-primary/70 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-muted-foreground leading-relaxed">
-            <span className="text-primary font-semibold">Bridge v3</span> 支持 Solana ↔ EVM 双向桥接。当前源链测试代币：
+            <span className="text-primary font-semibold">EVM Bridge</span> supports BSC ↔ Arbitrum ↔ Ethereum with auto-relay.
             {sourceTokenInfo ? (
               <button onClick={() => copyToClipboard(sourceTokenInfo.address)}
                 className="font-mono text-sm text-primary/90 ml-1 hover:text-primary transition-colors inline-flex items-center gap-1" data-testid="button-copy-token">
-                {sourceTokenInfo.label}：{sourceTokenInfo.short} <Copy className="w-3 h-3 inline" />
+                {sourceTokenInfo.label}: {sourceTokenInfo.short} <Copy className="w-3 h-3 inline" />
               </button>
-            ) : (
-              <span className="text-yellow-400 text-sm ml-1">未配置</span>
-            )}
+            ) : null}
           </div>
         </div>
 
@@ -309,14 +283,27 @@ export default function Bridge() {
                 <div className="flex-1">
                   <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-1.5 text-center">Source</div>
                   <div className="flex flex-wrap gap-1.5 justify-center">
-                    {allChainKeys.map((chain) => (
-                      <button key={chain} onClick={() => setSourceChain(chain)} data-testid={`button-source-${chain}`}
-                        className={`px-3 py-1.5 rounded border text-sm font-semibold tracking-wide uppercase transition-all ${
-                          sourceChain === chain ? "bg-primary/30 border-primary/60 text-primary" : "border-border/40 text-muted-foreground/80 hover:border-primary/30"
-                        }`}>
-                        {ALL_CHAINS[chain].shortName}
-                      </button>
-                    ))}
+                    {allChainKeys.map((chain) => {
+                      const disabled = isChainDisabled(chain);
+                      const isSelected = sourceChain === chain;
+                      return (
+                        <button
+                          key={chain}
+                          onClick={() => !disabled && setSourceChain(chain)}
+                          disabled={disabled}
+                          data-testid={`button-source-${chain}`}
+                          className={`px-3 py-1.5 rounded border text-sm font-semibold tracking-wide uppercase transition-all ${
+                            disabled
+                              ? "border-border/20 text-muted-foreground/30 cursor-not-allowed line-through"
+                              : isSelected
+                                ? "bg-primary/30 border-primary/60 text-primary"
+                                : "border-border/40 text-muted-foreground/80 hover:border-primary/30"
+                          }`}>
+                          {ALL_CHAINS[chain].shortName}
+                          {disabled && <Construction className="w-3 h-3 inline ml-1 text-yellow-400/50" />}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
                 <ArrowRight className="w-5 h-5 text-primary flex-shrink-0" />
@@ -350,17 +337,11 @@ export default function Bridge() {
                   <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center mx-auto mb-3">
                     <Wallet className="w-7 h-7 text-primary/60" />
                   </div>
-                  {isSolanaSource ? (
-                    <p className="text-muted-foreground text-sm mb-3">请使用顶部钱包按钮连接 Phantom / Solflare</p>
-                  ) : (
-                    <>
-                      <p className="text-muted-foreground text-sm mb-3">使用 MetaMask 连接到 {ALL_CHAINS[sourceChain].name}</p>
-                      <Button onClick={handleConnectEvm} className="text-sm tracking-wide uppercase gap-2"
-                        data-testid="button-connect-evm" style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)" }}>
-                        <Wallet className="w-4 h-4" /> Connect EVM Wallet
-                      </Button>
-                    </>
-                  )}
+                  <p className="text-muted-foreground text-sm mb-3">Connect MetaMask to {ALL_CHAINS[sourceChain].name}</p>
+                  <Button onClick={handleConnectEvm} className="text-sm tracking-wide uppercase gap-2"
+                    data-testid="button-connect-evm" style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)" }}>
+                    <Wallet className="w-4 h-4" /> Connect EVM Wallet
+                  </Button>
                 </div>
               )}
 
@@ -369,7 +350,7 @@ export default function Bridge() {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-muted-foreground uppercase tracking-wide">Connected</span>
                     <span className="font-mono text-sm text-primary">
-                      {isSolanaSource ? truncAddr(solanaWallet.publicKey!.toBase58()) : truncAddr(evmAddress!)}
+                      {truncAddr(evmAddress!)}
                     </span>
                   </div>
                   <div>
@@ -396,16 +377,16 @@ export default function Bridge() {
                   {insufficientBalance && parsedAmount > 0 && (
                     <div className="flex items-center gap-2 p-2 rounded-md bg-red-500/10 border border-red-500/30">
                       <AlertTriangle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
-                      <span className="text-sm text-red-400 font-medium">余额不足</span>
+                      <span className="text-sm text-red-400 font-medium" data-testid="text-insufficient-balance">Insufficient balance</span>
                     </div>
                   )}
 
                   <div>
                     <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground block mb-1.5">
-                      {isSolanaSource ? "目标 EVM 地址 (必填)" : "目标 Solana 地址 (必填)"}
+                      Target EVM Address (optional, defaults to connected wallet)
                     </label>
                     <Input value={recipient} onChange={(e) => setRecipient(e.target.value)}
-                      placeholder={isSolanaSource ? "0x..." : "Base58 Solana address"}
+                      placeholder="0x... (leave empty to use connected wallet)"
                       className="cyber-input font-mono text-base" data-testid="input-bridge-recipient" />
                   </div>
                 </div>
@@ -435,7 +416,7 @@ export default function Bridge() {
               <div className="flex items-start gap-2 p-3 rounded-md bg-yellow-500/5 border border-yellow-500/20">
                 <Info className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-yellow-400/90 leading-relaxed">
-                  需要先授权 (Approve) Bridge 合约使用你的 wrapped token。
+                  Approve the Bridge contract to use your ForgAI tokens first.
                 </p>
               </div>
             )}
@@ -470,7 +451,7 @@ export default function Bridge() {
             <div>
               <div className="font-orbitron text-lg font-bold text-foreground uppercase tracking-wider mb-1">Bridge Initiated!</div>
               <p className="text-sm text-muted-foreground">{amount} ForgAI → {ALL_CHAINS[targetChain].name}</p>
-              <p className="text-sm text-muted-foreground/80 mt-1">Relayer 将在几分钟内完成目标链铸币/释放</p>
+              <p className="text-sm text-muted-foreground/80 mt-1">Relayer will auto-complete the transfer on {ALL_CHAINS[targetChain].name}</p>
             </div>
             <div className="p-3 rounded-md bg-primary/5 border border-primary/15 space-y-2 text-left">
               <div className="flex justify-between items-center">
@@ -487,41 +468,26 @@ export default function Bridge() {
             </div>
             <Button onClick={resetBridge} className="w-full text-sm tracking-wide uppercase gap-2"
               data-testid="button-bridge-again" style={{ background: "linear-gradient(135deg, #6B46C1, #4C1D95)" }}>
-              <ArrowDownUp className="w-4 h-4" /> Bridge Again
+              <RotateCcw className="w-4 h-4" /> Bridge Again
             </Button>
           </motion.div>
         )}
 
-        <div className="mt-6 glass-card rounded-md border border-primary/10 p-4">
-          <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Supported Routes</div>
-          <div className="space-y-2">
-            {[
-              { from: "Solana", to: "BSC", mode: "Custodial", eta: "~2-5 min" },
-              { from: "Solana", to: "Arbitrum", mode: "Custodial", eta: "~3-7 min" },
-              { from: "Solana", to: "Ethereum", mode: "Custodial", eta: "~5-15 min" },
-              { from: "BSC", to: "Solana", mode: "Custodial", eta: "~2-5 min" },
-              { from: "Arbitrum", to: "Solana", mode: "Custodial", eta: "~3-7 min" },
-              { from: "Ethereum", to: "Solana", mode: "Custodial", eta: "~5-15 min" },
-            ].map((route, i) => (
-              <div key={i} className="flex items-center justify-between py-2 border-b border-border/20 last:border-0">
-                <div className="flex items-center gap-2">
-                  <Link2 className="w-3 h-3 text-primary/60" />
-                  <span className="text-sm text-foreground">{route.from} → {route.to}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-sm text-muted-foreground uppercase">{route.mode}</span>
-                  <span className="text-sm text-green-400 font-medium">{route.eta}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-4 glass-card rounded-md border border-yellow-500/20 p-3 flex items-start gap-2">
-          <AlertTriangle className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
-          <p className="text-sm text-yellow-400/80 leading-relaxed">
-            当前为 Custodial MVP 版本，资金由项目方 Vault 托管。请仅用于测试用途，不要桥接大额资金。
-          </p>
+        <div className="mt-6 glass-card rounded-md border border-primary/10 p-4 space-y-2">
+          <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Contract Addresses</div>
+          {[
+            { label: "Bridge (all chains)", value: "0x49daa7A1109d061BF67b56676def0Bc439289Cb8" },
+            { label: "BSC ForgAI", value: BSC_TOKEN_FULL },
+            { label: "ARB/ETH wForgAI", value: "0x1452280dDa6Fa4C815f95B06cc15d429aEb0d917" },
+          ].map(({ label, value }) => (
+            <div key={label} className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">{label}</span>
+              <button onClick={() => copyToClipboard(value)}
+                className="font-mono text-sm text-primary/80 hover:text-primary transition-colors flex items-center gap-1" data-testid={`button-copy-${label.toLowerCase().replace(/[^a-z]/g, '-')}`}>
+                {value.slice(0, 8)}...{value.slice(-4)} <Copy className="w-3 h-3" />
+              </button>
+            </div>
+          ))}
         </div>
       </div>
     </div>

@@ -245,44 +245,13 @@ export async function getBridgeFee(chainKey: string): Promise<bigint> {
   }
 }
 
-export async function bridgeToSolana(params: {
+export async function bridgeToSolana(_params: {
   fromChainKey: string;
   amount: string;
   decimals: number;
   recipientSolanaAddress: string;
 }): Promise<BridgeResult> {
-  const fromConfig = EVM_CHAINS[params.fromChainKey];
-  if (!fromConfig) throw new Error("Invalid source chain");
-  const sourceToken = getSourceTokenForChain(params.fromChainKey);
-  if (!sourceToken) throw new Error("Source token not configured for this chain");
-  if (fromConfig.bridgeAddress === "0x0000000000000000000000000000000000000000") {
-    throw new Error("Bridge contract not configured");
-  }
-
-  await switchBridgeChain(params.fromChainKey);
-
-  const walletClient = getWalletClient(params.fromChainKey);
-  const [account] = await walletClient.getAddresses();
-  const amountWei = parseUnits(params.amount, params.decimals);
-  const recipientBytes32 = solanaAddressToBytes32(params.recipientSolanaAddress);
-  const fee = await getBridgeFee(params.fromChainKey);
-
-  const SOLANA_CHAIN_ID = BigInt(999999999);
-
-  const hash = await walletClient.writeContract({
-    address: fromConfig.bridgeAddress,
-    abi: BRIDGE_ABI,
-    functionName: "bridgeOut",
-    args: [sourceToken, amountWei, SOLANA_CHAIN_ID, recipientBytes32],
-    value: fee,
-    account,
-    chain: getViemChain(fromConfig),
-  });
-
-  return {
-    txHash: hash,
-    explorerUrl: `${fromConfig.explorerUrl}/tx/${hash}`,
-  };
+  throw new Error("Solana bridge is upgrading to wrapped SPL model. EVM→Solana transfers are disabled. Please use EVM↔EVM bridge.");
 }
 
 export function getWrappedTokenForChain(chainKey: string): Address | undefined {
@@ -296,4 +265,47 @@ export function getSourceTokenForChain(chainKey: string): Address | undefined {
     return (import.meta.env.VITE_BSC_TOKEN || "0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff") as Address;
   }
   return config.wrappedToken;
+}
+
+export async function bridgeEvmToEvm(params: {
+  fromChainKey: string;
+  toChainKey: string;
+  amount: string;
+  decimals: number;
+  recipientAddress: string;
+}): Promise<BridgeResult> {
+  const fromConfig = EVM_CHAINS[params.fromChainKey];
+  const toConfig = EVM_CHAINS[params.toChainKey];
+  if (!fromConfig) throw new Error("Invalid source chain");
+  if (!toConfig) throw new Error("Invalid target chain");
+  const sourceToken = getSourceTokenForChain(params.fromChainKey);
+  if (!sourceToken) throw new Error("Source token not configured for this chain");
+  if (fromConfig.bridgeAddress === "0x0000000000000000000000000000000000000000") {
+    throw new Error("Bridge contract not configured");
+  }
+
+  await switchBridgeChain(params.fromChainKey);
+
+  const walletClient = getWalletClient(params.fromChainKey);
+  const [account] = await walletClient.getAddresses();
+  const amountWei = parseUnits(params.amount, params.decimals);
+  const recipientBytes32 = evmAddressToBytes32(getAddress(params.recipientAddress) as Address);
+  const fee = await getBridgeFee(params.fromChainKey);
+
+  const targetChainId = BigInt(toConfig.id);
+
+  const hash = await walletClient.writeContract({
+    address: fromConfig.bridgeAddress,
+    abi: BRIDGE_ABI,
+    functionName: "bridgeOut",
+    args: [sourceToken, amountWei, targetChainId, recipientBytes32],
+    value: fee,
+    account,
+    chain: getViemChain(fromConfig),
+  });
+
+  return {
+    txHash: hash,
+    explorerUrl: `${fromConfig.explorerUrl}/tx/${hash}`,
+  };
 }
