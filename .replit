@@ -30,6 +30,10 @@ author = "agent"
 task = "workflow.run"
 args = "Start application"
 
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "EVM Bridge Relayer"
+
 [[workflows.workflow]]
 name = "Start application"
 author = "agent"
@@ -38,6 +42,17 @@ author = "agent"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[[workflows.workflow]]
+name = "EVM Bridge Relayer"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npx tsx server/evm-evm-relayer.ts"
+
+[workflows.workflow.metadata]
+outputType = "console"
 
 [userenv]
 
@@ -68,5 +83,5 @@ SOURCE_TOKEN = "0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff"
 WRAPPED_FORGAI_BSC = "0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff"
 BSC_RPC_URL = "https://bsc-dataseed1.binance.org"
 ARBITRUM_RPC_URL = "https://arb1.arbitrum.io/rpc"
-ETHEREUM_RPC_URL = "https://eth.llamarpc.com"
+ETHEREUM_RPC_URL = "https://ethereum-rpc.publicnode.com"
 SOURCE_TOKEN_BSC = "0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff"
