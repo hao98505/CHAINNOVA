@@ -11,7 +11,7 @@ import * as fs from "fs";
 const SOURCE_RPC_URL = process.env.SOURCE_RPC_URL;
 const SOURCE_BRIDGE = process.env.SOURCE_BRIDGE as Address;
 const SOURCE_TOKEN = process.env.SOURCE_TOKEN as Address;
-const RELAYER_PRIVATE_KEY = process.env.RELAYER_PRIVATE_KEY;
+const RELAYER_PRIVATE_KEY = process.env.RELAYER_PRIVATE_KEY || process.env.PRIVATE_KEY;
 const STATE_FILE = process.env.STATE_FILE_PATH || "./bridge-evm-state.json";
 
 const SOLANA_RPC = process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
@@ -273,12 +273,21 @@ async function catchUpScan(state: RelayerState): Promise<void> {
     return;
   }
 
-  console.log(`[回补] 扫描区间: ${fromBlock} → ${latestBlock} (共 ${latestBlock - fromBlock + BigInt(1)} 块)`);
+  const gap = latestBlock - fromBlock + BigInt(1);
+  console.log(`[回补] 扫描区间: ${fromBlock} → ${latestBlock} (共 ${gap} 块)`);
 
-  const BATCH_SIZE = BigInt(100);
+  const BATCH_SIZE = BigInt(5);
   let cursor = fromBlock;
+  let consecutiveErrors = 0;
 
   while (cursor <= latestBlock) {
+    if (consecutiveErrors >= 3) {
+      console.log(`[回补] 连续 ${consecutiveErrors} 次 getLogs 失败（RPC 限制），跳到最新块`);
+      state.lastScannedBlock = Number(latestBlock);
+      saveState(state);
+      break;
+    }
+
     const batchEnd = cursor + BATCH_SIZE - BigInt(1) > latestBlock
       ? latestBlock
       : cursor + BATCH_SIZE - BigInt(1);
@@ -290,6 +299,8 @@ async function catchUpScan(state: RelayerState): Promise<void> {
         fromBlock: cursor,
         toBlock: batchEnd,
       });
+
+      consecutiveErrors = 0;
 
       if (logs.length > 0) {
         console.log(`[回补] 区间 ${cursor}-${batchEnd} 发现 ${logs.length} 笔事件`);
@@ -309,7 +320,10 @@ async function catchUpScan(state: RelayerState): Promise<void> {
         );
       }
     } catch (err: any) {
-      console.error(`[回补错误] 区间 ${cursor}-${batchEnd}: ${err.message}`);
+      consecutiveErrors++;
+      if (consecutiveErrors === 1) {
+        console.error(`[回补错误] 区间 ${cursor}-${batchEnd}: ${err.message}`);
+      }
     }
 
     state.lastScannedBlock = Number(batchEnd);

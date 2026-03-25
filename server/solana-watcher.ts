@@ -17,7 +17,7 @@ import * as fs from "fs";
 const SOLANA_RPC = process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
 const SOLANA_VAULT_ATA = process.env.SOLANA_VAULT_ATA;
 const SOLANA_MINT = process.env.SOLANA_MINT || "6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump";
-const RELAYER_PRIVATE_KEY = process.env.RELAYER_PRIVATE_KEY as `0x${string}`;
+const RELAYER_PRIVATE_KEY = (process.env.RELAYER_PRIVATE_KEY || process.env.PRIVATE_KEY) as `0x${string}`;
 const STATE_FILE = process.env.STATE_FILE_PATH || "./bridge-state.json";
 
 const CHAIN_CONFIG: Record<string, { rpc: string; bridge: Address; targetToken: Address }> = {};
@@ -118,7 +118,7 @@ async function processDeposit(
       transport: http(chainConf.rpc),
     });
 
-    const validatorKey = process.env.VALIDATOR_PRIVATE_KEY as `0x${string}`;
+    const validatorKey = (process.env.VALIDATOR_PRIVATE_KEY || process.env.PRIVATE_KEY) as `0x${string}`;
     if (!validatorKey) {
       console.error("[错误] VALIDATOR_PRIVATE_KEY 未设置");
       return;
