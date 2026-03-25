@@ -275,7 +275,7 @@ async function catchUpScan(state: RelayerState): Promise<void> {
 
   console.log(`[回补] 扫描区间: ${fromBlock} → ${latestBlock} (共 ${latestBlock - fromBlock + BigInt(1)} 块)`);
 
-  const BATCH_SIZE = BigInt(2000);
+  const BATCH_SIZE = BigInt(100);
   let cursor = fromBlock;
 
   while (cursor <= latestBlock) {

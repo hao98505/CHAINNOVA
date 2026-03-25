@@ -20,27 +20,28 @@ const SOLANA_MINT = process.env.SOLANA_MINT || "6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMt
 const RELAYER_PRIVATE_KEY = process.env.RELAYER_PRIVATE_KEY as `0x${string}`;
 const STATE_FILE = process.env.STATE_FILE_PATH || "./bridge-state.json";
 
-const CHAIN_CONFIG: Record<string, { rpc: string; bridge: Address; wrappedToken: Address }> = {};
+const CHAIN_CONFIG: Record<string, { rpc: string; bridge: Address; targetToken: Address }> = {};
 
-if (process.env.BSC_RPC_URL && process.env.BSC_BRIDGE && process.env.WRAPPED_FORGAI_BSC) {
+const BSC_TOKEN = process.env.SOURCE_TOKEN_BSC || process.env.WRAPPED_FORGAI_BSC;
+if (process.env.BSC_RPC_URL && process.env.BSC_BRIDGE && BSC_TOKEN) {
   CHAIN_CONFIG["bsc"] = {
     rpc: process.env.BSC_RPC_URL,
     bridge: process.env.BSC_BRIDGE as Address,
-    wrappedToken: process.env.WRAPPED_FORGAI_BSC as Address,
+    targetToken: BSC_TOKEN as Address,
   };
 }
 if (process.env.ARBITRUM_RPC_URL && process.env.ARBITRUM_BRIDGE && process.env.WRAPPED_FORGAI_ARBITRUM) {
   CHAIN_CONFIG["arbitrum"] = {
     rpc: process.env.ARBITRUM_RPC_URL,
     bridge: process.env.ARBITRUM_BRIDGE as Address,
-    wrappedToken: process.env.WRAPPED_FORGAI_ARBITRUM as Address,
+    targetToken: process.env.WRAPPED_FORGAI_ARBITRUM as Address,
   };
 }
 if (process.env.ETHEREUM_RPC_URL && process.env.ETHEREUM_BRIDGE && process.env.WRAPPED_FORGAI_ETHEREUM) {
   CHAIN_CONFIG["ethereum"] = {
     rpc: process.env.ETHEREUM_RPC_URL,
     bridge: process.env.ETHEREUM_BRIDGE as Address,
-    wrappedToken: process.env.WRAPPED_FORGAI_ETHEREUM as Address,
+    targetToken: process.env.WRAPPED_FORGAI_ETHEREUM as Address,
   };
 }
 
@@ -140,7 +141,7 @@ async function processDeposit(
         { type: "uint256" },
         { type: "address" },
       ],
-      [transferId, chainConf.wrappedToken, amount, recipientEvm as Address]
+      [transferId, chainConf.targetToken, amount, recipientEvm as Address]
     );
 
     const messageHash = keccak256(message);
