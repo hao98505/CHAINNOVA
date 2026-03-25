@@ -38,6 +38,11 @@ const config = {
       chainId: 42161,
       accounts: [PRIVATE_KEY],
     },
+    ethereum: {
+      url: process.env.ETHEREUM_RPC_URL || "https://eth.llamarpc.com",
+      chainId: 1,
+      accounts: [PRIVATE_KEY],
+    },
   },
 };
 
