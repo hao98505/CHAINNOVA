@@ -185,44 +185,46 @@ async function watchChain(chain: ChainDef, state: RelayerState): Promise<void> {
 
   const POLL_INTERVAL = 10000;
 
-  async function poll() {
-    try {
-      const latest = await client.getBlockNumber();
-      const from = BigInt(state.lastScannedBlocks[chain.name] + 1);
-      if (from > latest) return;
+  function schedulePoll() {
+    setTimeout(() => {
+      (async () => {
+        const latest = await client.getBlockNumber();
+        const from = BigInt(state.lastScannedBlocks[chain.name] + 1);
+        if (from <= latest) {
+          const toBlock = from + BigInt(1000) < latest ? from + BigInt(1000) : latest;
+          const logs = await client.getLogs({
+            address: chain.bridge,
+            event: BRIDGE_TRANSFER_EVENT,
+            fromBlock: from,
+            toBlock: toBlock,
+          });
 
-      const logs = await client.getLogs({
-        address: chain.bridge,
-        event: BRIDGE_TRANSFER_EVENT,
-        fromBlock: from,
-        toBlock: latest,
+          for (const log of logs) {
+            const args = (log as any).args;
+            if (!args) continue;
+            await relayTransfer(
+              chain,
+              args.transferId,
+              args.sender,
+              args.amount,
+              Number(args.targetChainId),
+              args.recipientBytes32,
+              state,
+            );
+          }
+
+          state.lastScannedBlocks[chain.name] = Number(toBlock);
+          saveState(state);
+        }
+      })().catch((err) => {
+        console.error(`[${chain.name}] 轮询错误:`, String(err.message || err).slice(0, 120));
+      }).finally(() => {
+        schedulePoll();
       });
-
-      for (const log of logs) {
-        const args = (log as any).args;
-        if (!args) continue;
-        await relayTransfer(
-          chain,
-          args.transferId,
-          args.sender,
-          args.amount,
-          Number(args.targetChainId),
-          args.recipientBytes32,
-          state,
-        );
-      }
-
-      state.lastScannedBlocks[chain.name] = Number(latest);
-      saveState(state);
-    } catch (err: any) {
-      if (!err.message.includes("limit")) {
-        console.error(`[${chain.name}] 轮询错误:`, err.message);
-      }
-    }
+    }, POLL_INTERVAL);
   }
 
-  await poll();
-  setInterval(poll, POLL_INTERVAL);
+  schedulePoll();
 }
 
 async function main() {
@@ -245,8 +247,15 @@ async function main() {
 
   console.log(`\n[就绪] EVM↔EVM Relayer 运行中\n`);
 
-  await new Promise(() => {});
+  setInterval(() => {}, 60000);
 }
+
+process.on("uncaughtException", (err) => {
+  console.error("[uncaughtException]", err.message);
+});
+process.on("unhandledRejection", (reason: any) => {
+  console.error("[unhandledRejection]", reason?.message || reason);
+});
 
 main().catch((error) => {
   console.error("[致命]", error.message || error);

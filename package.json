@@ -19,7 +19,8 @@
     "bridge:config:eth": "TS_NODE_PROJECT=tsconfig.hardhat.json hardhat run scripts/configRoutes.cjs --network ethereum",
     "bridge:watch:solana": "tsx server/solana-watcher.ts",
     "bridge:watch:evm": "tsx server/bridge-relayer.ts",
-    "bridge:dev": "npx concurrently \"tsx server/solana-watcher.ts\" \"tsx server/bridge-relayer.ts\""
+    "bridge:dev": "npx concurrently \"tsx server/evm-evm-relayer.ts\" \"tsx server/solana-watcher.ts\" \"tsx server/bridge-relayer.ts\"",
+    "bridge:watch:evm-evm": "stdbuf -oL tsx server/evm-evm-relayer.ts"
   },
   "dependencies": {
     "@coral-xyz/anchor": "^0.32.1",

@@ -63,8 +63,9 @@ Three-chain EVM bridge fully deployed and tested with real tokens:
 - **BSC ForgAI (native)**: `0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff`
 - **Deployer/Owner/Validator**: `0x31bF8708f2E7Bd9eefa57557be8100057132f3eC`
 - **Relayer**: `server/evm-evm-relayer.ts` — polling-based (10s interval), uses publicnode RPCs for BSC/ETH
-- **Test script**: `scripts/test-bridge-bsc-to-arb.cjs`
-- **Verified**: BSC→ARB automated relay tested with 4 real ForgAI tokens (4.0 Wrapped ForgAI on Arbitrum)
+- **Scripts**: `npm run bridge:watch:evm-evm` (relayer), `scripts/acceptance-test-evm.cjs` (formal tests)
+- **bridge:dev** now includes evm-evm-relayer alongside solana-watcher and bridge-relayer
+- **Verified**: All 6 directions tested with real tokens (ARB→BSC, BSC→ETH, ETH→BSC, BSC→ARB ×4)
 
 #### BSC↔Solana Bridge (Blocked)
 Solana SPL ForgAI mint authority is destroyed — cannot mint new SPL tokens. Needs a new wrapped SPL model with a fresh mint authority held by a Solana bridge program.
