@@ -56,20 +56,28 @@ Bidirectional custodial MVP bridge for ForgAI token between Solana and 3 EVM cha
 - **Compilation**: `npm run bridge:compile` or `TS_NODE_PROJECT=tsconfig.hardhat.json npx hardhat compile`
 - **Docs**: `docs/bridge-v2.md`
 
-#### EVM↔EVM Bridge (Verified On-Chain)
-Three-chain EVM bridge fully deployed and tested with real tokens:
+#### Bridge Status Summary
+- **EVM 部分：阶段性通过** — BSC ↔ Arbitrum / Ethereum 合约路径与 relayer 服务均已验收
+- **Solana 部分：blocked** — 需要 wrapped SPL 重构，见下文
+
+#### EVM↔EVM Bridge (EVM 阶段通过)
+BSC ↔ Arbitrum / Ethereum 三链桥已部署、代码接入、relayer 常驻验收通过：
 - **Bridge Contract** (all 3 chains): `0x49daa7A1109d061BF67b56676def0Bc439289Cb8`
 - **ARB/ETH Wrapped Token**: `0x1452280dDa6Fa4C815f95B06cc15d429aEb0d917`
 - **BSC ForgAI (native)**: `0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff`
 - **Deployer/Owner/Validator**: `0x31bF8708f2E7Bd9eefa57557be8100057132f3eC`
-- **Relayer**: `server/evm-evm-relayer.ts` — polling-based (10s interval), uses publicnode RPCs for BSC/ETH
+- **Relayer**: `server/evm-evm-relayer.ts` — polling-based (10s interval), publicnode RPCs for BSC/ETH
 - **Scripts**: `npm run bridge:watch:evm-evm` (relayer), `scripts/acceptance-test-evm.cjs` (formal tests)
 - **bridge:dev** includes evm-evm-relayer + solana-watcher + bridge-relayer
-- **Workflow**: "EVM Bridge Relayer" — Replit-managed persistent workflow running `npx tsx server/evm-evm-relayer.ts`
-- **Verified**: 30min continuous relayer stability (BSC +4350 blocks, ARB +7891 blocks, ETH +164 blocks, zero crashes); auto-relay BSC→ARB within 10s; all 3 contract paths tested with real tokens (ARB→BSC, BSC→ETH, ETH→BSC, BSC→ARB)
+- **Workflow**: "EVM Bridge Relayer" — Replit-managed persistent workflow (`npx tsx server/evm-evm-relayer.ts`)
 
-#### BSC↔Solana Bridge (Blocked)
-Solana SPL ForgAI mint authority is destroyed — cannot mint new SPL tokens. Needs a new wrapped SPL model with a fresh mint authority held by a Solana bridge program.
+#### BSC↔Solana Bridge (Blocked — 需要 Wrapped SPL 重构)
+Solana SPL ForgAI (`6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump`) 的 mint authority 已销毁，无法铸造新 SPL token。当前 Vault 模型（锁定/释放已有 SPL）因零库存且无法补充而不可用。
+**下一步不是继续堆 Vault 流动性**，而是：
+1. 部署新的 Wrapped SPL ForgAI mint（bridge program 持有 mint authority）
+2. 编写 Solana bridge program（lock/release 原生 SPL 或 mint/burn wrapped SPL）
+3. 更新 solana-watcher 和 bridge-relayer 适配新模型
+4. 前端 Bridge UI 对接新 Solana 合约
 
 #### Bridge Environment Variables
 Frontend (Vite):
