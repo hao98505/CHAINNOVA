@@ -1,7 +1,7 @@
 # ChainNova Agents V2
 
 ## Overview
-A decentralized AI agent marketplace built on Solana blockchain. Users can mint, buy, rent, and stake AI agents as NFTs, plus bridge ForgAI tokens cross-chain via a bidirectional Solana ↔ EVM bridge.
+A decentralized AI agent marketplace built on Solana blockchain. Users can mint, buy, rent, and stake AI agents as NFTs, plus bridge ForgAI tokens cross-chain. EVM↔EVM bridge (BSC / Arbitrum / Ethereum) is operational; Solana direction is disabled pending wrapped SPL (wFORGAI) rewrite.
 
 ## Tech Stack
 - **Frontend**: React 18 + TypeScript + Vite
