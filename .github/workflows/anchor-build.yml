@@ -35,7 +35,6 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: "1.85.0"
-          components: rust-src
 
       - name: Cache Cargo
         uses: actions/cache@v4
@@ -44,8 +43,8 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: anchor-build-v4-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: anchor-build-v4-
+          key: anchor-build-v5-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: anchor-build-v5-
 
       - name: Install Solana CLI v${{ env.SOLANA_CLI_VERSION }}
         run: |
@@ -65,23 +64,9 @@ jobs:
       - name: Generate keypair
         run: solana-keygen new --no-bip39-passphrase -o ~/.config/solana/id.json
 
-      - name: Trigger platform-tools download and patch cargo
-        run: |
-          anchor build 2>&1 || true
-          echo "--- Patching platform-tools cargo with system cargo ---"
-          PLATFORM_CARGO=$(find "$HOME/.local/share/solana" -name "cargo" -path "*/platform-tools/rust/bin/*" 2>/dev/null | head -1)
-          SYSTEM_CARGO=$(which cargo)
-          if [ -n "$PLATFORM_CARGO" ]; then
-            echo "Before: $($PLATFORM_CARGO --version 2>/dev/null || echo 'unknown')"
-            cp -f "$SYSTEM_CARGO" "$PLATFORM_CARGO"
-            echo "After: $($PLATFORM_CARGO --version 2>/dev/null || echo 'patched')"
-          else
-            echo "ERROR: Could not find platform-tools cargo"
-            find "$HOME/.local/share/solana" -name "cargo" 2>/dev/null
-            exit 1
-          fi
-
-      - name: Anchor build (with patched cargo)
+      - name: Anchor build
+        env:
+          CARGO_BUILD_SBF_CARGO: cargo
         run: anchor build
 
       - name: Report build result
