@@ -100,6 +100,7 @@ jobs:
           cargo +solana update blake3 --precise 1.5.5
           cargo +solana update borsh@1.6.1 --precise 1.5.3
           cargo +solana update proc-macro-crate@3.5.0 --precise 3.2.0
+          cargo +solana update indexmap@2.13.0 --precise 2.7.0
           cargo +solana update rayon --precise 1.10.0
           cargo +solana update rayon-core --precise 1.12.1
           cargo +solana update unicode-segmentation --precise 1.12.0
