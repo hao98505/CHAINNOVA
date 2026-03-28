@@ -1,0 +1,3 @@
+[workspace]
+members = ["programs/wforgai-bridge"]
+resolver = "2"

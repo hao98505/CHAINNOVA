@@ -3,10 +3,10 @@
 ## Overview
 Decentralized AI agent marketplace on Solana. Mint, buy, rent, and stake AI agents as NFTs. Bridge ForgAI tokens cross-chain.
 
-## Bridge Status (Phase 0)
-- **EVM↔EVM**: Operational (BSC / Arbitrum / Ethereum)
-- **Solana**: Disabled — pending wrapped SPL (wFORGAI) rewrite
-- **Phase 1**: Solana Anchor bridge program + wFORGAI mint
+## Bridge Status
+- **EVM↔EVM**: Operational (BSC / Arbitrum / Ethereum) — Phase 0 complete
+- **Solana**: Phase 1 in progress — Anchor bridge program + wFORGAI mint
+- **PRD**: `docs/solana-bridge-prd.md`
 
 ## Tech Stack
 - **Frontend**: React 18 + TypeScript + Vite + Tailwind CSS + Framer Motion
@@ -39,10 +39,15 @@ Decentralized AI agent marketplace on Solana. Mint, buy, rent, and stake AI agen
 - **Relayer**: `server/evm-evm-relayer.ts` (Replit Workflow, 10s polling)
 - **Scripts**: `npm run bridge:watch:evm-evm`, `scripts/acceptance-test-evm.cjs`
 
-### Solana Bridge (Disabled — Phase 0 Complete)
-Mint authority destroyed on `6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump`. All bridge entry points throw.
-- **Next**: Phase 1 — Solana Anchor bridge program + wFORGAI wrapped SPL mint
-- **PRD**: `docs/solana-bridge-prd.md`
+### Solana Bridge (Phase 1 — In Progress)
+Anchor program: `programs/wforgai-bridge/`
+- **wFORGAI**: 9 decimals, mint authority = PDA (`seeds: ["mint-authority"]`)
+- **Instructions**: `initialize`, `complete_transfer` (mint), `bridge_out` (burn), `pause`, `unpause`, `update_validator`
+- **State**: `BridgeConfig` PDA, `TransferRecord` PDA per transfer_id
+- **Signature**: secp256k1 (same EVM validator key)
+- **Error codes**: 6000–6006 per PRD
+- **Supported chains**: BSC (56), Arbitrum (42161), Ethereum (1)
+- **Old SPL**: `6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump` — mint authority destroyed, not used
 
 ## Environment Variables
 ```
