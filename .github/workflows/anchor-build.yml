@@ -65,6 +65,12 @@ jobs:
       - name: Generate keypair
         run: solana-keygen new --no-bip39-passphrase -o ~/.config/solana/id.json
 
+      - name: Pin compatible dependency versions
+        run: |
+          cargo generate-lockfile
+          cargo update toml_datetime@1.1.0 --precise 1.0.1 2>/dev/null || true
+          cargo update toml_edit@0.25.8 --precise 0.22.22 2>/dev/null || true
+
       - name: Anchor build
         run: anchor build
 
