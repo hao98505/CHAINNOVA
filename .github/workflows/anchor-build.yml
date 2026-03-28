@@ -43,8 +43,8 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: anchor-build-v5-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: anchor-build-v5-
+          key: anchor-build-v6-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: anchor-build-v6-
 
       - name: Install Solana CLI v${{ env.SOLANA_CLI_VERSION }}
         run: |
@@ -64,9 +64,12 @@ jobs:
       - name: Generate keypair
         run: solana-keygen new --no-bip39-passphrase -o ~/.config/solana/id.json
 
+      - name: Override solana rustup toolchain with system Rust
+        run: |
+          rustup toolchain link solana "$(rustc --print sysroot)"
+          echo "Solana toolchain now points to: $(cargo +solana --version)"
+
       - name: Anchor build
-        env:
-          CARGO_BUILD_SBF_CARGO: cargo
         run: anchor build
 
       - name: Report build result
