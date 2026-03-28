@@ -46,10 +46,13 @@ Anchor program: `programs/wforgai-bridge/`
 - **Instructions**: `initialize`, `complete_transfer` (mint), `bridge_out` (burn), `pause`, `unpause`, `update_validator`
 - **State**: `BridgeConfig` PDA, `TransferRecord` PDA per transfer_id
 - **Signature**: secp256k1 (same EVM validator key)
-- **Error codes**: 6000–6006 per PRD
+- **Initialize constraints**: `wforgai_mint.decimals == 9` (6007), `mint_authority == PDA` (6008)
+- **Error codes**: 6000–6008 (see `SPEC.md`)
 - **Supported chains**: BSC (56), Arbitrum (42161), Ethereum (1)
-- **Spec**: `programs/wforgai-bridge/SPEC.md` (transfer_id formula, recipient_bytes32 encoding, signature verification)
-- **Build status**: Cannot `cargo check`/`anchor build` in Replit (Solana SDK exceeds container memory). Build externally with `anchor build`.
+- **Spec**: `programs/wforgai-bridge/SPEC.md`
+- **Tests**: `tests/wforgai-bridge.test.ts` (13 cases: init constraints, pause/unpause, bridge_out validation, complete_transfer sig verify + replay)
+- **CI**: `.github/workflows/anchor-build.yml` — `anchor build` + `anchor test` on push to main
+- **Build**: Cannot build in Replit (Solana SDK exceeds container memory). Use GitHub Actions or local `anchor build`.
 - **Old SPL**: `6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump` — mint authority destroyed, not used
 
 ## Environment Variables
