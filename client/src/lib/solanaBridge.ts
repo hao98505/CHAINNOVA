@@ -80,7 +80,7 @@ export async function initiateSolanaDeposit(_params: {
   targetChain: string;
   recipientEvmAddress: string;
 }): Promise<SolanaBridgeResult> {
-  throw new Error("Solana bridge is upgrading to wrapped SPL model. Vault deposits are disabled. Please use EVM↔EVM bridge.");
+  throw new Error("Solana bridge is disabled pending wFORGAI rewrite. Please use EVM↔EVM bridge.");
 }
 
 export function quoteSolanaToEvm(
