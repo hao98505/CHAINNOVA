@@ -9,6 +9,7 @@ on:
       - 'Anchor.toml'
       - 'Cargo.toml'
       - 'Cargo.lock'
+      - '.github/workflows/anchor-build.yml'
   pull_request:
     branches: [main]
     paths:
@@ -17,6 +18,8 @@ on:
       - 'Anchor.toml'
       - 'Cargo.toml'
       - 'Cargo.lock'
+      - '.github/workflows/anchor-build.yml'
+  workflow_dispatch:
 
 env:
   SOLANA_CLI_VERSION: "2.1.7"
