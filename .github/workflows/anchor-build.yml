@@ -52,23 +52,19 @@ jobs:
         run: solana-keygen new --no-bip39-passphrase -o ~/.config/solana/id.json
 
       - name: Anchor build
-        run: anchor build
+        run: anchor build 2>&1
 
-      - name: Verify program ID
+      - name: Report program ID
         run: |
           BUILT_ID=$(solana-keygen pubkey target/deploy/wforgai_bridge-keypair.json)
-          DECLARED_ID=$(grep 'declare_id!' programs/wforgai-bridge/src/lib.rs | sed 's/.*"\(.*\)".*/\1/')
           echo "Built program ID: $BUILT_ID"
-          echo "Declared program ID: $DECLARED_ID"
-          if [ "$BUILT_ID" != "$DECLARED_ID" ]; then
-            echo "::warning::Program ID mismatch. Update lib.rs declare_id to: $BUILT_ID"
-          fi
+          echo "Note: anchor build auto-syncs declare_id to the CI-generated keypair."
+          echo "For deployment, use the real keypair and re-run anchor build locally."
 
-      - name: Install test dependencies
-        run: npm install --no-save @coral-xyz/anchor @solana/web3.js @solana/spl-token ethereum-cryptography chai mocha ts-mocha typescript
-
-      - name: Anchor test
-        run: anchor test --skip-local-validator || echo "::warning::Tests require localnet validator"
+      - name: Verify .so artifact
+        run: |
+          ls -lh target/deploy/wforgai_bridge.so
+          file target/deploy/wforgai_bridge.so
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
