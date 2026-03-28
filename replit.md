@@ -51,8 +51,10 @@ Anchor program: `programs/wforgai-bridge/`
 - **Supported chains**: BSC (56), Arbitrum (42161), Ethereum (1)
 - **Spec**: `programs/wforgai-bridge/SPEC.md`
 - **Tests**: `tests/wforgai-bridge.test.ts` (13 cases: init constraints, pause/unpause, bridge_out validation, complete_transfer sig verify + replay)
-- **CI**: `.github/workflows/anchor-build.yml` — `anchor build` + `anchor test` on push to main
+- **CI**: `.github/workflows/anchor-build.yml` — `anchor build --no-idl` on push to main (GREEN)
+- **CI strategy**: Rust 1.85 system cargo patched into solana toolchain (rustc 1.79), 9 dep pins for MSRV compat, IDL gen skipped (proc_macro2 incompatibility)
 - **Build**: Cannot build in Replit (Solana SDK exceeds container memory). Use GitHub Actions or local `anchor build`.
+- **Build output**: `wforgai_bridge.so` — 261KB eBPF binary, uploaded as CI artifact
 - **Old SPL**: `6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump` — mint authority destroyed, not used
 
 ## Environment Variables
