@@ -113,6 +113,8 @@ recipient_bytes32 = 0x000000000000000000000000 ++ evm_address
 | 6004 | InvalidTargetChain | target_chain_id not in {56, 42161, 1} |
 | 6005 | InsufficientBalance | sender ATA balance < amount |
 | 6006 | Unauthorized | non-admin calls pause/unpause/update_validator |
+| 6007 | InvalidMintDecimals | wforgai_mint.decimals != 9 (initialize only) |
+| 6008 | InvalidMintAuthority | wforgai_mint.mint_authority != MintAuthorityPDA (initialize only) |
 
 ## Failure Semantics
 

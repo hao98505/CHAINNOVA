@@ -22,4 +22,10 @@ pub enum BridgeError {
 
     #[msg("Unauthorized")]
     Unauthorized = 6006,
+
+    #[msg("Mint decimals must be 9")]
+    InvalidMintDecimals = 6007,
+
+    #[msg("Mint authority must be the bridge PDA")]
+    InvalidMintAuthority = 6008,
 }

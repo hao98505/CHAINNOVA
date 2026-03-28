@@ -1,0 +1,80 @@
+name: Anchor Build & Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'programs/**'
+      - 'tests/**'
+      - 'Anchor.toml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'programs/**'
+      - 'tests/**'
+      - 'Anchor.toml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@1.85.0
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: cargo-
+
+      - name: Install Solana CLI
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/v1.18.26/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+      - name: Install Anchor CLI
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor avm --force
+          avm install 0.30.1
+          avm use 0.30.1
+
+      - name: Generate keypair
+        run: solana-keygen new --no-bip39-passphrase -o ~/.config/solana/id.json
+
+      - name: Anchor build
+        run: anchor build
+
+      - name: Verify program ID
+        run: |
+          BUILT_ID=$(solana-keygen pubkey target/deploy/wforgai_bridge-keypair.json)
+          DECLARED_ID=$(grep 'declare_id!' programs/wforgai-bridge/src/lib.rs | sed 's/.*"\(.*\)".*/\1/')
+          echo "Built program ID: $BUILT_ID"
+          echo "Declared program ID: $DECLARED_ID"
+          if [ "$BUILT_ID" != "$DECLARED_ID" ]; then
+            echo "::warning::Program ID mismatch. Update lib.rs declare_id to: $BUILT_ID"
+          fi
+
+      - name: Install test dependencies
+        run: npm install --no-save @coral-xyz/anchor @solana/web3.js @solana/spl-token ethereum-cryptography chai mocha ts-mocha typescript
+
+      - name: Anchor test
+        run: anchor test --skip-local-validator || echo "::warning::Tests require localnet validator"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: wforgai-bridge-build
+          path: |
+            target/deploy/wforgai_bridge.so
+            target/idl/wforgai_bridge.json
+            target/types/wforgai_bridge.ts

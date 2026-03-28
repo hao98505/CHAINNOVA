@@ -1,7 +1,10 @@
 use anchor_lang::prelude::*;
 use anchor_spl::token::{Mint, Token};
 
+use crate::errors::BridgeError;
 use crate::state::{BridgeConfig, MINT_AUTHORITY_SEED};
+
+const WFORGAI_DECIMALS: u8 = 9;
 
 #[derive(Accounts)]
 pub struct Initialize<'info> {
@@ -17,6 +20,10 @@ pub struct Initialize<'info> {
     )]
     pub bridge_config: Account<'info, BridgeConfig>,
 
+    #[account(
+        constraint = wforgai_mint.decimals == WFORGAI_DECIMALS @ BridgeError::InvalidMintDecimals,
+        constraint = wforgai_mint.mint_authority.contains(&mint_authority.key()) @ BridgeError::InvalidMintAuthority,
+    )]
     pub wforgai_mint: Account<'info, Mint>,
 
     /// CHECK: PDA used as mint authority, no data
