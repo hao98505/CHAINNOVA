@@ -18,14 +18,21 @@ on:
       - 'Cargo.toml'
       - 'Cargo.lock'
 
+env:
+  SOLANA_CLI_VERSION: "2.1.7"
+  ANCHOR_VERSION: "0.30.1"
+  RUST_VERSION: "1.85.0"
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Rust
-        uses: dtolnay/rust-toolchain@1.85.0
+      - name: Install Rust ${{ env.RUST_VERSION }}
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
 
       - name: Cache Cargo
         uses: actions/cache@v4
@@ -34,39 +41,39 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: cargo-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: cargo-
+          key: anchor-build-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: anchor-build-
 
-      - name: Install Solana CLI
+      - name: Install Solana CLI v${{ env.SOLANA_CLI_VERSION }}
         run: |
-          sh -c "$(curl -sSfL https://release.anza.xyz/v1.18.26/install)"
+          sh -c "$(curl -sSfL https://release.anza.xyz/v${{ env.SOLANA_CLI_VERSION }}/install)"
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+          solana --version
 
-      - name: Install Anchor CLI
+      - name: Install Anchor CLI v${{ env.ANCHOR_VERSION }}
         run: |
           cargo install --git https://github.com/coral-xyz/anchor avm --force
-          avm install 0.30.1
-          avm use 0.30.1
+          avm install ${{ env.ANCHOR_VERSION }}
+          avm use ${{ env.ANCHOR_VERSION }}
+          anchor --version
 
       - name: Generate keypair
         run: solana-keygen new --no-bip39-passphrase -o ~/.config/solana/id.json
 
       - name: Anchor build
-        run: anchor build 2>&1
+        run: anchor build
 
-      - name: Report program ID
+      - name: Report build result
+        if: success()
         run: |
           BUILT_ID=$(solana-keygen pubkey target/deploy/wforgai_bridge-keypair.json)
-          echo "Built program ID: $BUILT_ID"
-          echo "Note: anchor build auto-syncs declare_id to the CI-generated keypair."
-          echo "For deployment, use the real keypair and re-run anchor build locally."
-
-      - name: Verify .so artifact
-        run: |
+          echo "Program .so built successfully"
+          echo "CI program ID: $BUILT_ID (ephemeral, from CI-generated keypair)"
           ls -lh target/deploy/wforgai_bridge.so
           file target/deploy/wforgai_bridge.so
 
-      - name: Upload artifacts
+      - name: Upload build artifacts
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: wforgai-bridge-build
