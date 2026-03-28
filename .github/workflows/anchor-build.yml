@@ -43,8 +43,8 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: anchor-build-v2-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: anchor-build-v2-
+          key: anchor-build-v3-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: anchor-build-v3-
 
       - name: Install Solana CLI v${{ env.SOLANA_CLI_VERSION }}
         run: |
@@ -52,11 +52,19 @@ jobs:
           echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
 
       - name: Verify Solana CLI
+        run: solana --version
+
+      - name: Patch cargo-build-sbf to use system cargo
         run: |
-          solana --version
-          SBF_CARGO=$(find "$HOME/.local/share/solana" -name "cargo" -path "*/platform-tools/rust/bin/*" 2>/dev/null | head -1)
-          if [ -n "$SBF_CARGO" ]; then
-            echo "SBF bundled cargo: $($SBF_CARGO --version 2>/dev/null || echo 'unknown')"
+          PLATFORM_TOOLS_DIR=$(find "$HOME/.local/share/solana" -type d -name "platform-tools" | head -1)
+          if [ -n "$PLATFORM_TOOLS_DIR" ] && [ -d "$PLATFORM_TOOLS_DIR/rust/bin" ]; then
+            SBF_CARGO="$PLATFORM_TOOLS_DIR/rust/bin/cargo"
+            SYSTEM_CARGO=$(which cargo)
+            echo "Replacing SBF bundled cargo ($($SBF_CARGO --version 2>/dev/null || echo 'unknown')) with system cargo ($(cargo --version))"
+            cp "$SYSTEM_CARGO" "$SBF_CARGO"
+            echo "Patched successfully: $($SBF_CARGO --version)"
+          else
+            echo "Warning: platform-tools directory not found"
           fi
 
       - name: Install Anchor CLI v${{ env.ANCHOR_VERSION }}
@@ -68,20 +76,6 @@ jobs:
 
       - name: Generate keypair
         run: solana-keygen new --no-bip39-passphrase -o ~/.config/solana/id.json
-
-      - name: Generate lockfile pinning pre-edition2024 deps
-        run: |
-          cargo generate-lockfile
-          echo "Downgrading edition2024 transitive deps for cargo-build-sbf compat..."
-          cargo update -p toml_datetime --precise 1.0.1 2>/dev/null || true
-          cargo update -p toml_edit --precise 0.22.22 2>/dev/null || true
-          cargo update -p winnow --precise 0.6.24 2>/dev/null || true
-          # Clear any cached edition2024 crate sources to prevent stale manifests
-          find ~/.cargo/registry/src -maxdepth 2 -name "Cargo.toml" -exec grep -l 'edition = "2024"' {} \; 2>/dev/null | while read f; do
-            dir=$(dirname "$f")
-            echo "Removing cached edition2024 source: $(basename $dir)"
-            rm -rf "$dir"
-          done
 
       - name: Anchor build
         run: anchor build
