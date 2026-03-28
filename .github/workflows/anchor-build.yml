@@ -43,8 +43,8 @@ jobs:
             ~/.cargo/registry
             ~/.cargo/git
             target
-          key: anchor-build-v7-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: anchor-build-v7-
+          key: anchor-build-v9-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: anchor-build-v9-
 
       - name: Install Solana CLI v${{ env.SOLANA_CLI_VERSION }}
         run: |
@@ -64,28 +64,31 @@ jobs:
       - name: Generate keypair
         run: solana-keygen new --no-bip39-passphrase -o ~/.config/solana/id.json
 
-      - name: Trigger platform-tools download
-        run: anchor build 2>&1 || true
-
-      - name: Patch platform-tools Rust with system Rust 1.85
+      - name: Download solana toolchain then patch its cargo
         run: |
-          SYSROOT=$(rustc --print sysroot)
-          PT_RUST=$(find "$HOME/.local/share/solana" -type d -path "*/platform-tools/rust" | head -1)
-          if [ -z "$PT_RUST" ]; then
-            echo "ERROR: platform-tools/rust not found!"
-            find "$HOME/.local/share/solana" -type d -name "platform-tools" 2>/dev/null
+          echo "=== Step 1: trigger solana toolchain download ==="
+          anchor build 2>&1 || true
+
+          echo "=== Step 2: find solana toolchain cargo ==="
+          SOLANA_TC_PATH=$(rustup toolchain list -v | grep "^solana" | awk '{print $2}')
+          echo "Solana toolchain path: $SOLANA_TC_PATH"
+
+          if [ -z "$SOLANA_TC_PATH" ]; then
+            echo "ERROR: solana toolchain not found in rustup"
+            rustup toolchain list -v
             exit 1
           fi
-          echo "Platform-tools Rust: $PT_RUST"
-          echo "Before: $($PT_RUST/bin/cargo --version 2>/dev/null || echo unknown)"
-          rm -rf "${PT_RUST}.bak"
-          mv "$PT_RUST" "${PT_RUST}.bak"
-          ln -s "$SYSROOT" "$PT_RUST"
-          echo "After: $($PT_RUST/bin/cargo --version 2>/dev/null || echo unknown)"
-          rustup toolchain link solana "$SYSROOT"
-          echo "cargo +solana: $(cargo +solana --version)"
 
-      - name: Anchor build (with patched toolchain)
+          SOLANA_CARGO="$SOLANA_TC_PATH/bin/cargo"
+          SYSTEM_CARGO=$(which cargo)
+
+          echo "Before patch: $($SOLANA_CARGO --version 2>/dev/null || echo 'unknown')"
+          echo "System cargo: $(cargo --version)"
+
+          cp -f "$SYSTEM_CARGO" "$SOLANA_CARGO"
+          echo "After patch: $($SOLANA_CARGO --version 2>/dev/null || echo 'unknown')"
+
+      - name: Anchor build
         run: anchor build
 
       - name: Report build result
