@@ -95,15 +95,19 @@ jobs:
 
       - name: Pin deps compatible with rustc 1.79 (solana toolchain)
         run: |
-          cargo +solana generate-lockfile || true
-          cargo +solana update constant_time_eq --precise 0.4.0 || true
-          cargo +solana update indexmap --precise 2.7.0 || true
-          cargo +solana update proc-macro-crate --precise 3.2.0 || true
-          cargo +solana update toml_datetime --precise 0.6.8 || true
-          cargo +solana update toml_edit --precise 0.22.22 || true
-          cargo +solana update unicode-segmentation --precise 1.12.0 || true
-          echo "=== Lockfile deps check ==="
-          grep -E "constant_time_eq|indexmap|proc-macro-crate|toml_datetime|toml_edit|unicode-seg" Cargo.lock | head -20 || true
+          cargo +solana generate-lockfile
+          echo "=== Pinning parent crates to pull compatible transitive deps ==="
+          cargo +solana update blake3 --precise 1.5.5
+          cargo +solana update borsh --precise 1.5.3
+          cargo +solana update borsh-derive --precise 1.5.3
+          cargo +solana update rayon --precise 1.10.0
+          cargo +solana update rayon-core --precise 1.12.1
+          cargo +solana update unicode-segmentation --precise 1.12.0
+          echo "=== Verify resolved versions ==="
+          grep -A1 'name = "constant_time_eq"' Cargo.lock || true
+          grep -A1 'name = "blake3"' Cargo.lock || true
+          grep -A1 'name = "borsh"' Cargo.lock | head -6 || true
+          grep -A1 'name = "proc-macro-crate"' Cargo.lock || true
 
       - name: Anchor build
         run: anchor build
