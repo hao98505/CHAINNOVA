@@ -5,7 +5,7 @@ seeds = false
 skip-lint = false
 
 [programs.devnet]
-wforgai_bridge = "11111111111111111111111111111111"
+wforgai_bridge = "5EApB5fWMEBzFX4HFePxokLTR3yddHpM1z7VyMuC3GpZ"
 
 [registry]
 url = "https://api.apr.dev"

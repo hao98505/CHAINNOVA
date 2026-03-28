@@ -45,6 +45,10 @@ pub fn handler(
     require!(!config.paused, BridgeError::BridgePaused);
     require!(amount > 0, BridgeError::InvalidAmount);
     require!(
+        amount % 1_000_000_000 == 0,
+        BridgeError::InvalidAmount
+    );
+    require!(
         SUPPORTED_CHAINS.contains(&target_chain_id),
         BridgeError::InvalidTargetChain
     );

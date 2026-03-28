@@ -6,7 +6,7 @@ pub mod instructions;
 
 use instructions::*;
 
-declare_id!("11111111111111111111111111111111");
+declare_id!("5EApB5fWMEBzFX4HFePxokLTR3yddHpM1z7VyMuC3GpZ");
 
 #[program]
 pub mod wforgai_bridge {

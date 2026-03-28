@@ -41,12 +41,15 @@ Decentralized AI agent marketplace on Solana. Mint, buy, rent, and stake AI agen
 
 ### Solana Bridge (Phase 1 — In Progress)
 Anchor program: `programs/wforgai-bridge/`
+- **Program ID**: `5EApB5fWMEBzFX4HFePxokLTR3yddHpM1z7VyMuC3GpZ` (placeholder, replace after `anchor build` keygen)
 - **wFORGAI**: 9 decimals, mint authority = PDA (`seeds: ["mint-authority"]`)
 - **Instructions**: `initialize`, `complete_transfer` (mint), `bridge_out` (burn), `pause`, `unpause`, `update_validator`
 - **State**: `BridgeConfig` PDA, `TransferRecord` PDA per transfer_id
 - **Signature**: secp256k1 (same EVM validator key)
 - **Error codes**: 6000–6006 per PRD
 - **Supported chains**: BSC (56), Arbitrum (42161), Ethereum (1)
+- **Spec**: `programs/wforgai-bridge/SPEC.md` (transfer_id formula, recipient_bytes32 encoding, signature verification)
+- **Build status**: Cannot `cargo check`/`anchor build` in Replit (Solana SDK exceeds container memory). Build externally with `anchor build`.
 - **Old SPL**: `6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump` — mint authority destroyed, not used
 
 ## Environment Variables
