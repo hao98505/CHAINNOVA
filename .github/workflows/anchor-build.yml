@@ -42,9 +42,11 @@ jobs:
           path: |
             ~/.cargo/registry
             ~/.cargo/git
+            ~/.cargo/bin
+            ~/.avm
             target
-          key: anchor-build-v9-${{ hashFiles('**/Cargo.lock') }}
-          restore-keys: anchor-build-v9-
+          key: anchor-build-v10-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: anchor-build-v10-
 
       - name: Install Solana CLI v${{ env.SOLANA_CLI_VERSION }}
         run: |
@@ -111,7 +113,7 @@ jobs:
           grep -A1 'name = "proc-macro-crate"' Cargo.lock || true
 
       - name: Anchor build
-        run: anchor build
+        run: anchor build --no-idl
 
       - name: Report build result
         if: success()
@@ -129,5 +131,3 @@ jobs:
           name: wforgai-bridge-build
           path: |
             target/deploy/wforgai_bridge.so
-            target/idl/wforgai_bridge.json
-            target/types/wforgai_bridge.ts
