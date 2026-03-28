@@ -80,12 +80,17 @@ jobs:
           fi
 
           SOLANA_CARGO="$SOLANA_TC_PATH/bin/cargo"
-          SYSTEM_CARGO=$(which cargo)
+
+          # Get the REAL cargo binary, not the rustup proxy
+          # $(which cargo) returns ~/.cargo/bin/cargo which is a rustup proxy
+          # Copying the proxy causes infinite recursion when cargo +solana calls itself
+          REAL_CARGO=$(rustup which cargo)
+          echo "Real cargo binary: $REAL_CARGO"
 
           echo "Before patch: $($SOLANA_CARGO --version 2>/dev/null || echo 'unknown')"
-          echo "System cargo: $(cargo --version)"
+          echo "Real system cargo: $($REAL_CARGO --version)"
 
-          cp -f "$SYSTEM_CARGO" "$SOLANA_CARGO"
+          cp -f "$REAL_CARGO" "$SOLANA_CARGO"
           echo "After patch: $($SOLANA_CARGO --version 2>/dev/null || echo 'unknown')"
 
       - name: Anchor build
