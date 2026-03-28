@@ -93,6 +93,15 @@ jobs:
           cp -f "$REAL_CARGO" "$SOLANA_CARGO"
           echo "After patch: $($SOLANA_CARGO --version 2>/dev/null || echo 'unknown')"
 
+      - name: Pin deps compatible with rustc 1.79 (solana toolchain)
+        run: |
+          cargo +solana update constant_time_eq@0.4.2 --precise 0.3.1 2>/dev/null || true
+          cargo +solana update indexmap@2.13.0 --precise 2.7.1 2>/dev/null || true
+          cargo +solana update proc-macro-crate@3.5.0 --precise 3.2.0 2>/dev/null || true
+          cargo +solana update toml_datetime@1.1.0 --precise 0.6.8 2>/dev/null || true
+          cargo +solana update toml_edit@0.25.8 --precise 0.22.22 2>/dev/null || true
+          cargo +solana update unicode-segmentation@1.13.2 --precise 1.12.0 2>/dev/null || true
+
       - name: Anchor build
         run: anchor build
 
