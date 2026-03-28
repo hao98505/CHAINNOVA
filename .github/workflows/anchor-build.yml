@@ -98,8 +98,8 @@ jobs:
           cargo +solana generate-lockfile
           echo "=== Pinning parent crates to pull compatible transitive deps ==="
           cargo +solana update blake3 --precise 1.5.5
-          cargo +solana update borsh --precise 1.5.3
-          cargo +solana update borsh-derive --precise 1.5.3
+          cargo +solana update borsh@1.6.1 --precise 1.5.3
+          cargo +solana update borsh-derive@1.6.1 --precise 1.5.3 || true
           cargo +solana update rayon --precise 1.10.0
           cargo +solana update rayon-core --precise 1.12.1
           cargo +solana update unicode-segmentation --precise 1.12.0
