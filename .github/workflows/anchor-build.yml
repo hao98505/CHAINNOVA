@@ -1,0 +1,134 @@
+name: Anchor Build & Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'programs/**'
+      - 'tests/**'
+      - 'Anchor.toml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/anchor-build.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'programs/**'
+      - 'tests/**'
+      - 'Anchor.toml'
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+      - '.github/workflows/anchor-build.yml'
+  workflow_dispatch:
+
+env:
+  SOLANA_CLI_VERSION: "2.1.7"
+  ANCHOR_VERSION: "0.30.1"
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust 1.85.0
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: "1.85.0"
+
+      - name: Cache Cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            ~/.cargo/bin
+            ~/.avm
+            target
+          key: anchor-build-v10-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: anchor-build-v10-
+
+      - name: Install Solana CLI v${{ env.SOLANA_CLI_VERSION }}
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/v${{ env.SOLANA_CLI_VERSION }}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> $GITHUB_PATH
+
+      - name: Verify Solana CLI
+        run: solana --version
+
+      - name: Install Anchor CLI v${{ env.ANCHOR_VERSION }}
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor avm --force
+          avm install ${{ env.ANCHOR_VERSION }}
+          avm use ${{ env.ANCHOR_VERSION }}
+          anchor --version
+
+      - name: Generate keypair
+        run: solana-keygen new --no-bip39-passphrase -o ~/.config/solana/id.json
+
+      - name: Download solana toolchain then patch its cargo
+        run: |
+          echo "=== Step 1: trigger solana toolchain download ==="
+          anchor build 2>&1 || true
+
+          echo "=== Step 2: find solana toolchain cargo ==="
+          SOLANA_TC_PATH=$(rustup toolchain list -v | grep "^solana" | awk '{print $2}')
+          echo "Solana toolchain path: $SOLANA_TC_PATH"
+
+          if [ -z "$SOLANA_TC_PATH" ]; then
+            echo "ERROR: solana toolchain not found in rustup"
+            rustup toolchain list -v
+            exit 1
+          fi
+
+          SOLANA_CARGO="$SOLANA_TC_PATH/bin/cargo"
+
+          # Get the REAL cargo binary, not the rustup proxy
+          # $(which cargo) returns ~/.cargo/bin/cargo which is a rustup proxy
+          # Copying the proxy causes infinite recursion when cargo +solana calls itself
+          REAL_CARGO=$(rustup which cargo)
+          echo "Real cargo binary: $REAL_CARGO"
+
+          echo "Before patch: $($SOLANA_CARGO --version 2>/dev/null || echo 'unknown')"
+          echo "Real system cargo: $($REAL_CARGO --version)"
+
+          cp -f "$REAL_CARGO" "$SOLANA_CARGO"
+          echo "After patch: $($SOLANA_CARGO --version 2>/dev/null || echo 'unknown')"
+
+      - name: Pin deps compatible with rustc 1.79 (solana toolchain)
+        run: |
+          cargo +solana generate-lockfile
+          echo "=== Pinning parent crates to pull compatible transitive deps ==="
+          cargo +solana update blake3 --precise 1.5.5
+          cargo +solana update borsh@1.6.1 --precise 1.5.3
+          cargo +solana update proc-macro-crate@3.5.0 --precise 3.2.0
+          cargo +solana update indexmap@2.13.0 --precise 2.7.0
+          cargo +solana update rayon --precise 1.10.0
+          cargo +solana update rayon-core --precise 1.12.1
+          cargo +solana update unicode-segmentation --precise 1.12.0
+          echo "=== Verify resolved versions ==="
+          grep -A1 'name = "constant_time_eq"' Cargo.lock || true
+          grep -A1 'name = "blake3"' Cargo.lock || true
+          grep -A1 'name = "borsh"' Cargo.lock | head -6 || true
+          grep -A1 'name = "proc-macro-crate"' Cargo.lock || true
+
+      - name: Anchor build
+        run: anchor build --no-idl
+
+      - name: Report build result
+        if: success()
+        run: |
+          BUILT_ID=$(solana-keygen pubkey target/deploy/wforgai_bridge-keypair.json)
+          echo "Program .so built successfully"
+          echo "CI program ID: $BUILT_ID (ephemeral, from CI-generated keypair)"
+          ls -lh target/deploy/wforgai_bridge.so
+          file target/deploy/wforgai_bridge.so
+
+      - name: Upload build artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wforgai-bridge-build
+          path: |
+            target/deploy/wforgai_bridge.so

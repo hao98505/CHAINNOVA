@@ -10,10 +10,6 @@ export const SOLANA_MINT = new PublicKey(
   import.meta.env.VITE_SOLANA_MINT || "6ZcR1KCqVZDLzSoUbiPW8P6XUvrazxMtUZTa9csppump"
 );
 
-export const SOLANA_VAULT = import.meta.env.VITE_SOLANA_VAULT
-  ? new PublicKey(import.meta.env.VITE_SOLANA_VAULT)
-  : null;
-
 const SOLANA_RPC = import.meta.env.VITE_SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com";
 
 export function getSolanaConnection(): Connection {
@@ -80,7 +76,7 @@ export async function initiateSolanaDeposit(_params: {
   targetChain: string;
   recipientEvmAddress: string;
 }): Promise<SolanaBridgeResult> {
-  throw new Error("Solana bridge is upgrading to wrapped SPL model. Vault deposits are disabled. Please use EVM↔EVM bridge.");
+  throw new Error("Solana bridge is disabled pending wFORGAI rewrite. Please use EVM↔EVM bridge.");
 }
 
 export function quoteSolanaToEvm(
@@ -90,7 +86,7 @@ export function quoteSolanaToEvm(
   return {
     receiveAmount: "0",
     protocolFee: "N/A",
-    route: "Solana bridge upgrading — disabled",
+    route: "Solana bridge disabled — pending wFORGAI rewrite",
     eta: "N/A",
   };
 }
