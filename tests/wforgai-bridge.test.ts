@@ -10,6 +10,7 @@ import {
 import {
   createMint,
   getOrCreateAssociatedTokenAccount,
+  getAccount,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { expect } from "chai";
@@ -24,6 +25,27 @@ function ethAddressFromPrivateKey(privKey: Uint8Array): Uint8Array {
   const pubKey = secp256k1.getPublicKey(privKey, false).slice(1);
   const hash = keccak256(pubKey);
   return hash.slice(12, 32);
+}
+
+function signTransferMessage(
+  transferId: Buffer,
+  amount: anchor.BN,
+  recipient: PublicKey,
+  mint: PublicKey,
+  privKey: Uint8Array,
+): { signature: Uint8Array; recoveryId: number } {
+  let message = Buffer.alloc(104);
+  transferId.copy(message, 0);
+  message.writeBigUInt64LE(BigInt(amount.toString()), 32);
+  recipient.toBuffer().copy(message, 40);
+  mint.toBuffer().copy(message, 72);
+
+  const msgHash = keccak256(message);
+  const sigObj = secp256k1.sign(msgHash, new Uint8Array(privKey));
+  return {
+    signature: sigObj.toCompactRawBytes(),
+    recoveryId: sigObj.recovery,
+  };
 }
 
 describe("wforgai-bridge", () => {
@@ -187,7 +209,7 @@ describe("wforgai-bridge", () => {
     });
   });
 
-  describe("bridge_out", () => {
+  describe("bridge_out (validation)", () => {
     let senderAta: PublicKey;
     const recipient = Buffer.alloc(32);
     recipient.set(
@@ -351,7 +373,129 @@ describe("wforgai-bridge", () => {
       }
     });
 
-    it("succeeds with valid validator signature", async () => {
+    it("rejects when bridge is paused", async () => {
+      await program.methods
+        .pause()
+        .accounts({ admin: admin.publicKey, bridgeConfig: bridgeConfigPda })
+        .rpc();
+
+      const transferId = Buffer.alloc(32, 0xcc);
+      const amount = new anchor.BN(1_000_000_000);
+      const recipient = admin.publicKey;
+
+      const [transferRecordPda] = PublicKey.findProgramAddressSync(
+        [TRANSFER_SEED, transferId],
+        program.programId
+      );
+
+      const recipientAta = await getOrCreateAssociatedTokenAccount(
+        provider.connection,
+        admin.payer,
+        wforgaiMint,
+        recipient
+      );
+
+      const { signature, recoveryId } = signTransferMessage(
+        transferId,
+        amount,
+        recipient,
+        wforgaiMint,
+        validatorPrivKey,
+      );
+
+      try {
+        await program.methods
+          .completeTransfer(
+            Array.from(transferId) as any,
+            amount,
+            recipient,
+            Array.from(signature) as any,
+            recoveryId
+          )
+          .accounts({
+            payer: admin.publicKey,
+            bridgeConfig: bridgeConfigPda,
+            transferRecord: transferRecordPda,
+            wforgaiMint: wforgaiMint,
+            mintAuthority: mintAuthorityPda,
+            recipientAta: recipientAta.address,
+            systemProgram: SystemProgram.programId,
+            tokenProgram: TOKEN_PROGRAM_ID,
+          })
+          .rpc();
+        expect.fail("Should have thrown BridgePaused");
+      } catch (err: any) {
+        expect(err.error.errorCode.code).to.equal("BridgePaused");
+      }
+
+      await program.methods
+        .unpause()
+        .accounts({ admin: admin.publicKey, bridgeConfig: bridgeConfigPda })
+        .rpc();
+    });
+
+    it("succeeds with valid validator signature and mints tokens", async () => {
+      const transferId = Buffer.alloc(32, 0xbb);
+      const amount = new anchor.BN(2_000_000_000);
+      const recipient = admin.publicKey;
+
+      const [transferRecordPda] = PublicKey.findProgramAddressSync(
+        [TRANSFER_SEED, transferId],
+        program.programId
+      );
+
+      const recipientAtaAccount = await getOrCreateAssociatedTokenAccount(
+        provider.connection,
+        admin.payer,
+        wforgaiMint,
+        recipient
+      );
+
+      const balanceBefore = Number(recipientAtaAccount.amount);
+
+      const { signature, recoveryId } = signTransferMessage(
+        transferId,
+        amount,
+        recipient,
+        wforgaiMint,
+        validatorPrivKey,
+      );
+
+      await program.methods
+        .completeTransfer(
+          Array.from(transferId) as any,
+          amount,
+          recipient,
+          Array.from(signature) as any,
+          recoveryId
+        )
+        .accounts({
+          payer: admin.publicKey,
+          bridgeConfig: bridgeConfigPda,
+          transferRecord: transferRecordPda,
+          wforgaiMint: wforgaiMint,
+          mintAuthority: mintAuthorityPda,
+          recipientAta: recipientAtaAccount.address,
+          systemProgram: SystemProgram.programId,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .rpc();
+
+      const record = await program.account.transferRecord.fetch(
+        transferRecordPda
+      );
+      expect(record.completed).to.equal(true);
+
+      const ataAfter = await getAccount(
+        provider.connection,
+        recipientAtaAccount.address
+      );
+      expect(Number(ataAfter.amount)).to.equal(
+        balanceBefore + amount.toNumber()
+      );
+    });
+
+    it("rejects replay (same transfer_id)", async () => {
       const transferId = Buffer.alloc(32, 0xbb);
       const amount = new anchor.BN(2_000_000_000);
       const recipient = admin.publicKey;
@@ -368,16 +512,176 @@ describe("wforgai-bridge", () => {
         recipient
       );
 
-      let message = Buffer.alloc(104);
-      transferId.copy(message, 0);
-      message.writeBigUInt64LE(BigInt(amount.toString()), 32);
-      recipient.toBuffer().copy(message, 40);
-      wforgaiMint.toBuffer().copy(message, 72);
+      const { signature, recoveryId } = signTransferMessage(
+        transferId,
+        amount,
+        recipient,
+        wforgaiMint,
+        validatorPrivKey,
+      );
 
-      const msgHash = keccak256(message);
-      const sigObj = secp256k1.sign(msgHash, new Uint8Array(validatorPrivKey));
-      const signature = sigObj.toCompactRawBytes();
-      const recoveryId = sigObj.recovery;
+      try {
+        await program.methods
+          .completeTransfer(
+            Array.from(transferId) as any,
+            amount,
+            recipient,
+            Array.from(signature) as any,
+            recoveryId
+          )
+          .accounts({
+            payer: admin.publicKey,
+            bridgeConfig: bridgeConfigPda,
+            transferRecord: transferRecordPda,
+            wforgaiMint: wforgaiMint,
+            mintAuthority: mintAuthorityPda,
+            recipientAta: recipientAta.address,
+            systemProgram: SystemProgram.programId,
+            tokenProgram: TOKEN_PROGRAM_ID,
+          })
+          .rpc();
+        expect.fail("Should have failed — replay");
+      } catch (err: any) {
+        expect(err.message).to.include("already in use");
+      }
+    });
+  });
+
+  describe("bridge_out (success)", () => {
+    it("burns tokens and emits BridgeOut log", async () => {
+      const recipientBytes32 = Buffer.alloc(32);
+      recipientBytes32.set(
+        Buffer.from("31bF8708f2E7Bd9eefa57557be8100057132f3eC", "hex"),
+        12
+      );
+      const burnAmount = new anchor.BN(1_000_000_000);
+
+      const senderAtaAccount = await getOrCreateAssociatedTokenAccount(
+        provider.connection,
+        admin.payer,
+        wforgaiMint,
+        admin.publicKey
+      );
+      const balanceBefore = Number(senderAtaAccount.amount);
+      expect(balanceBefore).to.be.gte(burnAmount.toNumber());
+
+      const configBefore = await program.account.bridgeConfig.fetch(
+        bridgeConfigPda
+      );
+      const nonceBefore = configBefore.nonce.toNumber();
+
+      const tx = await program.methods
+        .bridgeOut(
+          burnAmount,
+          new anchor.BN(56),
+          Array.from(recipientBytes32) as any
+        )
+        .accounts({
+          sender: admin.publicKey,
+          bridgeConfig: bridgeConfigPda,
+          wforgaiMint: wforgaiMint,
+          senderAta: senderAtaAccount.address,
+          tokenProgram: TOKEN_PROGRAM_ID,
+        })
+        .rpc();
+
+      const ataAfter = await getAccount(
+        provider.connection,
+        senderAtaAccount.address
+      );
+      expect(Number(ataAfter.amount)).to.equal(
+        balanceBefore - burnAmount.toNumber()
+      );
+
+      const configAfter = await program.account.bridgeConfig.fetch(
+        bridgeConfigPda
+      );
+      expect(configAfter.nonce.toNumber()).to.equal(nonceBefore + 1);
+    });
+  });
+
+  describe("update_validator", () => {
+    it("admin can update validator address", async () => {
+      const newPrivKey = Keypair.generate().secretKey.slice(0, 32);
+      const newEthAddr = ethAddressFromPrivateKey(new Uint8Array(newPrivKey));
+
+      await program.methods
+        .updateValidator(Array.from(newEthAddr) as any)
+        .accounts({
+          admin: admin.publicKey,
+          bridgeConfig: bridgeConfigPda,
+        })
+        .rpc();
+
+      const config = await program.account.bridgeConfig.fetch(bridgeConfigPda);
+      expect(Buffer.from(config.validatorEthAddress)).to.deep.equal(
+        Buffer.from(newEthAddr)
+      );
+    });
+
+    it("non-admin cannot update validator", async () => {
+      const attacker = Keypair.generate();
+      const airdropSig = await provider.connection.requestAirdrop(
+        attacker.publicKey,
+        LAMPORTS_PER_SOL
+      );
+      await provider.connection.confirmTransaction(airdropSig);
+
+      const fakeAddr = new Uint8Array(20).fill(0xff);
+
+      try {
+        await program.methods
+          .updateValidator(Array.from(fakeAddr) as any)
+          .accounts({
+            admin: attacker.publicKey,
+            bridgeConfig: bridgeConfigPda,
+          })
+          .signers([attacker])
+          .rpc();
+        expect.fail("Should have thrown Unauthorized");
+      } catch (err: any) {
+        expect(err.error.errorCode.code).to.equal("Unauthorized");
+      }
+    });
+
+    it("new validator signature works in complete_transfer", async () => {
+      const config = await program.account.bridgeConfig.fetch(bridgeConfigPda);
+      const currentValidator = Buffer.from(config.validatorEthAddress);
+
+      const newPrivKey = Keypair.generate().secretKey.slice(0, 32);
+      const newEthAddr = ethAddressFromPrivateKey(new Uint8Array(newPrivKey));
+
+      await program.methods
+        .updateValidator(Array.from(newEthAddr) as any)
+        .accounts({
+          admin: admin.publicKey,
+          bridgeConfig: bridgeConfigPda,
+        })
+        .rpc();
+
+      const transferId = Buffer.alloc(32, 0xdd);
+      const amount = new anchor.BN(1_000_000_000);
+      const recipient = admin.publicKey;
+
+      const [transferRecordPda] = PublicKey.findProgramAddressSync(
+        [TRANSFER_SEED, transferId],
+        program.programId
+      );
+
+      const recipientAta = await getOrCreateAssociatedTokenAccount(
+        provider.connection,
+        admin.payer,
+        wforgaiMint,
+        recipient
+      );
+
+      const { signature, recoveryId } = signTransferMessage(
+        transferId,
+        amount,
+        recipient,
+        wforgaiMint,
+        newPrivKey,
+      );
 
       await program.methods
         .completeTransfer(
@@ -403,58 +707,6 @@ describe("wforgai-bridge", () => {
         transferRecordPda
       );
       expect(record.completed).to.equal(true);
-    });
-
-    it("rejects replay (same transfer_id)", async () => {
-      const transferId = Buffer.alloc(32, 0xbb);
-      const amount = new anchor.BN(2_000_000_000);
-      const recipient = admin.publicKey;
-
-      const [transferRecordPda] = PublicKey.findProgramAddressSync(
-        [TRANSFER_SEED, transferId],
-        program.programId
-      );
-
-      const recipientAta = await getOrCreateAssociatedTokenAccount(
-        provider.connection,
-        admin.payer,
-        wforgaiMint,
-        recipient
-      );
-
-      let message = Buffer.alloc(104);
-      transferId.copy(message, 0);
-      message.writeBigUInt64LE(BigInt(amount.toString()), 32);
-      recipient.toBuffer().copy(message, 40);
-      wforgaiMint.toBuffer().copy(message, 72);
-
-      const msgHash = keccak256(message);
-      const sigObj = secp256k1.sign(msgHash, new Uint8Array(validatorPrivKey));
-
-      try {
-        await program.methods
-          .completeTransfer(
-            Array.from(transferId) as any,
-            amount,
-            recipient,
-            Array.from(sigObj.toCompactRawBytes()) as any,
-            sigObj.recovery
-          )
-          .accounts({
-            payer: admin.publicKey,
-            bridgeConfig: bridgeConfigPda,
-            transferRecord: transferRecordPda,
-            wforgaiMint: wforgaiMint,
-            mintAuthority: mintAuthorityPda,
-            recipientAta: recipientAta.address,
-            systemProgram: SystemProgram.programId,
-            tokenProgram: TOKEN_PROGRAM_ID,
-          })
-          .rpc();
-        expect.fail("Should have failed — replay");
-      } catch (err: any) {
-        expect(err.message).to.include("already in use");
-      }
     });
   });
 });
