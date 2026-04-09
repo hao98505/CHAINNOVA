@@ -260,6 +260,8 @@ async function watchSolanaBridgeOut(
           const parsed = parseBridgeOutLog(log);
           if (!parsed) continue;
 
+          if (processedSet.has(parsed.transferId)) continue;
+
           console.log(`\n[detected] BridgeOut in tx ${sigInfo.signature.slice(0, 20)}...`);
 
           await relaySolanaToEvm(
