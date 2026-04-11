@@ -4,6 +4,7 @@ import { formatTokenAmount } from "./formatters";
 import type { MarketData, VaultBalance, DexScreenerResponse } from "./types";
 
 const DEXSCREENER_API = "https://api.dexscreener.com/latest/dex/tokens";
+const GECKOTERMINAL_API = "https://api.geckoterminal.com/api/v2/networks/bsc/tokens";
 
 export async function fetchMarketData(): Promise<MarketData> {
   try {
@@ -21,11 +22,13 @@ export async function fetchMarketData(): Promise<MarketData> {
     const bscPairs = data.pairs.filter((p) => p.chainId === "bsc");
     const pair = bscPairs.length > 0 ? bscPairs[0] : data.pairs[0];
 
+    const holders = await fetchHoldersCount();
+
     return {
       currentPrice: pair.priceUsd ? parseFloat(pair.priceUsd) : null,
       marketCap: pair.marketCap ?? pair.fdv ?? null,
       liquidity: pair.liquidity?.usd ?? null,
-      holders: null,
+      holders,
       volume24h: pair.volume?.h24 ?? null,
       priceChange24h: pair.priceChange?.h24 ?? null,
       pairAddress: pair.pairAddress,
@@ -33,6 +36,33 @@ export async function fetchMarketData(): Promise<MarketData> {
     };
   } catch {
     return nullMarketData();
+  }
+}
+
+async function fetchHoldersCount(): Promise<number | null> {
+  try {
+    const res = await fetch(
+      `${GECKOTERMINAL_API}/${TOKEN_CONFIG.contractAddress}`,
+      {
+        signal: AbortSignal.timeout(8_000),
+        headers: { Accept: "application/json" },
+      },
+    );
+    if (!res.ok) return null;
+
+    const data = await res.json();
+    const info = data?.data?.attributes;
+    if (info?.holders_count != null) {
+      return typeof info.holders_count === "number"
+        ? info.holders_count
+        : parseInt(info.holders_count, 10) || null;
+    }
+    if (info?.gt_score_details?.holders != null) {
+      return null;
+    }
+    return null;
+  } catch {
+    return null;
   }
 }
 
