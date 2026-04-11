@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { AgentCard } from "@/components/AgentCard";
 import { CreateAgentModal } from "@/components/CreateAgentModal";
 import { ParticleBackground } from "@/components/ParticleBackground";
+import { TokenDashboard } from "@/components/home/TokenDashboard";
 import { useAgents } from "@/hooks/useChainNova";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
@@ -101,6 +102,8 @@ export default function Home() {
 
         <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-background to-transparent" />
       </section>
+
+      <TokenDashboard />
 
       <section className="px-6 py-10">
         <div className="max-w-5xl mx-auto">
