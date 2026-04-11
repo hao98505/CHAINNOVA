@@ -19,7 +19,7 @@ Decentralized AI agent marketplace on Solana. Mint, buy, rent, and stake AI agen
 ## Architecture
 
 ### Pages
-- `/` — Home (hero + particle background + stats)
+- `/` — Home (hero + Token Dashboard + particle background + stats)
 - `/marketplace` — AI agent NFT grid
 - `/my-agents` — Personal NFT collection
 - `/stake` — $CNOVA staking
@@ -50,7 +50,14 @@ Anchor program: `programs/wforgai-bridge/`
 - **Error codes**: 6000–6008 (see `SPEC.md`)
 - **Supported chains**: BSC (56), Arbitrum (42161), Ethereum (1)
 - **Spec**: `programs/wforgai-bridge/SPEC.md`
-- **Tests**: `tests/wforgai-bridge.test.ts` (13 cases: init constraints, pause/unpause, bridge_out validation, complete_transfer sig verify + replay)
+- **Tests**: `tests/wforgai-bridge.test.ts` (18 cases: init constraints, pause/unpause, bridge_out validation+burn+nonce, complete_transfer sig verify+replay+balance, update_validator admin/sig)
+- **Bidirectional Relayer**: `server/solana-evm-relayer.ts` — Solana→EVM (BridgeOut log→completeTransfer), EVM→Solana stub; dedup by transfer_id, paginated scanning, 12-block EVM finality
+
+### Token Dashboard (Homepage)
+- **Config**: `client/src/config/tokenDashboard.ts` — addresses, vaults, tax, transparency
+- **Hooks**: `client/src/hooks/useTokenDashboard.ts` — overview/vaults/myDashboard/referral queries
+- **Component**: `client/src/components/home/TokenDashboard.tsx` — 6 sections with glassmorphism, i18n, error handling
+- **i18n**: `tokenDashboard` namespace in `client/src/lib/i18n.ts` (EN + ZH)
 - **CI**: `.github/workflows/anchor-build.yml` — `anchor build --no-idl` on push to main (GREEN)
 - **CI strategy**: Rust 1.85 system cargo patched into solana toolchain (rustc 1.79), 9 dep pins for MSRV compat, IDL gen skipped (proc_macro2 incompatibility)
 - **Build**: Cannot build in Replit (Solana SDK exceeds container memory). Use GitHub Actions or local `anchor build`.
