@@ -1,0 +1,132 @@
+先暂停处理 `bigint-buffer` 漏洞这条支线。那不是我当前主任务。现在回到主任务，按下面要求执行。
+
+当前主任务分为两部分：
+**1）把官网 Token Dashboard 和相关功能全量切到我的测试代币**
+**2）产出奖励架构合约草案 + 架构文档 + 前端数据结构预留**
+
+测试代币地址：
+`0x0a9c2e3cda80a828334bfa2577a75a85229f7777`
+
+注意：
+
+* **现在不要部署主网**
+* **现在不要向我要私钥**
+* **现在不要自动生成什么部署钱包给我**
+* 这一步只做代码、配置、文档、前端和合约草案
+* 如果将来需要测试部署，我会决定是否提供“测试钱包私钥”到 Replit Secrets，但不是现在
+
+---
+
+## 第一部分：全量切换到测试代币
+
+请检查并更新所有与 Token Dashboard 和相关外链有关的地方，统一切到：
+`0x0a9c2e3cda80a828334bfa2577a75a85229f7777`
+
+至少覆盖：
+
+* `client/src/config/tokenDashboard.ts`
+* `client/src/hooks/useTokenDashboard.ts`
+* `client/src/lib/tokenDashboard/adapters.ts`
+* `client/src/lib/tokenDashboard/contracts.ts`
+* `client/src/lib/tokenDashboard/types.ts`
+* `client/src/components/home/TokenDashboard.tsx`
+* `client/src/pages/Home.tsx`
+* `client/src/lib/i18n.ts`
+
+要求：
+
+1. 从链上读取并确认：
+
+* `name()`
+* `symbol()`
+* `decimals()`
+
+2. Dashboard 显示切到这个测试币的真实 name / symbol
+3. 所有 explorer / contract / chart / holders / market adapters 查询目标都改成新地址
+4. 如果新币未被索引：
+
+* price / market cap / volume / holders 可以显示 `--`
+* 但合约地址、链上 balance、explorer link 必须正确
+
+5. 搜索并清理：
+
+* 旧 token address
+* 旧 token name
+* 旧 token symbol
+* 旧 chart / buy / contract link
+
+---
+
+## 第二部分：做奖励架构草案和前端预留
+
+目标：
+采用二层架构：
+
+1. Holder dividend 走 Flap Tax Token V2 dividend（`minimumShareBalance = 200000`）
+2. 其余税收进入自定义 `MasterVault`
+3. `MasterVault` 再拆分到：
+
+* `LPRewardVault`
+* `ReferralVault`
+* `MarketingVault`
+
+### 2.1 产出 solidity 合约草案
+
+先不要部署，只生成文件。
+
+需要：
+
+* `MasterVault.sol`
+* `LPRewardVault.sol`
+* `ReferralVault.sol`
+* `MarketingVault.sol`
+
+要求：
+
+* 所有比例用 basis points
+* 所有关键函数加事件
+* 外部调用考虑重入保护
+* 不要设计成“税先到普通钱包再人工分配”
+
+### 2.2 产出架构文档
+
+写清楚：
+
+* 税收流向
+* 各合约职责
+* 页面字段对应哪个合约数据
+* Phase 1 / 2 / 3 哪些字段能接，哪些只能预留
+* 为什么不能用普通钱包先收税
+
+### 2.3 前端数据结构预留
+
+先不要接真实 claim，只扩展类型、配置、hooks、explorer links，预留：
+
+* `dividendContract`
+* `masterVault`
+* `lpRewardVault`
+* `referralVault`
+* `marketingVault`
+* `earnedLP`
+* `pendingReferral`
+* `claimableHolderReward`
+* 对应 explorer links
+
+---
+
+## 这次的交付要求
+
+按下面格式汇报，不要再跑题：
+
+1. 测试代币地址是否已全量切换完成
+2. 改动文件清单
+3. 旧地址 / 旧 symbol / 旧 name 搜索残留结果
+4. 当前首页截图
+5. 当前已真实读取的数据项
+6. 当前仍然是占位 / 预留的数据项
+7. 新增的合约草案文件清单
+8. 架构文档路径
+9. GitHub HEAD 提交号
+
+重点：
+**先把代码、配置、文档、合约草案做完整，再谈部署。不要继续跑去修无关漏洞。**
