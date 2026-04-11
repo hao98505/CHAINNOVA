@@ -1,0 +1,7 @@
+{
+  "name": "bigint-buffer",
+  "version": "1.1.5",
+  "description": "Pure JS replacement for bigint-buffer — removes vulnerable native C++ addon (CVE GHSA-3gc7-fjrx-p6mg)",
+  "main": "dist/node.js",
+  "license": "MIT"
+}

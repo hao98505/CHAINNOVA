@@ -59,6 +59,9 @@ export interface MyDashboardData {
   pendingBnbRewards: number | null;
   pendingLpRewards: number | null;
   pendingReferralCommission: number | null;
+  claimableHolderReward: number | null;
+  earnedLP: number | null;
+  pendingReferral: number | null;
 }
 
 export interface ReferralData {
@@ -68,6 +71,20 @@ export interface ReferralData {
   pendingReview: number | null;
   claimableCommission: number | null;
   history: Array<{ date: string; amount: number; status: string }>;
+}
+
+export interface OnChainTokenMeta {
+  name: string;
+  symbol: string;
+  decimals: number;
+}
+
+export interface RewardContractAddresses {
+  dividendContract: string;
+  masterVault: string;
+  lpRewardVault: string;
+  referralVault: string;
+  marketingVault: string;
 }
 
 export interface DexScreenerPair {

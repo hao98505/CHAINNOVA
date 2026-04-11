@@ -7,19 +7,32 @@ import {
   fetchWalletTokenBalance,
   detectEvmWallet,
 } from "@/lib/tokenDashboard/adapters";
+import { readOnChainTokenMeta } from "@/lib/tokenDashboard/contracts";
 import { relativeTime } from "@/lib/tokenDashboard/formatters";
-import type { TokenOverview, VaultData, MyDashboardData, ReferralData } from "@/lib/tokenDashboard/types";
+import type { TokenOverview, VaultData, MyDashboardData, ReferralData, OnChainTokenMeta } from "@/lib/tokenDashboard/types";
 
-export type { TokenOverview, VaultData, MyDashboardData, ReferralData };
+export type { TokenOverview, VaultData, MyDashboardData, ReferralData, OnChainTokenMeta };
+
+export function useOnChainTokenMeta() {
+  return useQuery<OnChainTokenMeta>({
+    queryKey: ["token-onchain-meta"],
+    queryFn: readOnChainTokenMeta,
+    staleTime: 5 * 60_000,
+    retry: 2,
+    retryDelay: 3000,
+  });
+}
 
 export function useTokenOverview() {
+  const { data: meta } = useOnChainTokenMeta();
+
   return useQuery<TokenOverview>({
-    queryKey: ["token-overview"],
+    queryKey: ["token-overview", meta?.name],
     queryFn: async (): Promise<TokenOverview> => {
       const market = await fetchMarketData();
       return {
-        name: TOKEN_CONFIG.name,
-        symbol: TOKEN_CONFIG.symbol,
+        name: meta?.name || TOKEN_CONFIG.name || TOKEN_CONFIG.contractAddress,
+        symbol: meta?.symbol || TOKEN_CONFIG.symbol || "TOKEN",
         contractAddress: TOKEN_CONFIG.contractAddress,
         currentPrice: market.currentPrice,
         marketCap: market.marketCap,
@@ -94,6 +107,9 @@ export function useMyTokenDashboard() {
         pendingBnbRewards: null,
         pendingLpRewards: null,
         pendingReferralCommission: null,
+        claimableHolderReward: null,
+        earnedLP: null,
+        pendingReferral: null,
       };
     },
     enabled: true,

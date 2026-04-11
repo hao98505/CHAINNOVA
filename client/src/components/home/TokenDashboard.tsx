@@ -10,6 +10,7 @@ import {
   useVaults,
   useMyTokenDashboard,
   useReferralData,
+  useOnChainTokenMeta,
 } from "@/hooks/useTokenDashboard";
 import {
   TOKEN_CONFIG,
@@ -133,6 +134,11 @@ function SectionTitle({ children, icon: Icon }: { children: React.ReactNode; ico
 function OverviewSection() {
   const { t } = useLanguage();
   const { data, isLoading, isError, refetch } = useTokenOverview();
+  const { data: meta } = useOnChainTokenMeta();
+
+  const tokenName = data?.name || meta?.name || TOKEN_CONFIG.name || TOKEN_CONFIG.contractAddress;
+  const tokenSymbol = data?.symbol || meta?.symbol || TOKEN_CONFIG.symbol || "TOKEN";
+  const tokenInitial = tokenName.charAt(0).toUpperCase() || "?";
 
   const td = t.tokenDashboard;
   const metrics = [
@@ -155,14 +161,14 @@ function OverviewSection() {
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-primary/20 border-2 border-primary/40 flex items-center justify-center">
-              <span className="font-orbitron text-lg font-bold text-primary">F</span>
+              <span className="font-orbitron text-lg font-bold text-primary">{tokenInitial}</span>
             </div>
             <div>
               <div className="text-xl font-bold text-purple-50" data-testid="text-token-name">
-                {TOKEN_CONFIG.name}
+                {tokenName}
               </div>
               <div className="text-sm text-purple-300 tracking-wide" data-testid="text-token-symbol">
-                ${TOKEN_CONFIG.symbol}
+                ${tokenSymbol}
               </div>
             </div>
           </div>
@@ -647,6 +653,8 @@ function TransparencySection() {
 export function TokenDashboard() {
   const { t } = useLanguage();
   const td = t.tokenDashboard;
+  const { data: meta } = useOnChainTokenMeta();
+  const displayName = meta?.name || TOKEN_CONFIG.name || td.tokenLabel;
 
   return (
     <section id="token-dashboard" className="px-4 sm:px-6 py-12" data-testid="section-token-dashboard">
@@ -664,7 +672,7 @@ export function TokenDashboard() {
             </span>
           </div>
           <h2 className="font-orbitron text-2xl md:text-3xl font-bold tracking-wider text-purple-50">
-            {TOKEN_CONFIG.name} {td.analyticsTitle}
+            {displayName} {td.analyticsTitle}
           </h2>
         </motion.div>
 

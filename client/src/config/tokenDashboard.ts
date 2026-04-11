@@ -1,24 +1,36 @@
 export const TOKEN_CONFIG = {
-  name: "ForgAI",
-  symbol: "FORGAI",
+  name: "",
+  symbol: "",
   decimals: 18,
-  contractAddress: "0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff",
+  contractAddress: "0x0a9c2e3cda80a828334bfa2577a75a85229f7777",
   chain: "BSC",
   chainId: 56,
   rpcUrl: "https://bsc-rpc.publicnode.com",
-  explorerUrl: "https://bscscan.com/token/0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff",
+  explorerUrl: "https://bscscan.com/token/0x0a9c2e3cda80a828334bfa2577a75a85229f7777",
   explorerAddressUrl: "https://bscscan.com/address",
+  dexScreenerUrl: `https://dexscreener.com/bsc/0x0a9c2e3cda80a828334bfa2577a75a85229f7777`,
+  geckoTerminalUrl: `https://www.geckoterminal.com/bsc/tokens/0x0a9c2e3cda80a828334bfa2577a75a85229f7777`,
+  buyUrl: "",
+  chartUrl: "",
   buyTaxPercent: 3,
   sellTaxPercent: 6,
   holdingThreshold: 200_000,
   githubUrl: "https://github.com/hao98505/CHAINNOVA",
 };
 
+export const VAULT_CONTRACT_CONFIG = {
+  dividendContract: "",
+  masterVault: "",
+  lpRewardVault: "",
+  referralVault: "",
+  marketingVault: "",
+};
+
 export const VAULT_CONFIG = [
   {
     id: "holder-dividend",
     labelKey: "holderDividend" as const,
-    address: "0x0000000000000000000000000000000000000001",
+    address: VAULT_CONTRACT_CONFIG.dividendContract,
     allocationPercent: 30,
     color: "#A78BFA",
     icon: "Users" as const,
@@ -26,7 +38,7 @@ export const VAULT_CONFIG = [
   {
     id: "lp-reward",
     labelKey: "lpReward" as const,
-    address: "0x0000000000000000000000000000000000000002",
+    address: VAULT_CONTRACT_CONFIG.lpRewardVault,
     allocationPercent: 30,
     color: "#34D399",
     icon: "Droplets" as const,
@@ -34,7 +46,7 @@ export const VAULT_CONFIG = [
   {
     id: "referral-commission",
     labelKey: "referralCommission" as const,
-    address: "0x0000000000000000000000000000000000000003",
+    address: VAULT_CONTRACT_CONFIG.referralVault,
     allocationPercent: 30,
     color: "#60A5FA",
     icon: "Link" as const,
@@ -42,7 +54,7 @@ export const VAULT_CONFIG = [
   {
     id: "marketing-budget",
     labelKey: "marketingBudget" as const,
-    address: "0x0000000000000000000000000000000000000004",
+    address: VAULT_CONTRACT_CONFIG.marketingVault,
     allocationPercent: 10,
     color: "#FBBF24",
     icon: "Megaphone" as const,
@@ -52,8 +64,15 @@ export const VAULT_CONFIG = [
 export const TRANSPARENCY_CONFIG = {
   tokenContract: TOKEN_CONFIG.contractAddress,
   vaultAddresses: VAULT_CONFIG.map((v) => ({ label: v.labelKey, address: v.address })),
-  marketingMultisig: "0x0000000000000000000000000000000000000005",
-  reimbursementVault: "0x0000000000000000000000000000000000000006",
+  vaultContracts: {
+    dividendContract: VAULT_CONTRACT_CONFIG.dividendContract,
+    masterVault: VAULT_CONTRACT_CONFIG.masterVault,
+    lpRewardVault: VAULT_CONTRACT_CONFIG.lpRewardVault,
+    referralVault: VAULT_CONTRACT_CONFIG.referralVault,
+    marketingVault: VAULT_CONTRACT_CONFIG.marketingVault,
+  },
+  marketingMultisig: "",
+  reimbursementVault: "",
   githubSource: TOKEN_CONFIG.githubUrl,
   auditStatus: "pending" as "pending" | "completed" | "in-progress",
   mintable: false,
