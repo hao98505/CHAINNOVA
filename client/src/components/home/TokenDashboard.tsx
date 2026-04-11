@@ -35,23 +35,23 @@ const FLOW_ICON_MAP = [CircleDollarSign, ArrowRight, Layers, Gift] as const;
 const FLOW_COLORS = ["#A78BFA", "#6B46C1", "#34D399", "#FBBF24"] as const;
 
 function Placeholder() {
-  return <span className="text-muted-foreground/50 font-mono">--</span>;
+  return <span className="text-purple-300/60 font-mono text-lg">--</span>;
 }
 
-function SkeletonValue({ isLoading, value, width = "w-20" }: { isLoading: boolean; value: React.ReactNode; width?: string }) {
-  if (isLoading) return <Skeleton className={`h-5 ${width} bg-primary/10`} />;
+function SkeletonValue({ isLoading, value, width = "w-24" }: { isLoading: boolean; value: React.ReactNode; width?: string }) {
+  if (isLoading) return <Skeleton className={`h-7 ${width} bg-primary/10`} />;
   return <>{value ?? <Placeholder />}</>;
 }
 
 function ErrorBanner({ message, onRetry }: { message: string; onRetry?: () => void }) {
   const { t } = useLanguage();
   return (
-    <div className="flex items-center gap-2 p-3 rounded border border-red-500/20 bg-red-500/5 text-red-400 text-xs" data-testid="banner-error">
-      <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
-      <span>{message}</span>
+    <div className="flex items-center gap-3 p-4 rounded-lg border border-red-500/30 bg-red-500/5 text-red-300 text-sm mb-4" data-testid="banner-error">
+      <AlertTriangle className="w-5 h-5 flex-shrink-0" />
+      <span className="flex-1">{message}</span>
       {onRetry && (
-        <Button size="sm" variant="ghost" className="h-6 px-2 text-[10px] ml-auto" onClick={onRetry} data-testid="button-retry">
-          <RefreshCw className="w-3 h-3 mr-1" /> {t.tokenDashboard.retry}
+        <Button size="sm" variant="ghost" className="h-8 px-3 text-sm" onClick={onRetry} data-testid="button-retry">
+          <RefreshCw className="w-4 h-4 mr-1.5" /> {t.tokenDashboard.retry}
         </Button>
       )}
     </div>
@@ -71,11 +71,11 @@ function CopyableAddress({ address, short = true, context = "default" }: { addre
   return (
     <button
       onClick={copy}
-      className="inline-flex items-center gap-1.5 font-mono text-xs text-primary/90 hover:text-primary transition-colors group"
+      className="inline-flex items-center gap-2 font-mono text-sm text-purple-300 hover:text-purple-100 transition-colors group"
       data-testid={`button-copy-address-${context}`}
     >
       <span>{display}</span>
-      {copied ? <Check className="w-3 h-3 text-green-400" /> : <Copy className="w-3 h-3 opacity-50 group-hover:opacity-100" />}
+      {copied ? <Check className="w-4 h-4 text-green-400" /> : <Copy className="w-4 h-4 opacity-60 group-hover:opacity-100" />}
     </button>
   );
 }
@@ -84,14 +84,14 @@ function StatusBadge({ active, label, id }: { active: boolean; label: string; id
   const { t } = useLanguage();
   return (
     <span
-      className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider border ${
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-semibold border ${
         active
-          ? "border-red-500/40 bg-red-500/10 text-red-400"
-          : "border-green-500/40 bg-green-500/10 text-green-400"
+          ? "border-red-500/40 bg-red-500/10 text-red-300"
+          : "border-green-500/40 bg-green-500/10 text-green-300"
       }`}
       data-testid={`status-${id}`}
     >
-      {active ? <ShieldX className="w-2.5 h-2.5" /> : <ShieldCheck className="w-2.5 h-2.5" />}
+      {active ? <ShieldX className="w-4 h-4" /> : <ShieldCheck className="w-4 h-4" />}
       {label}: {active ? t.tokenDashboard.yes : t.tokenDashboard.no}
     </span>
   );
@@ -103,14 +103,14 @@ function GlowCard({ children, className = "", delay = 0 }: { children: React.Rea
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay, duration: 0.5 }}
-      className={`relative rounded-lg border border-primary/20 overflow-hidden ${className}`}
+      className={`relative rounded-xl border border-purple-500/25 overflow-hidden ${className}`}
       style={{
-        background: "rgba(15, 10, 35, 0.65)",
+        background: "rgba(15, 10, 35, 0.7)",
         backdropFilter: "blur(16px)",
-        boxShadow: "0 0 1px rgba(167, 139, 250, 0.3), 0 0 15px rgba(107, 70, 193, 0.08), inset 0 1px 0 rgba(167, 139, 250, 0.06)",
+        boxShadow: "0 0 1px rgba(167, 139, 250, 0.4), 0 0 20px rgba(107, 70, 193, 0.1), inset 0 1px 0 rgba(167, 139, 250, 0.08)",
       }}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.04] to-transparent pointer-events-none" />
       <div className="relative z-10">{children}</div>
     </motion.div>
   );
@@ -118,19 +118,19 @@ function GlowCard({ children, className = "", delay = 0 }: { children: React.Rea
 
 function SectionTitle({ children, icon: Icon }: { children: React.ReactNode; icon?: React.ElementType }) {
   return (
-    <div className="flex items-center gap-2 mb-4">
-      {Icon && <Icon className="w-4 h-4 text-primary" />}
-      <h3 className="font-orbitron text-sm font-bold uppercase tracking-wider text-foreground">
+    <div className="flex items-center gap-3 mb-6">
+      {Icon && <Icon className="w-6 h-6 text-primary" />}
+      <h3 className="text-lg md:text-xl font-semibold text-purple-100 tracking-wide">
         {children}
       </h3>
-      <div className="flex-1 h-px bg-gradient-to-r from-primary/30 to-transparent" />
+      <div className="flex-1 h-px bg-gradient-to-r from-purple-500/30 to-transparent" />
     </div>
   );
 }
 
 function OverviewSection() {
   const { t } = useLanguage();
-  const { data, isLoading, isError, error, refetch } = useTokenOverview();
+  const { data, isLoading, isError, refetch } = useTokenOverview();
 
   const td = t.tokenDashboard;
   const metrics = [
@@ -145,47 +145,47 @@ function OverviewSection() {
 
   return (
     <GlowCard delay={0.1}>
-      <div className="p-5">
+      <div className="p-6 md:p-8">
         <SectionTitle icon={Coins}>{td.tokenOverview}</SectionTitle>
 
         {isError && <ErrorBanner message={td.loadError} onRetry={() => refetch()} />}
 
-        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-5">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-full bg-primary/20 border border-primary/30 flex items-center justify-center">
-              <span className="font-orbitron text-xs font-bold text-primary">F</span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-full bg-primary/20 border-2 border-primary/40 flex items-center justify-center">
+              <span className="font-orbitron text-lg font-bold text-primary">F</span>
             </div>
             <div>
-              <div className="font-orbitron text-base font-bold text-foreground" data-testid="text-token-name">
+              <div className="text-xl font-bold text-purple-50" data-testid="text-token-name">
                 {TOKEN_CONFIG.name}
               </div>
-              <div className="text-[10px] text-muted-foreground uppercase tracking-wider" data-testid="text-token-symbol">
+              <div className="text-sm text-purple-300 tracking-wide" data-testid="text-token-symbol">
                 ${TOKEN_CONFIG.symbol}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <CopyableAddress address={TOKEN_CONFIG.contractAddress} context="token-contract" />
             <a
               href={TOKEN_CONFIG.explorerUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-muted-foreground/50 hover:text-primary transition-colors"
+              className="text-purple-400 hover:text-purple-200 transition-colors"
               data-testid="link-explorer"
             >
-              <ExternalLink className="w-3 h-3" />
+              <ExternalLink className="w-5 h-5" />
             </a>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-4">
           {metrics.map((m) => (
-            <div key={m.key} className="text-center p-2 rounded bg-background/30 border border-primary/[0.07]">
-              <m.icon className="w-3 h-3 text-primary/60 mx-auto mb-1" />
-              <div className="font-orbitron text-sm font-bold text-foreground" data-testid={`text-${m.key}`}>
+            <div key={m.key} className="text-center p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
+              <m.icon className="w-5 h-5 text-purple-400 mx-auto mb-2" />
+              <div className="text-xl md:text-2xl font-bold text-purple-50 leading-tight" data-testid={`text-${m.key}`}>
                 <SkeletonValue isLoading={isLoading} value={m.value} />
               </div>
-              <div className="text-[9px] text-muted-foreground/70 uppercase tracking-wider mt-0.5">{m.label}</div>
+              <div className="text-sm text-purple-300/80 mt-1.5">{m.label}</div>
             </div>
           ))}
         </div>
@@ -203,51 +203,51 @@ function VaultsSection() {
     <div>
       <SectionTitle icon={Shield}>{td.vaultAllocation}</SectionTitle>
       {isError && <ErrorBanner message={td.loadError} onRetry={() => refetch()} />}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {VAULT_CONFIG.map((vc, i) => {
           const vault = vaults?.find((v) => v.id === vc.id);
           const Icon = ICON_MAP[vc.icon];
           const vaultLabel = td[vc.labelKey as keyof typeof td] as string;
           return (
             <GlowCard key={vc.id} delay={0.15 + i * 0.05}>
-              <div className="p-4">
-                <div className="flex items-center gap-2 mb-3">
+              <div className="p-5 md:p-6">
+                <div className="flex items-center gap-3 mb-4">
                   <div
-                    className="w-7 h-7 rounded-md flex items-center justify-center"
-                    style={{ background: `${vc.color}15`, border: `1px solid ${vc.color}30` }}
+                    className="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style={{ background: `${vc.color}18`, border: `1.5px solid ${vc.color}40` }}
                   >
-                    <Icon className="w-3.5 h-3.5" style={{ color: vc.color }} />
+                    <Icon className="w-5 h-5" style={{ color: vc.color }} />
                   </div>
                   <div>
-                    <div className="text-xs font-semibold text-foreground capitalize" data-testid={`text-vault-${vc.id}`}>
+                    <div className="text-base font-semibold text-purple-100" data-testid={`text-vault-${vc.id}`}>
                       {vaultLabel}
                     </div>
-                    <div className="text-[9px] font-mono text-muted-foreground/60">{vc.allocationPercent}%</div>
+                    <div className="text-2xl font-bold" style={{ color: vc.color }}>{vc.allocationPercent}%</div>
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {[
                     { label: td.balance, value: vault?.currentBalance },
                     { label: td.totalIn, value: vault?.totalInflow },
                     { label: td.totalOut, value: vault?.totalOutflow },
                   ].map((row) => (
                     <div key={row.label} className="flex items-center justify-between">
-                      <span className="text-[10px] text-muted-foreground/70 uppercase tracking-wider">{row.label}</span>
-                      <span className="font-mono text-xs text-foreground">
-                        <SkeletonValue isLoading={isLoading} value={row.value != null ? row.value.toLocaleString() : null} width="w-14" />
+                      <span className="text-sm text-purple-300/80">{row.label}</span>
+                      <span className="font-mono text-sm text-purple-100">
+                        <SkeletonValue isLoading={isLoading} value={row.value != null ? row.value.toLocaleString() : null} width="w-16" />
                       </span>
                     </div>
                   ))}
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-muted-foreground/70 uppercase tracking-wider">{td.updated}</span>
-                    <span className="font-mono text-[10px] text-muted-foreground/50">
-                      <SkeletonValue isLoading={isLoading} value={vault?.lastUpdateTime} width="w-14" />
+                    <span className="text-sm text-purple-300/80">{td.updated}</span>
+                    <span className="font-mono text-sm text-purple-300/60">
+                      <SkeletonValue isLoading={isLoading} value={vault?.lastUpdateTime} width="w-16" />
                     </span>
                   </div>
                 </div>
 
-                <div className="mt-3 h-1 rounded-full bg-background/50 overflow-hidden">
+                <div className="mt-4 h-2 rounded-full bg-purple-950/60 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-1000"
                     style={{ width: `${vc.allocationPercent}%`, background: vc.color }}
@@ -276,9 +276,9 @@ function MyDashboardSection() {
   if (!connected) {
     return (
       <GlowCard delay={0.3}>
-        <div className="p-6 text-center">
-          <Wallet className="w-8 h-8 text-primary/40 mx-auto mb-3" />
-          <div className="text-sm text-muted-foreground" data-testid="text-connect-dashboard">{td.connectWalletDashboard}</div>
+        <div className="p-8 md:p-10 text-center">
+          <Wallet className="w-12 h-12 text-purple-400/50 mx-auto mb-4" />
+          <div className="text-base text-purple-300" data-testid="text-connect-dashboard">{td.connectWalletDashboard}</div>
         </div>
       </GlowCard>
     );
@@ -299,36 +299,36 @@ function MyDashboardSection() {
 
   return (
     <GlowCard delay={0.3}>
-      <div className="p-5">
+      <div className="p-6 md:p-8">
         <SectionTitle icon={Wallet}>{td.myDashboard}</SectionTitle>
         {isError && <ErrorBanner message={td.loadError} onRetry={() => refetch()} />}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           {rows.map((r) => (
-            <div key={r.key} className="p-2 rounded bg-background/30 border border-primary/[0.07]">
-              <div className="text-[9px] text-muted-foreground/70 uppercase tracking-wider mb-1">{r.label}</div>
-              <div className="font-mono text-sm text-foreground" data-testid={`text-${r.key}`}>
+            <div key={r.key} className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
+              <div className="text-sm text-purple-300/80 mb-2">{r.label}</div>
+              <div className="font-mono text-lg font-bold text-purple-50" data-testid={`text-${r.key}`}>
                 <SkeletonValue isLoading={isLoading} value={r.value != null ? `${r.value}${r.suffix || ""}` : null} />
               </div>
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {rewards.map((r) => (
-            <div key={r.key} className="flex items-center justify-between p-3 rounded bg-background/30 border border-primary/[0.07]">
+            <div key={r.key} className="flex items-center justify-between p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
               <div>
-                <div className="text-[9px] text-muted-foreground/70 uppercase tracking-wider">{r.label}</div>
-                <div className="font-mono text-sm font-bold text-foreground" data-testid={`text-${r.key}`}>
+                <div className="text-sm text-purple-300/80 mb-1">{r.label}</div>
+                <div className="font-mono text-xl font-bold text-purple-50" data-testid={`text-${r.key}`}>
                   <SkeletonValue isLoading={isLoading} value={r.value != null ? `${r.value} ${r.unit}` : null} />
                 </div>
               </div>
               <Button
-                size="sm"
+                size="default"
                 variant="outline"
-                className="text-[10px] uppercase tracking-wider border-primary/30 hover:border-primary/60 h-7 px-2"
+                className="text-sm border-purple-500/40 hover:border-purple-400/70 hover:bg-purple-500/10 text-purple-200 h-10 px-4"
                 onClick={() => handleClaim(r.type)}
                 data-testid={`button-claim-${r.key}`}
               >
-                <Gift className="w-3 h-3 mr-1" /> {td.claim}
+                <Gift className="w-4 h-4 mr-2" /> {td.claim}
               </Button>
             </div>
           ))}
@@ -350,34 +350,34 @@ function MechanismFlowSection() {
   }));
 
   const destinations = [
-    { label: td.holderDividends, pct: "40%", color: "#A78BFA" },
+    { label: td.holderDividends, pct: "30%", color: "#A78BFA" },
     { label: td.lpRewards, pct: "30%", color: "#34D399" },
-    { label: td.referral, pct: "15%", color: "#60A5FA" },
-    { label: td.marketing, pct: "15%", color: "#FBBF24" },
+    { label: td.referral, pct: "30%", color: "#60A5FA" },
+    { label: td.marketing, pct: "10%", color: "#FBBF24" },
   ];
 
   return (
     <GlowCard delay={0.35}>
-      <div className="p-5">
+      <div className="p-6 md:p-8">
         <SectionTitle icon={Send}>{td.mechanismFlow}</SectionTitle>
-        <div className="flex flex-col sm:flex-row items-center gap-2 mb-5">
+        <div className="flex flex-col sm:flex-row items-center gap-3 mb-6">
           {steps.map((s, i) => (
-            <div key={s.id} className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 px-3 py-2 rounded-md border border-primary/15 bg-background/40">
-                <s.icon className="w-3.5 h-3.5" style={{ color: s.color }} />
-                <span className="text-xs font-semibold text-foreground whitespace-nowrap">{s.label}</span>
+            <div key={s.id} className="flex items-center gap-3">
+              <div className="flex items-center gap-2 px-4 py-3 rounded-lg border border-purple-500/20 bg-purple-950/40">
+                <s.icon className="w-5 h-5" style={{ color: s.color }} />
+                <span className="text-sm font-semibold text-purple-100 whitespace-nowrap">{s.label}</span>
               </div>
               {i < steps.length - 1 && (
-                <ChevronRight className="w-4 h-4 text-primary/30 hidden sm:block" />
+                <ChevronRight className="w-5 h-5 text-purple-500/40 hidden sm:block" />
               )}
             </div>
           ))}
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {destinations.map((d) => (
-            <div key={d.label} className="text-center p-2 rounded border border-primary/[0.07] bg-background/20">
-              <div className="font-orbitron text-lg font-bold" style={{ color: d.color }}>{d.pct}</div>
-              <div className="text-[9px] text-muted-foreground/70 uppercase tracking-wider">{d.label}</div>
+            <div key={d.label} className="text-center p-4 rounded-lg border border-purple-500/15 bg-purple-950/30">
+              <div className="text-2xl md:text-3xl font-bold mb-1" style={{ color: d.color }}>{d.pct}</div>
+              <div className="text-sm text-purple-300/80">{d.label}</div>
             </div>
           ))}
         </div>
@@ -400,9 +400,9 @@ function ReferralSection() {
   if (!connected) {
     return (
       <GlowCard delay={0.4}>
-        <div className="p-6 text-center">
-          <Link className="w-8 h-8 text-primary/40 mx-auto mb-3" />
-          <div className="text-sm text-muted-foreground" data-testid="text-connect-referral">{td.connectWalletReferral}</div>
+        <div className="p-8 md:p-10 text-center">
+          <Link className="w-12 h-12 text-purple-400/50 mx-auto mb-4" />
+          <div className="text-base text-purple-300" data-testid="text-connect-referral">{td.connectWalletReferral}</div>
         </div>
       </GlowCard>
     );
@@ -418,44 +418,44 @@ function ReferralSection() {
 
   return (
     <GlowCard delay={0.4}>
-      <div className="p-5">
+      <div className="p-6 md:p-8">
         <SectionTitle icon={Users}>{td.referralProgram}</SectionTitle>
         {isError && <ErrorBanner message={td.loadError} onRetry={() => refetch()} />}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-5">
           {stats.map((s) => (
-            <div key={s.key} className="p-2 rounded bg-background/30 border border-primary/[0.07]">
-              <div className="text-[9px] text-muted-foreground/70 uppercase tracking-wider mb-1">{s.label}</div>
-              <div className="font-mono text-sm text-foreground" data-testid={`text-referral-${s.key}`}>
+            <div key={s.key} className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
+              <div className="text-sm text-purple-300/80 mb-2">{s.label}</div>
+              <div className="font-mono text-lg font-bold text-purple-50" data-testid={`text-referral-${s.key}`}>
                 <SkeletonValue isLoading={isLoading} value={s.value} />
               </div>
             </div>
           ))}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <Button
-            size="sm"
+            size="default"
             variant="outline"
-            className="text-[10px] uppercase tracking-wider border-primary/30 hover:border-primary/60"
+            className="text-sm border-purple-500/40 hover:border-purple-400/70 hover:bg-purple-500/10 text-purple-200 h-10 px-5"
             onClick={handleSubmitReview}
             data-testid="button-submit-review"
           >
-            <FileText className="w-3 h-3 mr-1" /> {td.submitReview}
+            <FileText className="w-4 h-4 mr-2" /> {td.submitReview}
           </Button>
         </div>
-        <div className="mt-3 pt-3 border-t border-primary/10">
-          <div className="text-[10px] text-muted-foreground/60 uppercase tracking-wider">{td.referralHistory}</div>
+        <div className="mt-5 pt-5 border-t border-purple-500/15">
+          <div className="text-sm text-purple-300/70 mb-2">{td.referralHistory}</div>
           {data?.history && data.history.length > 0 ? (
-            <div className="mt-2 space-y-1">
+            <div className="space-y-2">
               {data.history.map((h, i) => (
-                <div key={i} className="flex justify-between text-xs text-muted-foreground">
+                <div key={i} className="flex justify-between text-sm text-purple-300/80">
                   <span>{h.date}</span>
                   <span>{h.amount} {TOKEN_CONFIG.symbol}</span>
-                  <span className="uppercase text-[10px]">{h.status}</span>
+                  <span>{h.status}</span>
                 </div>
               ))}
             </div>
           ) : (
-            <div className="text-xs text-muted-foreground/40 mt-1">{td.noHistory}</div>
+            <div className="text-sm text-purple-300/50">{td.noHistory}</div>
           )}
         </div>
       </div>
@@ -470,46 +470,46 @@ function TransparencySection() {
 
   return (
     <GlowCard delay={0.45}>
-      <div className="p-5">
+      <div className="p-6 md:p-8">
         <SectionTitle icon={ShieldCheck}>{td.transparency}</SectionTitle>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="space-y-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="space-y-4">
             <div>
-              <div className="text-[9px] text-muted-foreground/70 uppercase tracking-wider mb-0.5">{td.tokenContract}</div>
+              <div className="text-sm text-purple-300/70 mb-1">{td.tokenContract}</div>
               <CopyableAddress address={cfg.tokenContract} short={false} context="transparency-contract" />
             </div>
             <div>
-              <div className="text-[9px] text-muted-foreground/70 uppercase tracking-wider mb-0.5">{td.marketingMultisig}</div>
+              <div className="text-sm text-purple-300/70 mb-1">{td.marketingMultisig}</div>
               <CopyableAddress address={cfg.marketingMultisig} context="marketing-multisig" />
             </div>
             <div>
-              <div className="text-[9px] text-muted-foreground/70 uppercase tracking-wider mb-0.5">{td.reimbursementVault}</div>
+              <div className="text-sm text-purple-300/70 mb-1">{td.reimbursementVault}</div>
               <CopyableAddress address={cfg.reimbursementVault} context="reimbursement-vault" />
             </div>
             <div>
-              <div className="text-[9px] text-muted-foreground/70 uppercase tracking-wider mb-0.5">{td.githubSource}</div>
+              <div className="text-sm text-purple-300/70 mb-1">{td.githubSource}</div>
               <a
                 href={cfg.githubSource}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-xs text-primary/80 hover:text-primary transition-colors inline-flex items-center gap-1"
+                className="text-sm text-purple-300 hover:text-purple-100 transition-colors inline-flex items-center gap-2"
                 data-testid="link-github"
               >
-                <ExternalLink className="w-3 h-3" /> {td.viewRepository}
+                <ExternalLink className="w-4 h-4" /> {td.viewRepository}
               </a>
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-4">
             <div>
-              <div className="text-[9px] text-muted-foreground/70 uppercase tracking-wider mb-1">{td.vaultAddresses}</div>
-              <div className="space-y-1">
+              <div className="text-sm text-purple-300/70 mb-2">{td.vaultAddresses}</div>
+              <div className="space-y-2">
                 {cfg.vaultAddresses.map((v) => {
                   const vaultLabel = td[v.label as keyof typeof td] as string;
                   return (
-                    <div key={v.label} className="flex items-center gap-2">
-                      <span className="text-[10px] text-muted-foreground/60 capitalize w-20 truncate">
+                    <div key={v.label} className="flex items-center gap-3">
+                      <span className="text-sm text-purple-300/60 w-24 truncate">
                         {vaultLabel}
                       </span>
                       <CopyableAddress address={v.address} context={`vault-${v.label}`} />
@@ -520,20 +520,20 @@ function TransparencySection() {
             </div>
 
             <div>
-              <div className="text-[9px] text-muted-foreground/70 uppercase tracking-wider mb-1">{td.auditStatus}</div>
-              <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold uppercase tracking-wider border ${
+              <div className="text-sm text-purple-300/70 mb-2">{td.auditStatus}</div>
+              <span className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-semibold border ${
                 cfg.auditStatus === "completed"
-                  ? "border-green-500/40 bg-green-500/10 text-green-400"
+                  ? "border-green-500/40 bg-green-500/10 text-green-300"
                   : cfg.auditStatus === "in-progress"
-                  ? "border-yellow-500/40 bg-yellow-500/10 text-yellow-400"
-                  : "border-muted-foreground/20 bg-muted/10 text-muted-foreground"
+                  ? "border-yellow-500/40 bg-yellow-500/10 text-yellow-300"
+                  : "border-purple-400/25 bg-purple-500/5 text-purple-300"
               }`} data-testid="status-audit">
-                <BadgeCheck className="w-2.5 h-2.5" />
+                <BadgeCheck className="w-4 h-4" />
                 {cfg.auditStatus}
               </span>
             </div>
 
-            <div className="flex flex-wrap gap-2 mt-1">
+            <div className="flex flex-wrap gap-3 mt-2">
               <StatusBadge active={cfg.mintable} label={td.mintable} id="mintable" />
               <StatusBadge active={cfg.taxMutable} label={td.taxMutable} id="tax-mutable" />
               <StatusBadge active={cfg.adminWithdrawal} label={td.adminWithdrawal} id="admin-withdrawal" />
@@ -550,21 +550,21 @@ export function TokenDashboard() {
   const td = t.tokenDashboard;
 
   return (
-    <section className="px-6 py-10" data-testid="section-token-dashboard">
-      <div className="max-w-5xl mx-auto space-y-6">
+    <section className="px-4 sm:px-6 py-12" data-testid="section-token-dashboard">
+      <div className="max-w-5xl mx-auto space-y-8">
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-2"
+          className="text-center mb-4"
         >
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded border border-primary/20 bg-primary/5 mb-3">
-            <div className="w-1.5 h-1.5 rounded-full bg-primary status-dot" />
-            <span className="text-[10px] font-semibold text-primary tracking-widest uppercase">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-md border border-purple-500/25 bg-purple-500/5 mb-4">
+            <div className="w-2 h-2 rounded-full bg-primary status-dot" />
+            <span className="text-sm font-semibold text-purple-300 tracking-wider uppercase">
               {td.sectionBadge}
             </span>
           </div>
-          <h2 className="font-orbitron text-xl md:text-2xl font-black uppercase tracking-wider text-foreground neon-glow-text">
+          <h2 className="font-orbitron text-2xl md:text-3xl font-bold tracking-wider text-purple-50">
             {TOKEN_CONFIG.name} {td.analyticsTitle}
           </h2>
         </motion.div>
