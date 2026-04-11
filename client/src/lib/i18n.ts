@@ -25,6 +25,7 @@ export const translations = {
       disconnect: "DISCONNECT",
       solBalance: "SOL BALANCE",
       cnovaBalance: "$CNOVA",
+      connectBsc: "Connect BSC",
     },
     home: {
       liveBadge: "BSC MAINNET • LIVE",
@@ -379,6 +380,7 @@ export const translations = {
       disconnect: "断开连接",
       solBalance: "SOL 余额",
       cnovaBalance: "$CNOVA",
+      connectBsc: "连接 BSC",
     },
     home: {
       liveBadge: "BSC 主网 • 已上线",

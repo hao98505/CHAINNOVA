@@ -55,11 +55,15 @@ Anchor program: `programs/wforgai-bridge/`
 
 ### Token Dashboard (Homepage)
 - **Test Token**: `0x0a9c2e3cda80a828334bfa2577a75a85229f7777` (BSC)
+- **DEX Status**: No trading pair yet — price/marketCap/liquidity/volume/holders all show `--`
+- **Wallet**: EVM wallet (MetaMask/injected) via `EvmWalletContext` — header shows BSC connect button on homepage
 - **Config**: `client/src/config/tokenDashboard.ts` — token address, vault contract addresses (`VAULT_CONTRACT_CONFIG`), tax, transparency
 - **On-Chain Meta**: `useOnChainTokenMeta()` reads name/symbol/decimals from contract; falls back to config
-- **Hooks**: `client/src/hooks/useTokenDashboard.ts` — overview/vaults/myDashboard/referral queries
+- **EVM Wallet Context**: `client/src/contexts/EvmWalletContext.tsx` — connect/disconnect, chain detection, balance reading, eligibility check
+- **Hooks**: `client/src/hooks/useTokenDashboard.ts` — overview/vaults/myDashboard/referral queries (uses EvmWalletContext)
 - **Component**: `client/src/components/home/TokenDashboard.tsx` — 6 sections with glassmorphism, i18n, error handling
 - **i18n**: `tokenDashboard` namespace in `client/src/lib/i18n.ts` (EN + ZH)
+- **Phase 2 fields**: holdingWeight, timeMultiplier, pendingBnb/Lp/Referral marked with "Phase 2" label, Claim buttons disabled
 
 ### On-Chain Reward Vault Architecture (Draft — Not Deployed)
 - **Architecture Doc**: `docs/architecture/reward-vault-architecture.md`

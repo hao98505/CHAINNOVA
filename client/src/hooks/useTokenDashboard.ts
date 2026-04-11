@@ -1,15 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
-import { useWallet } from "@solana/wallet-adapter-react";
 import { TOKEN_CONFIG, VAULT_CONFIG } from "@/config/tokenDashboard";
 import {
   fetchMarketData,
   fetchVaultBalances,
-  fetchWalletTokenBalance,
-  detectEvmWallet,
 } from "@/lib/tokenDashboard/adapters";
 import { readOnChainTokenMeta } from "@/lib/tokenDashboard/contracts";
 import { relativeTime } from "@/lib/tokenDashboard/formatters";
 import type { TokenOverview, VaultData, MyDashboardData, ReferralData, OnChainTokenMeta } from "@/lib/tokenDashboard/types";
+import { useEvmWallet } from "@/contexts/EvmWalletContext";
 
 export type { TokenOverview, VaultData, MyDashboardData, ReferralData, OnChainTokenMeta };
 
@@ -75,33 +73,19 @@ export function useVaults() {
 }
 
 export function useMyTokenDashboard() {
-  const { publicKey, connected } = useWallet();
-  const solanaAddress = connected ? (publicKey?.toBase58() ?? null) : null;
+  const evm = useEvmWallet();
 
   return useQuery<MyDashboardData>({
-    queryKey: ["token-my-dashboard"],
+    queryKey: ["token-my-dashboard", evm.address, evm.chainId],
     queryFn: async (): Promise<MyDashboardData> => {
-      const evm = await detectEvmWallet();
-
-      let balance: number | null = null;
-      let eligible: boolean | null = null;
-
-      if (evm.address && evm.isOnBsc) {
-        const result = await fetchWalletTokenBalance(evm.address);
-        if (result) {
-          balance = result.formatted;
-          eligible = result.formatted >= TOKEN_CONFIG.holdingThreshold;
-        }
-      }
-
       return {
-        solanaAddress,
+        solanaAddress: null,
         evmAddress: evm.address,
         evmChainId: evm.chainId,
         evmChainName: evm.chainName,
         isOnBsc: evm.isOnBsc,
-        balance,
-        eligible,
+        balance: evm.balance,
+        eligible: evm.eligible,
         holdingWeight: null,
         timeMultiplier: null,
         pendingBnbRewards: null,
@@ -112,7 +96,7 @@ export function useMyTokenDashboard() {
         pendingReferral: null,
       };
     },
-    enabled: true,
+    enabled: !!evm.address,
     staleTime: 15_000,
     refetchInterval: 30_000,
     retry: 1,
@@ -120,11 +104,10 @@ export function useMyTokenDashboard() {
 }
 
 export function useReferralData() {
-  const { publicKey, connected } = useWallet();
-  const walletAddress = publicKey?.toBase58();
+  const evm = useEvmWallet();
 
   return useQuery<ReferralData>({
-    queryKey: ["token-referral", walletAddress],
+    queryKey: ["token-referral", evm.address],
     queryFn: async (): Promise<ReferralData> => {
       return {
         inviteCode: null,
@@ -135,7 +118,7 @@ export function useReferralData() {
         history: [],
       };
     },
-    enabled: connected && !!walletAddress,
+    enabled: !!evm.address,
     staleTime: 30_000,
   });
 }

@@ -1,5 +1,4 @@
 import { motion } from "framer-motion";
-import { useWallet } from "@solana/wallet-adapter-react";
 import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -26,6 +25,7 @@ import {
   Globe, CheckCircle2, XCircle,
 } from "lucide-react";
 import { formatUsd, formatTokenCount } from "@/lib/tokenDashboard/formatters";
+import { useEvmWallet } from "@/contexts/EvmWalletContext";
 
 const ICON_MAP = {
   Users,
@@ -272,28 +272,38 @@ function VaultsSection() {
 
 function MyDashboardSection() {
   const { t } = useLanguage();
+  const evm = useEvmWallet();
   const { data, isLoading, isError, refetch } = useMyTokenDashboard();
   const { data: meta } = useOnChainTokenMeta();
   const { toast } = useToast();
   const td = t.tokenDashboard;
-  const [showSolana, setShowSolana] = useState(false);
   const tokenSymbol = meta?.symbol || TOKEN_CONFIG.symbol || "TOKEN";
 
   const handleClaim = useCallback((type: string) => {
     toast({ title: td.claimInitiated, description: `${type} ${td.claimPending}` });
   }, [toast, td]);
 
-  const hasEvmWallet = !!data?.evmAddress;
-  const isOnBsc = !!data?.isOnBsc;
-  const hasSolana = !!data?.solanaAddress;
-
-  if (!hasEvmWallet && !isLoading) {
+  if (!evm.address) {
     return (
       <GlowCard delay={0.3}>
         <div className="p-8 md:p-10 text-center">
-          <Wallet className="w-12 h-12 text-purple-400/50 mx-auto mb-4" />
+          <Wallet className="w-12 h-12 text-yellow-400/50 mx-auto mb-4" />
           <div className="text-base text-purple-300 mb-2" data-testid="text-connect-dashboard">{td.connectEvmDashboard}</div>
-          <div className="text-sm text-purple-400/60">{td.connectEvmHint}</div>
+          <div className="text-sm text-purple-400/60 mb-4">{td.connectEvmHint}</div>
+          <Button
+            onClick={evm.connect}
+            disabled={evm.isConnecting}
+            data-testid="button-connect-evm-dashboard"
+            className="text-sm font-semibold tracking-wide uppercase"
+            style={{
+              background: "linear-gradient(135deg, #F0B90B, #D4A00A)",
+              border: "1px solid rgba(240,185,11,0.5)",
+              color: "#1a1a2e",
+            }}
+          >
+            <Wallet className="w-4 h-4 mr-2" />
+            {evm.isConnecting ? "..." : td.connectEvmDashboard.split(" ").slice(0, 2).join(" ")}
+          </Button>
         </div>
       </GlowCard>
     );
@@ -311,7 +321,7 @@ function MyDashboardSection() {
               <div className="w-2.5 h-2.5 rounded-full bg-green-400 status-dot" />
               <span className="text-sm font-semibold text-green-300">{td.evmWalletConnected}</span>
             </div>
-            {isOnBsc ? (
+            {evm.isOnBsc ? (
               <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-sm border border-green-500/40 bg-green-500/10 text-green-300" data-testid="status-bsc">
                 <CheckCircle2 className="w-3.5 h-3.5" /> {td.onBsc}
               </span>
@@ -322,30 +332,26 @@ function MyDashboardSection() {
             )}
           </div>
           <div className="flex items-center gap-2 mb-2" data-testid="text-evm-address">
-            <SkeletonValue isLoading={isLoading} value={
-              data?.evmAddress ? <CopyableAddress address={data.evmAddress} context="evm-dashboard" /> : null
-            } />
-            {data?.evmAddress && (
-              <a
-                href={`${TOKEN_CONFIG.explorerAddressUrl}/${data.evmAddress}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-purple-400 hover:text-purple-200 transition-colors"
-                data-testid="link-evm-explorer"
-              >
-                <ExternalLink className="w-4 h-4" />
-              </a>
-            )}
+            <CopyableAddress address={evm.address} context="evm-dashboard" />
+            <a
+              href={`${TOKEN_CONFIG.explorerAddressUrl}/${evm.address}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-purple-400 hover:text-purple-200 transition-colors"
+              data-testid="link-evm-explorer"
+            >
+              <ExternalLink className="w-4 h-4" />
+            </a>
           </div>
           <div className="flex items-center gap-2">
             <Globe className="w-4 h-4 text-purple-400" />
             <span className="text-sm text-purple-200" data-testid="text-evm-network">
-              <SkeletonValue isLoading={isLoading} value={data?.evmChainName} />
+              {evm.chainName || "--"}
             </span>
           </div>
         </div>
 
-        {hasEvmWallet && !isOnBsc && (
+        {evm.address && !evm.isOnBsc && (
           <div className="flex items-center gap-3 p-4 rounded-lg border border-yellow-500/20 bg-yellow-500/5 mb-4">
             <AlertTriangle className="w-5 h-5 text-yellow-400/70 flex-shrink-0" />
             <span className="text-sm text-yellow-300/80">{td.switchToBsc}</span>
@@ -356,18 +362,22 @@ function MyDashboardSection() {
           <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
             <div className="text-sm text-purple-300/80 mb-2">{td.myBalance}</div>
             <div className="font-mono text-lg font-bold text-purple-50" data-testid="text-my-balance">
-              <SkeletonValue isLoading={isLoading} value={
-                data?.balance != null ? `${formatTokenCount(data.balance)} ${tokenSymbol}` : null
-              } />
+              {evm.balanceLoading ? (
+                <Skeleton className="h-7 w-24 bg-primary/10" />
+              ) : evm.balance != null ? (
+                `${formatTokenCount(evm.balance)} ${tokenSymbol}`
+              ) : (
+                <Placeholder />
+              )}
             </div>
           </div>
           <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
             <div className="text-sm text-purple-300/80 mb-2">{td.eligible}</div>
             <div className="font-mono text-lg font-bold" data-testid="text-eligible">
-              {isLoading ? (
+              {evm.balanceLoading ? (
                 <Skeleton className="h-7 w-24 bg-primary/10" />
-              ) : data?.eligible != null ? (
-                data.eligible ? (
+              ) : evm.eligible != null ? (
+                evm.eligible ? (
                   <span className="text-green-300">{td.eligibleYes}</span>
                 ) : (
                   <span className="text-yellow-300">{td.eligibleNo} ({TOKEN_CONFIG.holdingThreshold.toLocaleString()})</span>
@@ -380,35 +390,38 @@ function MyDashboardSection() {
           <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
             <div className="text-sm text-purple-300/80 mb-2">{td.holdingWeight}</div>
             <div className="font-mono text-lg font-bold text-purple-50" data-testid="text-holding-weight">
-              <SkeletonValue isLoading={isLoading} value={data?.holdingWeight != null ? `${data.holdingWeight.toFixed(2)}%` : null} />
+              <Placeholder />
             </div>
+            <div className="text-[10px] text-purple-500/50 mt-1">Phase 2</div>
           </div>
           <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
             <div className="text-sm text-purple-300/80 mb-2">{td.timeMultiplier}</div>
             <div className="font-mono text-lg font-bold text-purple-50" data-testid="text-time-multiplier">
-              <SkeletonValue isLoading={isLoading} value={data?.timeMultiplier != null ? `${data.timeMultiplier}x` : null} />
+              <Placeholder />
             </div>
+            <div className="text-[10px] text-purple-500/50 mt-1">Phase 2</div>
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           {[
-            { label: td.pendingBnb, key: "pending-bnb", value: data?.pendingBnbRewards, unit: "BNB", type: "BNB" },
-            { label: td.pendingLp, key: "pending-lp", value: data?.pendingLpRewards, unit: "LP", type: "LP" },
-            { label: td.referralComm, key: "referral-comm", value: data?.pendingReferralCommission, unit: tokenSymbol, type: "Referral" },
+            { label: td.pendingBnb, key: "pending-bnb", unit: "BNB", type: "BNB" },
+            { label: td.pendingLp, key: "pending-lp", unit: "LP", type: "LP" },
+            { label: td.referralComm, key: "referral-comm", unit: tokenSymbol, type: "Referral" },
           ].map((r) => (
             <div key={r.key} className="flex items-center justify-between p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
               <div>
                 <div className="text-sm text-purple-300/80 mb-1">{r.label}</div>
                 <div className="font-mono text-xl font-bold text-purple-50" data-testid={`text-${r.key}`}>
-                  <SkeletonValue isLoading={isLoading} value={r.value != null ? `${r.value} ${r.unit}` : null} />
+                  <Placeholder />
                 </div>
+                <div className="text-[10px] text-purple-500/50 mt-1">Phase 2</div>
               </div>
               <Button
                 size="default"
                 variant="outline"
-                className="text-sm border-purple-500/40 hover:border-purple-400/70 hover:bg-purple-500/10 text-purple-200 h-10 px-4"
-                onClick={() => handleClaim(r.type)}
+                className="text-sm border-purple-500/40 text-purple-200/40 h-10 px-4 cursor-not-allowed opacity-50"
+                disabled
                 data-testid={`button-claim-${r.key}`}
               >
                 <Gift className="w-4 h-4 mr-2" /> {td.claim}
@@ -416,30 +429,6 @@ function MyDashboardSection() {
             </div>
           ))}
         </div>
-
-        {hasSolana && (
-          <div className="border-t border-purple-500/10 pt-4">
-            <button
-              onClick={() => setShowSolana(!showSolana)}
-              className="flex items-center gap-2 text-sm text-purple-400/70 hover:text-purple-300 transition-colors mb-3"
-              data-testid="button-toggle-solana"
-            >
-              <ChevronDown className={`w-4 h-4 transition-transform ${showSolana ? "rotate-180" : ""}`} />
-              {td.solanaSecondary}
-            </button>
-            {showSolana && (
-              <div className="p-3 rounded-lg bg-purple-950/30 border border-purple-500/10">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-2 h-2 rounded-full bg-green-400/60" />
-                  <span className="text-sm text-purple-300/70">Solana</span>
-                </div>
-                <div className="text-sm" data-testid="text-solana-address">
-                  {data?.solanaAddress && <CopyableAddress address={data.solanaAddress} context="solana-dashboard" />}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
       </div>
     </GlowCard>
   );
@@ -495,7 +484,7 @@ function MechanismFlowSection() {
 
 function ReferralSection() {
   const { t } = useLanguage();
-  const { connected } = useWallet();
+  const evm = useEvmWallet();
   const { data, isLoading, isError, refetch } = useReferralData();
   const { data: meta } = useOnChainTokenMeta();
   const { toast } = useToast();
@@ -506,7 +495,7 @@ function ReferralSection() {
     toast({ title: td.reviewSubmitted, description: td.reviewPending });
   }, [toast, td]);
 
-  if (!connected) {
+  if (!evm.address) {
     return (
       <GlowCard delay={0.4}>
         <div className="p-8 md:p-10 text-center">
