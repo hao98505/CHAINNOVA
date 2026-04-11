@@ -48,3 +48,15 @@ id = "7V1XEEtokVVaKBUiK89zw"
 uri = "file://screenshots/homepage-bsc-first-header.png"
 type = "image"
 title = "Homepage - BSC TOKEN DASHBOARD Header + My Dashboard"
+
+[[outputs]]
+id = "sQBA8oBu4oXA-LgRFT5dc"
+uri = "file://screenshots/hero-unified-narrative.png"
+type = "image"
+title = "Homepage - Unified Multi-Chain Narrative"
+
+[[outputs]]
+id = "TItenogj_AA1TwnXG93KL"
+uri = "file://screenshots/hero-to-dashboard-transition.png"
+type = "image"
+title = "Homepage - Hero to ForgAI Analytics Transition"
