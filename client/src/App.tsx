@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -60,6 +60,9 @@ function AppLayout() {
     "--sidebar-width-icon": "3.5rem",
   };
 
+  const [location] = useLocation();
+  const isHome = location === "/";
+
   return (
     <SidebarProvider style={sidebarStyle as React.CSSProperties}>
       <div className="flex h-screen w-full bg-background overflow-hidden">
@@ -72,14 +75,17 @@ function AppLayout() {
                 className="text-muted-foreground"
               />
               <div className="hidden md:flex items-center gap-2">
-                <div className="w-1.5 h-1.5 rounded-full bg-green-400 status-dot" />
+                <div className={`w-1.5 h-1.5 rounded-full ${isHome ? "bg-yellow-400" : "bg-green-400"} status-dot`} />
                 <span className="font-orbitron text-xs text-muted-foreground tracking-widest uppercase">
-                  {t.header.network}
+                  {isHome ? t.header.networkHome : t.header.network}
                 </span>
               </div>
             </div>
             <div className="flex items-center gap-3">
               <LanguageToggle />
+              {isHome && (
+                <span className="text-[10px] text-muted-foreground/60 uppercase tracking-wider hidden lg:inline" data-testid="text-solana-label">Solana</span>
+              )}
               <WalletConnect />
             </div>
           </header>

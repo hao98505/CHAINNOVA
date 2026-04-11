@@ -19,6 +19,7 @@ export const translations = {
     },
     header: {
       network: "SOLANA DEVNET",
+      networkHome: "BSC TOKEN DASHBOARD",
       connectWallet: "Connect Wallet",
       copyAddress: "COPY ADDRESS",
       disconnect: "DISCONNECT",
@@ -26,7 +27,7 @@ export const translations = {
       cnovaBalance: "$CNOVA",
     },
     home: {
-      liveBadge: "LIVE ON SOLANA DEVNET",
+      liveBadge: "BSC MAINNET • LIVE",
       heroTitle1: "Decentralized",
       heroTitle2: "AI AGENT MARKET",
       heroDesc: "Mint, trade, and deploy autonomous AI agents as NFTs on Solana. Earn $CNOVA by contributing compute power to the network.",
@@ -369,6 +370,7 @@ export const translations = {
     },
     header: {
       network: "Solana 开发网",
+      networkHome: "BSC 代币仪表盘",
       connectWallet: "连接钱包",
       copyAddress: "复制地址",
       disconnect: "断开连接",
@@ -376,7 +378,7 @@ export const translations = {
       cnovaBalance: "$CNOVA",
     },
     home: {
-      liveBadge: "Solana 开发网已上线",
+      liveBadge: "BSC 主网 • 已上线",
       heroTitle1: "去中心化",
       heroTitle2: "AI 代理市场",
       heroDesc: "在 Solana 上以 NFT 形式铸造、交易和部署自主 AI 代理。通过贡献算力赚取 $CNOVA。",

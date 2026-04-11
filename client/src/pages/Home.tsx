@@ -46,9 +46,9 @@ export default function Home() {
             transition={{ duration: 0.8 }}
             className="text-center"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded border border-primary/30 bg-primary/10 mb-6">
-              <div className="w-1.5 h-1.5 rounded-full bg-green-400 status-dot" />
-              <span className="text-xs font-semibold text-primary tracking-widest uppercase">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded border border-yellow-500/30 bg-yellow-500/10 mb-6">
+              <div className="w-1.5 h-1.5 rounded-full bg-yellow-400 status-dot" />
+              <span className="text-xs font-semibold text-yellow-300 tracking-widest uppercase">
                 {t.home.liveBadge}
               </span>
             </div>
@@ -88,7 +88,7 @@ export default function Home() {
             </div>
 
             <div className="flex flex-wrap items-center justify-center gap-6 mt-10">
-              {["Phantom", "Solflare", "Anchor Protocol"].map((item) => (
+              {["MetaMask", "BSC", "Phantom", "Solflare"].map((item) => (
                 <div key={item} className="flex items-center gap-2">
                   <Shield className="w-3 h-3 text-primary/60" />
                   <span className="text-xs text-muted-foreground/80 tracking-wide uppercase">
