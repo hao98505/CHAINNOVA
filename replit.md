@@ -1,7 +1,7 @@
 # ChainNova Agents V2
 
 ## Overview
-Decentralized AI agent marketplace on Solana. Mint, buy, rent, and stake AI agents as NFTs. Bridge ForgAI tokens cross-chain.
+Decentralized AI agent marketplace on Solana. Mint, buy, rent, and stake AI agents as NFTs. Cross-chain token bridge.
 
 ## Bridge Status
 - **EVM↔EVM**: Operational (BSC / Arbitrum / Ethereum) — Phase 0 complete
@@ -54,10 +54,19 @@ Anchor program: `programs/wforgai-bridge/`
 - **Bidirectional Relayer**: `server/solana-evm-relayer.ts` — Solana→EVM (BridgeOut log→completeTransfer), EVM→Solana stub; dedup by transfer_id, paginated scanning, 12-block EVM finality
 
 ### Token Dashboard (Homepage)
-- **Config**: `client/src/config/tokenDashboard.ts` — addresses, vaults, tax, transparency
+- **Test Token**: `0x0a9c2e3cda80a828334bfa2577a75a85229f7777` (BSC)
+- **Config**: `client/src/config/tokenDashboard.ts` — token address, vault contract addresses (`VAULT_CONTRACT_CONFIG`), tax, transparency
+- **On-Chain Meta**: `useOnChainTokenMeta()` reads name/symbol/decimals from contract; falls back to config
 - **Hooks**: `client/src/hooks/useTokenDashboard.ts` — overview/vaults/myDashboard/referral queries
 - **Component**: `client/src/components/home/TokenDashboard.tsx` — 6 sections with glassmorphism, i18n, error handling
 - **i18n**: `tokenDashboard` namespace in `client/src/lib/i18n.ts` (EN + ZH)
+
+### On-Chain Reward Vault Architecture (Draft — Not Deployed)
+- **Architecture Doc**: `docs/architecture/reward-vault-architecture.md`
+- **Layer 1**: Holder dividend via Flap Tax Token V2 (minimumShareBalance = 200,000)
+- **Layer 2**: `MasterVault.sol` → splits BNB to LP (4286 bps) / Referral (4286 bps) / Marketing (1428 bps)
+- **Contracts**: `contracts/MasterVault.sol`, `LPRewardVault.sol`, `ReferralVault.sol`, `MarketingVault.sol`
+- **Frontend Prep**: `VAULT_CONTRACT_CONFIG` in config, `RewardContractAddresses` / `OnChainTokenMeta` types, `claimableHolderReward` / `earnedLP` / `pendingReferral` fields in `MyDashboardData`
 - **CI**: `.github/workflows/anchor-build.yml` — `anchor build --no-idl` on push to main (GREEN)
 - **CI strategy**: Rust 1.85 system cargo patched into solana toolchain (rustc 1.79), 9 dep pins for MSRV compat, IDL gen skipped (proc_macro2 incompatibility)
 - **Build**: Cannot build in Replit (Solana SDK exceeds container memory). Use GitHub Actions or local `anchor build`.
