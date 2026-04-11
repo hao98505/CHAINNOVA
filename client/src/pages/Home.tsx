@@ -87,7 +87,11 @@ export default function Home() {
               </Button>
             </div>
 
-            <div className="flex flex-wrap items-center justify-center gap-6 mt-10">
+            <div className="text-xs text-muted-foreground/50 tracking-wide uppercase mt-6" data-testid="text-hero-sub">
+              {t.home.heroSub}
+            </div>
+
+            <div className="flex flex-wrap items-center justify-center gap-6 mt-6">
               {["MetaMask", "BSC", "Phantom", "Solflare"].map((item) => (
                 <div key={item} className="flex items-center gap-2">
                   <Shield className="w-3 h-3 text-primary/60" />
