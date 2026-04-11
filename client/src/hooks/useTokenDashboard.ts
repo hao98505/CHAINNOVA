@@ -1,7 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { TOKEN_CONFIG, VAULT_CONFIG } from "@/config/tokenDashboard";
-import { fetchMarketData, fetchVaultBalances, fetchWalletTokenBalance } from "@/lib/tokenDashboard/adapters";
+import {
+  fetchMarketData,
+  fetchVaultBalances,
+  fetchWalletTokenBalance,
+  detectEvmWallet,
+} from "@/lib/tokenDashboard/adapters";
 import { relativeTime } from "@/lib/tokenDashboard/formatters";
 import type { TokenOverview, VaultData, MyDashboardData, ReferralData } from "@/lib/tokenDashboard/types";
 
@@ -58,14 +63,32 @@ export function useVaults() {
 
 export function useMyTokenDashboard() {
   const { publicKey, connected } = useWallet();
-  const walletAddress = publicKey?.toBase58();
+  const solanaAddress = publicKey?.toBase58() ?? null;
 
   return useQuery<MyDashboardData>({
-    queryKey: ["token-my-dashboard", walletAddress],
+    queryKey: ["token-my-dashboard", solanaAddress],
     queryFn: async (): Promise<MyDashboardData> => {
+      const evm = await detectEvmWallet();
+
+      let balance: number | null = null;
+      let eligible: boolean | null = null;
+
+      if (evm.address && evm.isOnBsc) {
+        const result = await fetchWalletTokenBalance(evm.address);
+        if (result) {
+          balance = result.formatted;
+          eligible = result.formatted >= TOKEN_CONFIG.holdingThreshold;
+        }
+      }
+
       return {
-        balance: null,
-        eligible: null,
+        solanaAddress,
+        evmAddress: evm.address,
+        evmChainId: evm.chainId,
+        evmChainName: evm.chainName,
+        isOnBsc: evm.isOnBsc,
+        balance,
+        eligible,
         holdingWeight: null,
         timeMultiplier: null,
         pendingBnbRewards: null,
@@ -73,8 +96,10 @@ export function useMyTokenDashboard() {
         pendingReferralCommission: null,
       };
     },
-    enabled: connected && !!walletAddress,
-    staleTime: 10_000,
+    enabled: connected && !!solanaAddress,
+    staleTime: 15_000,
+    refetchInterval: 30_000,
+    retry: 1,
   });
 }
 

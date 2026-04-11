@@ -39,7 +39,19 @@ export interface VaultData {
   lastUpdateTime: string | null;
 }
 
+export interface EvmWalletInfo {
+  address: string | null;
+  chainId: number | null;
+  chainName: string | null;
+  isOnBsc: boolean;
+}
+
 export interface MyDashboardData {
+  solanaAddress: string | null;
+  evmAddress: string | null;
+  evmChainId: number | null;
+  evmChainName: string | null;
+  isOnBsc: boolean;
   balance: number | null;
   eligible: boolean | null;
   holdingWeight: number | null;

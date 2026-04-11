@@ -1,10 +1,21 @@
 import { TOKEN_CONFIG, VAULT_CONFIG } from "@/config/tokenDashboard";
 import { readTokenBalance } from "./contracts";
 import { formatTokenAmount } from "./formatters";
-import type { MarketData, VaultBalance, DexScreenerResponse } from "./types";
+import type { MarketData, VaultBalance, EvmWalletInfo, DexScreenerResponse } from "./types";
 
 const DEXSCREENER_API = "https://api.dexscreener.com/latest/dex/tokens";
 const GECKOTERMINAL_API = "https://api.geckoterminal.com/api/v2/networks/bsc/tokens";
+
+const EVM_CHAIN_NAMES: Record<number, string> = {
+  1: "Ethereum",
+  56: "BNB Smart Chain",
+  137: "Polygon",
+  42161: "Arbitrum One",
+  10: "Optimism",
+  43114: "Avalanche",
+  250: "Fantom",
+  8453: "Base",
+};
 
 export async function fetchMarketData(): Promise<MarketData> {
   try {
@@ -56,9 +67,6 @@ async function fetchHoldersCount(): Promise<number | null> {
       return typeof info.holders_count === "number"
         ? info.holders_count
         : parseInt(info.holders_count, 10) || null;
-    }
-    if (info?.gt_score_details?.holders != null) {
-      return null;
     }
     return null;
   } catch {
@@ -119,5 +127,32 @@ export async function fetchWalletTokenBalance(
     };
   } catch {
     return null;
+  }
+}
+
+export async function detectEvmWallet(): Promise<EvmWalletInfo> {
+  const none: EvmWalletInfo = { address: null, chainId: null, chainName: null, isOnBsc: false };
+
+  if (typeof window === "undefined" || !window.ethereum) return none;
+
+  try {
+    const accounts = (await window.ethereum.request({
+      method: "eth_accounts",
+    })) as string[];
+
+    if (!accounts || accounts.length === 0) return none;
+
+    const address = accounts[0];
+    const rawChainId = (await window.ethereum.request({
+      method: "eth_chainId",
+    })) as string;
+
+    const chainId = parseInt(rawChainId, 16);
+    const chainName = EVM_CHAIN_NAMES[chainId] || `Chain ${chainId}`;
+    const isOnBsc = chainId === TOKEN_CONFIG.chainId;
+
+    return { address, chainId, chainName, isOnBsc };
+  } catch {
+    return none;
   }
 }

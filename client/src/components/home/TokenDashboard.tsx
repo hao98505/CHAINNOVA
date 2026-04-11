@@ -22,6 +22,7 @@ import {
   ArrowRight, Shield, ShieldCheck, ShieldX, Wallet, Gift,
   TrendingUp, Send, FileText, ChevronRight, Coins,
   BadgeCheck, CircleDollarSign, Layers, AlertTriangle, RefreshCw,
+  Globe, CheckCircle2, XCircle,
 } from "lucide-react";
 import { formatUsd, formatTokenCount } from "@/lib/tokenDashboard/formatters";
 
@@ -285,36 +286,141 @@ function MyDashboardSection() {
     );
   }
 
-  const rows = [
-    { label: td.myBalance, key: "my-balance", value: data?.balance, suffix: ` ${TOKEN_CONFIG.symbol}` },
-    { label: td.eligible, key: "eligible", value: data?.eligible != null ? (data.eligible ? `${td.yes} ✓` : `${td.no} (${TOKEN_CONFIG.holdingThreshold.toLocaleString()})`) : null },
-    { label: td.holdingWeight, key: "holding-weight", value: data?.holdingWeight != null ? `${data.holdingWeight.toFixed(2)}%` : null },
-    { label: td.timeMultiplier, key: "time-multiplier", value: data?.timeMultiplier != null ? `${data.timeMultiplier}x` : null },
-  ];
-
-  const rewards = [
-    { label: td.pendingBnb, key: "pending-bnb", value: data?.pendingBnbRewards, unit: "BNB", type: "BNB" },
-    { label: td.pendingLp, key: "pending-lp", value: data?.pendingLpRewards, unit: "LP", type: "LP" },
-    { label: td.referralComm, key: "referral-comm", value: data?.pendingReferralCommission, unit: TOKEN_CONFIG.symbol, type: "Referral" },
-  ];
+  const hasEvmWallet = !!data?.evmAddress;
+  const isOnBsc = !!data?.isOnBsc;
 
   return (
     <GlowCard delay={0.3}>
       <div className="p-6 md:p-8">
         <SectionTitle icon={Wallet}>{td.myDashboard}</SectionTitle>
         {isError && <ErrorBanner message={td.loadError} onRetry={() => refetch()} />}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-          {rows.map((r) => (
-            <div key={r.key} className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
-              <div className="text-sm text-purple-300/80 mb-2">{r.label}</div>
-              <div className="font-mono text-lg font-bold text-purple-50" data-testid={`text-${r.key}`}>
-                <SkeletonValue isLoading={isLoading} value={r.value != null ? `${r.value}${r.suffix || ""}` : null} />
-              </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-2 h-2 rounded-full bg-green-400 status-dot" />
+              <span className="text-sm font-semibold text-green-300">Solana Connected</span>
             </div>
-          ))}
+            <div className="text-sm text-purple-300/80 mb-1">{td.walletAddress}</div>
+            <div data-testid="text-solana-address">
+              <SkeletonValue isLoading={isLoading} value={
+                data?.solanaAddress ? <CopyableAddress address={data.solanaAddress} context="solana-dashboard" /> : null
+              } />
+            </div>
+          </div>
+
+          <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
+            <div className="flex items-center gap-2 mb-3">
+              {hasEvmWallet ? (
+                <>
+                  <div className="w-2 h-2 rounded-full bg-green-400 status-dot" />
+                  <span className="text-sm font-semibold text-green-300">{td.evmWallet}</span>
+                </>
+              ) : (
+                <>
+                  <div className="w-2 h-2 rounded-full bg-purple-400/50" />
+                  <span className="text-sm font-semibold text-purple-400/70">{td.evmWallet}</span>
+                </>
+              )}
+            </div>
+            {hasEvmWallet ? (
+              <>
+                <div className="text-sm text-purple-300/80 mb-1">{td.walletAddress}</div>
+                <div className="flex items-center gap-2" data-testid="text-evm-address">
+                  <CopyableAddress address={data!.evmAddress!} context="evm-dashboard" />
+                  <a
+                    href={`${TOKEN_CONFIG.explorerAddressUrl}/${data!.evmAddress}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-purple-400 hover:text-purple-200 transition-colors"
+                    data-testid="link-evm-explorer"
+                  >
+                    <ExternalLink className="w-4 h-4" />
+                  </a>
+                </div>
+                <div className="flex items-center gap-2 mt-2">
+                  <Globe className="w-4 h-4 text-purple-400" />
+                  <span className="text-sm text-purple-200" data-testid="text-evm-network">
+                    <SkeletonValue isLoading={isLoading} value={data?.evmChainName} />
+                  </span>
+                  {isOnBsc ? (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm border border-green-500/40 bg-green-500/10 text-green-300" data-testid="status-bsc">
+                      <CheckCircle2 className="w-3.5 h-3.5" /> {td.onBsc}
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm border border-yellow-500/40 bg-yellow-500/10 text-yellow-300" data-testid="status-bsc">
+                      <XCircle className="w-3.5 h-3.5" /> {td.notOnBsc}
+                    </span>
+                  )}
+                </div>
+              </>
+            ) : (
+              <div className="text-sm text-purple-300/60" data-testid="text-no-evm">
+                {td.connectEvmWallet}
+              </div>
+            )}
+          </div>
         </div>
+
+        {!hasEvmWallet && (
+          <div className="flex items-center gap-3 p-4 rounded-lg border border-purple-500/20 bg-purple-950/30 mb-6">
+            <AlertTriangle className="w-5 h-5 text-purple-400/70 flex-shrink-0" />
+            <span className="text-sm text-purple-300/80">{td.connectEvmWallet}</span>
+          </div>
+        )}
+
+        {hasEvmWallet && !isOnBsc && (
+          <div className="flex items-center gap-3 p-4 rounded-lg border border-yellow-500/20 bg-yellow-500/5 mb-6">
+            <AlertTriangle className="w-5 h-5 text-yellow-400/70 flex-shrink-0" />
+            <span className="text-sm text-yellow-300/80">{td.switchToBsc}</span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+          <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
+            <div className="text-sm text-purple-300/80 mb-2">{td.myBalance}</div>
+            <div className="font-mono text-lg font-bold text-purple-50" data-testid="text-my-balance">
+              <SkeletonValue isLoading={isLoading} value={
+                data?.balance != null ? `${formatTokenCount(data.balance)} ${TOKEN_CONFIG.symbol}` : null
+              } />
+            </div>
+          </div>
+          <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
+            <div className="text-sm text-purple-300/80 mb-2">{td.eligible}</div>
+            <div className="font-mono text-lg font-bold" data-testid="text-eligible">
+              {isLoading ? (
+                <Skeleton className="h-7 w-24 bg-primary/10" />
+              ) : data?.eligible != null ? (
+                data.eligible ? (
+                  <span className="text-green-300">{td.eligibleYes}</span>
+                ) : (
+                  <span className="text-yellow-300">{td.eligibleNo} ({TOKEN_CONFIG.holdingThreshold.toLocaleString()})</span>
+                )
+              ) : (
+                <Placeholder />
+              )}
+            </div>
+          </div>
+          <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
+            <div className="text-sm text-purple-300/80 mb-2">{td.holdingWeight}</div>
+            <div className="font-mono text-lg font-bold text-purple-50" data-testid="text-holding-weight">
+              <SkeletonValue isLoading={isLoading} value={data?.holdingWeight != null ? `${data.holdingWeight.toFixed(2)}%` : null} />
+            </div>
+          </div>
+          <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
+            <div className="text-sm text-purple-300/80 mb-2">{td.timeMultiplier}</div>
+            <div className="font-mono text-lg font-bold text-purple-50" data-testid="text-time-multiplier">
+              <SkeletonValue isLoading={isLoading} value={data?.timeMultiplier != null ? `${data.timeMultiplier}x` : null} />
+            </div>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          {rewards.map((r) => (
+          {[
+            { label: td.pendingBnb, key: "pending-bnb", value: data?.pendingBnbRewards, unit: "BNB", type: "BNB" },
+            { label: td.pendingLp, key: "pending-lp", value: data?.pendingLpRewards, unit: "LP", type: "LP" },
+            { label: td.referralComm, key: "referral-comm", value: data?.pendingReferralCommission, unit: TOKEN_CONFIG.symbol, type: "Referral" },
+          ].map((r) => (
             <div key={r.key} className="flex items-center justify-between p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
               <div>
                 <div className="text-sm text-purple-300/80 mb-1">{r.label}</div>
