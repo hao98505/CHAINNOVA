@@ -273,9 +273,11 @@ function VaultsSection() {
 function MyDashboardSection() {
   const { t } = useLanguage();
   const { data, isLoading, isError, refetch } = useMyTokenDashboard();
+  const { data: meta } = useOnChainTokenMeta();
   const { toast } = useToast();
   const td = t.tokenDashboard;
   const [showSolana, setShowSolana] = useState(false);
+  const tokenSymbol = meta?.symbol || TOKEN_CONFIG.symbol || "TOKEN";
 
   const handleClaim = useCallback((type: string) => {
     toast({ title: td.claimInitiated, description: `${type} ${td.claimPending}` });
@@ -355,7 +357,7 @@ function MyDashboardSection() {
             <div className="text-sm text-purple-300/80 mb-2">{td.myBalance}</div>
             <div className="font-mono text-lg font-bold text-purple-50" data-testid="text-my-balance">
               <SkeletonValue isLoading={isLoading} value={
-                data?.balance != null ? `${formatTokenCount(data.balance)} ${TOKEN_CONFIG.symbol}` : null
+                data?.balance != null ? `${formatTokenCount(data.balance)} ${tokenSymbol}` : null
               } />
             </div>
           </div>
@@ -393,7 +395,7 @@ function MyDashboardSection() {
           {[
             { label: td.pendingBnb, key: "pending-bnb", value: data?.pendingBnbRewards, unit: "BNB", type: "BNB" },
             { label: td.pendingLp, key: "pending-lp", value: data?.pendingLpRewards, unit: "LP", type: "LP" },
-            { label: td.referralComm, key: "referral-comm", value: data?.pendingReferralCommission, unit: TOKEN_CONFIG.symbol, type: "Referral" },
+            { label: td.referralComm, key: "referral-comm", value: data?.pendingReferralCommission, unit: tokenSymbol, type: "Referral" },
           ].map((r) => (
             <div key={r.key} className="flex items-center justify-between p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
               <div>
@@ -495,8 +497,10 @@ function ReferralSection() {
   const { t } = useLanguage();
   const { connected } = useWallet();
   const { data, isLoading, isError, refetch } = useReferralData();
+  const { data: meta } = useOnChainTokenMeta();
   const { toast } = useToast();
   const td = t.tokenDashboard;
+  const tokenSymbol = meta?.symbol || TOKEN_CONFIG.symbol || "TOKEN";
 
   const handleSubmitReview = useCallback(() => {
     toast({ title: td.reviewSubmitted, description: td.reviewPending });
@@ -554,7 +558,7 @@ function ReferralSection() {
               {data.history.map((h, i) => (
                 <div key={i} className="flex justify-between text-sm text-purple-300/80">
                   <span>{h.date}</span>
-                  <span>{h.amount} {TOKEN_CONFIG.symbol}</span>
+                  <span>{h.amount} {tokenSymbol}</span>
                   <span>{h.status}</span>
                 </div>
               ))}
