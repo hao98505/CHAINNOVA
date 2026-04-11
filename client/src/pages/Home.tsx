@@ -7,10 +7,10 @@ import { ParticleBackground } from "@/components/ParticleBackground";
 import { TokenDashboard } from "@/components/home/TokenDashboard";
 import { useAgents } from "@/hooks/useChainNova";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   Zap, Bot, ArrowRight, TrendingUp, Users, Activity, Shield,
-  Plus, Store, Coins
+  Plus, Store, Coins, BarChart3
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -87,9 +87,18 @@ export default function Home() {
               </Button>
             </div>
 
-            <div className="text-xs text-muted-foreground/50 tracking-wide uppercase mt-6" data-testid="text-hero-sub">
-              {t.home.heroSub}
-            </div>
+            <button
+              onClick={() => {
+                const el = document.getElementById("token-dashboard");
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className="inline-flex items-center gap-2 mt-6 px-4 py-2 text-sm text-yellow-300/90 hover:text-yellow-200 border border-yellow-500/25 hover:border-yellow-400/40 rounded bg-yellow-500/5 hover:bg-yellow-500/10 transition-all tracking-wide uppercase"
+              data-testid="button-hero-dashboard"
+            >
+              <BarChart3 className="w-4 h-4" />
+              {t.home.viewDashboard}
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
 
             <div className="flex flex-wrap items-center justify-center gap-6 mt-6">
               {["MetaMask", "BSC", "Phantom", "Solflare"].map((item) => (

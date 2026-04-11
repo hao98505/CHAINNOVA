@@ -649,7 +649,7 @@ export function TokenDashboard() {
   const td = t.tokenDashboard;
 
   return (
-    <section className="px-4 sm:px-6 py-12" data-testid="section-token-dashboard">
+    <section id="token-dashboard" className="px-4 sm:px-6 py-12" data-testid="section-token-dashboard">
       <div className="max-w-5xl mx-auto space-y-8">
         <motion.div
           initial={{ opacity: 0 }}
