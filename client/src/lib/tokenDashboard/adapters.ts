@@ -1,10 +1,10 @@
 import { TOKEN_CONFIG, VAULT_CONFIG } from "@/config/tokenDashboard";
 import { readTokenBalance } from "./contracts";
 import { formatTokenAmount } from "./formatters";
+import { fetchPortalMarketData } from "./portalAdapter";
 import type { MarketData, VaultBalance, EvmWalletInfo, DexScreenerResponse } from "./types";
 
 const DEXSCREENER_API = "https://api.dexscreener.com/latest/dex/tokens";
-const GECKOTERMINAL_API = "https://api.geckoterminal.com/api/v2/networks/bsc/tokens";
 
 const EVM_CHAIN_NAMES: Record<number, string> = {
   1: "Ethereum",
@@ -18,6 +18,11 @@ const EVM_CHAIN_NAMES: Record<number, string> = {
 };
 
 export async function fetchMarketData(): Promise<MarketData> {
+  const portalData = await fetchPortalMarketData();
+  if (portalData.currentPrice != null) {
+    return portalData;
+  }
+
   try {
     const res = await fetch(
       `${DEXSCREENER_API}/${TOKEN_CONFIG.contractAddress}`,
@@ -33,13 +38,11 @@ export async function fetchMarketData(): Promise<MarketData> {
     const bscPairs = data.pairs.filter((p) => p.chainId === "bsc");
     const pair = bscPairs.length > 0 ? bscPairs[0] : data.pairs[0];
 
-    const holders = await fetchHoldersCount();
-
     return {
       currentPrice: pair.priceUsd ? parseFloat(pair.priceUsd) : null,
       marketCap: pair.marketCap ?? pair.fdv ?? null,
       liquidity: pair.liquidity?.usd ?? null,
-      holders,
+      holders: null,
       volume24h: pair.volume?.h24 ?? null,
       priceChange24h: pair.priceChange?.h24 ?? null,
       pairAddress: pair.pairAddress,
@@ -47,30 +50,6 @@ export async function fetchMarketData(): Promise<MarketData> {
     };
   } catch {
     return nullMarketData();
-  }
-}
-
-async function fetchHoldersCount(): Promise<number | null> {
-  try {
-    const res = await fetch(
-      `${GECKOTERMINAL_API}/${TOKEN_CONFIG.contractAddress}`,
-      {
-        signal: AbortSignal.timeout(8_000),
-        headers: { Accept: "application/json" },
-      },
-    );
-    if (!res.ok) return null;
-
-    const data = await res.json();
-    const info = data?.data?.attributes;
-    if (info?.holders_count != null) {
-      return typeof info.holders_count === "number"
-        ? info.holders_count
-        : parseInt(info.holders_count, 10) || null;
-    }
-    return null;
-  } catch {
-    return null;
   }
 }
 

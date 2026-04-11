@@ -54,16 +54,21 @@ Anchor program: `programs/wforgai-bridge/`
 - **Bidirectional Relayer**: `server/solana-evm-relayer.ts` — Solana→EVM (BridgeOut log→completeTransfer), EVM→Solana stub; dedup by transfer_id, paginated scanning, 12-block EVM finality
 
 ### Token Dashboard (Homepage)
-- **Test Token**: `0x0a9c2e3cda80a828334bfa2577a75a85229f7777` (BSC)
-- **DEX Status**: No trading pair yet — price/marketCap/liquidity/volume/holders all show `--`
+- **Token**: ChainNovaAI (CNOVA), `0x0a9c2e3cda80a828334bfa2577a75a85229f7777` (BSC), 18 decimals, 1B supply
+- **Trading**: Flap Portal bonding curve at `0xe2ce6ab80874fa9fa2aae65d277dd6b8e65c9de0` — NOT on PancakeSwap/DexScreener
+- **Data Source**: `portalAdapter.ts` calls `getTokenV8Safe()` on-chain → derives price, marketCap, liquidity from reserve/supply. BNB/USD from CoinGecko.
+- **Buy/Chart**: GMGN (`https://gmgn.ai/bsc/token/...`)
+- **Tax**: 3% buy (300 bps) / 6% sell (600 bps) — on-chain via Portal
 - **Wallet**: EVM wallet (MetaMask/injected) via `EvmWalletContext` — header shows BSC connect button on homepage
-- **Config**: `client/src/config/tokenDashboard.ts` — token address, vault contract addresses (`VAULT_CONTRACT_CONFIG`), tax, transparency
+- **Config**: `client/src/config/tokenDashboard.ts` — token address, vault addresses (all empty = not deployed), Portal address, buy/chart URLs
+- **Adapters**: `portalAdapter.ts` (primary) → `adapters.ts` (fallback chain: Portal → DexScreener for post-graduation)
 - **On-Chain Meta**: `useOnChainTokenMeta()` reads name/symbol/decimals from contract; falls back to config
 - **EVM Wallet Context**: `client/src/contexts/EvmWalletContext.tsx` — connect/disconnect, chain detection, balance reading, eligibility check
 - **Hooks**: `client/src/hooks/useTokenDashboard.ts` — overview/vaults/myDashboard/referral queries (uses EvmWalletContext)
 - **Component**: `client/src/components/home/TokenDashboard.tsx` — 6 sections with glassmorphism, i18n, error handling
-- **i18n**: `tokenDashboard` namespace in `client/src/lib/i18n.ts` (EN + ZH)
-- **Phase 2 fields**: holdingWeight, timeMultiplier, pendingBnb/Lp/Referral marked with "Phase 2" label, Claim buttons disabled
+- **i18n**: `tokenDashboard` namespace in `client/src/lib/i18n.ts` (EN + ZH) — includes notDeployed, vaultsNotDeployed, buyNow, viewChart keys
+- **Vault Status**: All 4 vaults show "Not Deployed" badges; vault section shows banner explaining tax flows through Portal bonding curve
+- **My Dashboard**: holdingWeight, timeMultiplier, pendingBnb/Lp/Referral marked with "Not Deployed" badge, Claim buttons disabled
 
 ### On-Chain Reward Vault Architecture (Draft — Not Deployed)
 - **Architecture Doc**: `docs/architecture/reward-vault-architecture.md`

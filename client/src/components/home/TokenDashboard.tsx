@@ -6,7 +6,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import {
   useTokenOverview,
-  useVaults,
   useMyTokenDashboard,
   useReferralData,
   useOnChainTokenMeta,
@@ -39,6 +38,16 @@ const FLOW_COLORS = ["#A78BFA", "#6B46C1", "#34D399", "#FBBF24"] as const;
 
 function Placeholder() {
   return <span className="text-purple-300/60 font-mono text-lg">--</span>;
+}
+
+function NotDeployedBadge() {
+  const { t } = useLanguage();
+  return (
+    <div className="inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded text-[10px] font-semibold border border-yellow-500/30 bg-yellow-500/5 text-yellow-400/70">
+      <AlertTriangle className="w-3 h-3" />
+      {t.tokenDashboard.notDeployed}
+    </div>
+  );
 }
 
 function SkeletonValue({ isLoading, value, width = "w-24" }: { isLoading: boolean; value: React.ReactNode; width?: string }) {
@@ -183,6 +192,28 @@ function OverviewSection() {
             >
               <ExternalLink className="w-5 h-5" />
             </a>
+            {TOKEN_CONFIG.buyUrl && (
+              <a
+                href={TOKEN_CONFIG.buyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-semibold border border-green-500/40 bg-green-500/10 text-green-300 hover:bg-green-500/20 transition-colors"
+                data-testid="link-buy"
+              >
+                <TrendingUp className="w-4 h-4" /> {td.buyNow || "Buy"}
+              </a>
+            )}
+            {TOKEN_CONFIG.chartUrl && (
+              <a
+                href={TOKEN_CONFIG.chartUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-semibold border border-purple-500/30 bg-purple-500/10 text-purple-300 hover:bg-purple-500/20 transition-colors"
+                data-testid="link-chart"
+              >
+                <Layers className="w-4 h-4" /> {td.viewChart || "Chart"}
+              </a>
+            )}
           </div>
         </div>
 
@@ -204,18 +235,36 @@ function OverviewSection() {
 
 function VaultsSection() {
   const { t } = useLanguage();
-  const { data: vaults, isLoading, isError, refetch } = useVaults();
   const td = t.tokenDashboard;
+  const hasAnyVault = VAULT_CONFIG.some((vc) => vc.address && vc.address.length > 2);
 
   return (
     <div>
       <SectionTitle icon={Shield}>{td.vaultAllocation}</SectionTitle>
-      {isError && <ErrorBanner message={td.loadError} onRetry={() => refetch()} />}
+
+      <div className="flex items-center gap-3 p-4 rounded-lg border border-purple-500/20 bg-purple-950/30 mb-4">
+        <Coins className="w-5 h-5 text-purple-400 flex-shrink-0" />
+        <div className="text-sm text-purple-300/80">
+          {td.currentTaxMechanism}: <span className="font-semibold text-purple-200">{TOKEN_CONFIG.tradingPlatform}</span>
+          <span className="mx-2">|</span>
+          {td.buyTax}: <span className="font-semibold text-green-300">{TOKEN_CONFIG.buyTaxPercent}%</span>
+          <span className="mx-2">|</span>
+          {td.sellTax}: <span className="font-semibold text-red-300">{TOKEN_CONFIG.sellTaxPercent}%</span>
+        </div>
+      </div>
+
+      {!hasAnyVault && (
+        <div className="flex items-center gap-3 p-4 rounded-lg border border-yellow-500/20 bg-yellow-500/5 mb-4">
+          <AlertTriangle className="w-5 h-5 text-yellow-400/70 flex-shrink-0" />
+          <span className="text-sm text-yellow-300/80">{td.vaultsNotDeployed}</span>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {VAULT_CONFIG.map((vc, i) => {
-          const vault = vaults?.find((v) => v.id === vc.id);
           const Icon = ICON_MAP[vc.icon];
           const vaultLabel = td[vc.labelKey as keyof typeof td] as string;
+          const deployed = vc.address && vc.address.length > 2;
           return (
             <GlowCard key={vc.id} delay={0.15 + i * 0.05}>
               <div className="p-5 md:p-6">
@@ -234,31 +283,32 @@ function VaultsSection() {
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  {[
-                    { label: td.balance, value: vault?.currentBalance },
-                    { label: td.totalIn, value: vault?.totalInflow },
-                    { label: td.totalOut, value: vault?.totalOutflow },
-                  ].map((row) => (
-                    <div key={row.label} className="flex items-center justify-between">
-                      <span className="text-sm text-purple-300/80">{row.label}</span>
-                      <span className="font-mono text-sm text-purple-100">
-                        <SkeletonValue isLoading={isLoading} value={row.value != null ? formatTokenCount(row.value) : null} width="w-16" />
-                      </span>
+                {deployed ? (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-purple-300/80">{td.balance}</span>
+                      <span className="font-mono text-sm text-purple-100"><Placeholder /></span>
                     </div>
-                  ))}
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-purple-300/80">{td.updated}</span>
-                    <span className="font-mono text-sm text-purple-300/60">
-                      <SkeletonValue isLoading={isLoading} value={vault?.lastUpdateTime} width="w-16" />
-                    </span>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-purple-300/80">{td.totalIn}</span>
+                      <span className="font-mono text-sm text-purple-100"><Placeholder /></span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-purple-300/80">{td.totalOut}</span>
+                      <span className="font-mono text-sm text-purple-100"><Placeholder /></span>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <NotDeployedBadge />
+                    <div className="text-xs text-purple-400/50 mt-2">{td.pendingDeployment}</div>
+                  </div>
+                )}
 
                 <div className="mt-4 h-2 rounded-full bg-purple-950/60 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-1000"
-                    style={{ width: `${vc.allocationPercent}%`, background: vc.color }}
+                    style={{ width: `${vc.allocationPercent}%`, background: deployed ? vc.color : `${vc.color}40` }}
                   />
                 </div>
               </div>
@@ -392,14 +442,14 @@ function MyDashboardSection() {
             <div className="font-mono text-lg font-bold text-purple-50" data-testid="text-holding-weight">
               <Placeholder />
             </div>
-            <div className="text-[10px] text-purple-500/50 mt-1">Phase 2</div>
+            <NotDeployedBadge />
           </div>
           <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
             <div className="text-sm text-purple-300/80 mb-2">{td.timeMultiplier}</div>
             <div className="font-mono text-lg font-bold text-purple-50" data-testid="text-time-multiplier">
               <Placeholder />
             </div>
-            <div className="text-[10px] text-purple-500/50 mt-1">Phase 2</div>
+            <NotDeployedBadge />
           </div>
         </div>
 
@@ -415,7 +465,7 @@ function MyDashboardSection() {
                 <div className="font-mono text-xl font-bold text-purple-50" data-testid={`text-${r.key}`}>
                   <Placeholder />
                 </div>
-                <div className="text-[10px] text-purple-500/50 mt-1">Phase 2</div>
+                <NotDeployedBadge />
               </div>
               <Button
                 size="default"
