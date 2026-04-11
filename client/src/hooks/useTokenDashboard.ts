@@ -1,85 +1,58 @@
 import { useQuery } from "@tanstack/react-query";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { TOKEN_CONFIG, VAULT_CONFIG } from "@/config/tokenDashboard";
+import { fetchMarketData, fetchVaultBalances, fetchWalletTokenBalance } from "@/lib/tokenDashboard/adapters";
+import { relativeTime } from "@/lib/tokenDashboard/formatters";
+import type { TokenOverview, VaultData, MyDashboardData, ReferralData } from "@/lib/tokenDashboard/types";
 
-export interface TokenOverview {
-  name: string;
-  symbol: string;
-  contractAddress: string;
-  currentPrice: number | null;
-  marketCap: number | null;
-  liquidity: number | null;
-  holders: number | null;
-  volume24h: number | null;
-  buyTaxPercent: number;
-  sellTaxPercent: number;
-}
-
-export interface VaultData {
-  id: string;
-  currentBalance: number | null;
-  totalInflow: number | null;
-  totalOutflow: number | null;
-  allocationPercent: number;
-  lastUpdateTime: string | null;
-}
-
-export interface MyDashboardData {
-  balance: number | null;
-  eligible: boolean | null;
-  holdingWeight: number | null;
-  timeMultiplier: number | null;
-  pendingBnbRewards: number | null;
-  pendingLpRewards: number | null;
-  pendingReferralCommission: number | null;
-}
-
-export interface ReferralData {
-  inviteCode: string | null;
-  directReferrals: number | null;
-  qualifiedVolume: number | null;
-  pendingReview: number | null;
-  claimableCommission: number | null;
-  history: Array<{ date: string; amount: number; status: string }>;
-}
+export type { TokenOverview, VaultData, MyDashboardData, ReferralData };
 
 export function useTokenOverview() {
   return useQuery<TokenOverview>({
-    queryKey: ["/api/token/overview"],
-    queryFn: async () => {
-      await new Promise((r) => setTimeout(r, 300));
+    queryKey: ["token-overview"],
+    queryFn: async (): Promise<TokenOverview> => {
+      const market = await fetchMarketData();
       return {
         name: TOKEN_CONFIG.name,
         symbol: TOKEN_CONFIG.symbol,
         contractAddress: TOKEN_CONFIG.contractAddress,
-        currentPrice: null,
-        marketCap: null,
-        liquidity: null,
-        holders: null,
-        volume24h: null,
+        currentPrice: market.currentPrice,
+        marketCap: market.marketCap,
+        liquidity: market.liquidity,
+        holders: market.holders,
+        volume24h: market.volume24h,
         buyTaxPercent: TOKEN_CONFIG.buyTaxPercent,
         sellTaxPercent: TOKEN_CONFIG.sellTaxPercent,
       };
     },
-    staleTime: 30000,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    retry: 2,
+    retryDelay: 3000,
   });
 }
 
 export function useVaults() {
   return useQuery<VaultData[]>({
-    queryKey: ["/api/token/vaults"],
-    queryFn: async () => {
-      await new Promise((r) => setTimeout(r, 300));
-      return VAULT_CONFIG.map((v) => ({
-        id: v.id,
-        currentBalance: null,
-        totalInflow: null,
-        totalOutflow: null,
-        allocationPercent: v.allocationPercent,
-        lastUpdateTime: null,
-      }));
+    queryKey: ["token-vaults"],
+    queryFn: async (): Promise<VaultData[]> => {
+      const balances = await fetchVaultBalances();
+      return VAULT_CONFIG.map((vc) => {
+        const bal = balances.find((b) => b.id === vc.id);
+        return {
+          id: vc.id,
+          currentBalance: bal?.formattedBalance ?? null,
+          totalInflow: null,
+          totalOutflow: null,
+          allocationPercent: vc.allocationPercent,
+          lastUpdateTime: bal?.lastFetchedAt ? relativeTime(bal.lastFetchedAt) : null,
+        };
+      });
     },
-    staleTime: 30000,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+    retry: 2,
+    retryDelay: 3000,
   });
 }
 
@@ -88,9 +61,8 @@ export function useMyTokenDashboard() {
   const walletAddress = publicKey?.toBase58();
 
   return useQuery<MyDashboardData>({
-    queryKey: ["/api/token/my-dashboard", walletAddress],
-    queryFn: async () => {
-      await new Promise((r) => setTimeout(r, 300));
+    queryKey: ["token-my-dashboard", walletAddress],
+    queryFn: async (): Promise<MyDashboardData> => {
       return {
         balance: null,
         eligible: null,
@@ -102,7 +74,7 @@ export function useMyTokenDashboard() {
       };
     },
     enabled: connected && !!walletAddress,
-    staleTime: 10000,
+    staleTime: 10_000,
   });
 }
 
@@ -111,9 +83,8 @@ export function useReferralData() {
   const walletAddress = publicKey?.toBase58();
 
   return useQuery<ReferralData>({
-    queryKey: ["/api/token/referral", walletAddress],
-    queryFn: async () => {
-      await new Promise((r) => setTimeout(r, 300));
+    queryKey: ["token-referral", walletAddress],
+    queryFn: async (): Promise<ReferralData> => {
       return {
         inviteCode: null,
         directReferrals: null,
@@ -124,6 +95,6 @@ export function useReferralData() {
       };
     },
     enabled: connected && !!walletAddress,
-    staleTime: 30000,
+    staleTime: 30_000,
   });
 }

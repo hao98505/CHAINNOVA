@@ -23,6 +23,7 @@ import {
   TrendingUp, Send, FileText, ChevronRight, Coins,
   BadgeCheck, CircleDollarSign, Layers, AlertTriangle, RefreshCw,
 } from "lucide-react";
+import { formatUsd, formatTokenCount } from "@/lib/tokenDashboard/formatters";
 
 const ICON_MAP = {
   Users,
@@ -134,11 +135,11 @@ function OverviewSection() {
 
   const td = t.tokenDashboard;
   const metrics = [
-    { label: td.currentPrice, key: "current-price", value: data?.currentPrice != null ? `$${data.currentPrice.toFixed(6)}` : null, icon: CircleDollarSign },
-    { label: td.marketCap, key: "market-cap", value: data?.marketCap != null ? `$${(data.marketCap / 1e6).toFixed(2)}M` : null, icon: TrendingUp },
-    { label: td.liquidity, key: "liquidity", value: data?.liquidity != null ? `$${(data.liquidity / 1e3).toFixed(1)}K` : null, icon: Droplets },
+    { label: td.currentPrice, key: "current-price", value: data?.currentPrice != null ? formatUsd(data.currentPrice) : null, icon: CircleDollarSign },
+    { label: td.marketCap, key: "market-cap", value: data?.marketCap != null ? formatUsd(data.marketCap) : null, icon: TrendingUp },
+    { label: td.liquidity, key: "liquidity", value: data?.liquidity != null ? formatUsd(data.liquidity) : null, icon: Droplets },
     { label: td.holders, key: "holders", value: data?.holders != null ? data.holders.toLocaleString() : null, icon: Users },
-    { label: td.volume24h, key: "24h-volume", value: data?.volume24h != null ? `$${(data.volume24h / 1e3).toFixed(1)}K` : null, icon: Layers },
+    { label: td.volume24h, key: "24h-volume", value: data?.volume24h != null ? formatUsd(data.volume24h) : null, icon: Layers },
     { label: td.buyTax, key: "buy-tax", value: `${TOKEN_CONFIG.buyTaxPercent}%`, icon: ArrowRight },
     { label: td.sellTax, key: "sell-tax", value: `${TOKEN_CONFIG.sellTaxPercent}%`, icon: ArrowRight },
   ];
@@ -235,7 +236,7 @@ function VaultsSection() {
                     <div key={row.label} className="flex items-center justify-between">
                       <span className="text-sm text-purple-300/80">{row.label}</span>
                       <span className="font-mono text-sm text-purple-100">
-                        <SkeletonValue isLoading={isLoading} value={row.value != null ? row.value.toLocaleString() : null} width="w-16" />
+                        <SkeletonValue isLoading={isLoading} value={row.value != null ? formatTokenCount(row.value) : null} width="w-16" />
                       </span>
                     </div>
                   ))}
