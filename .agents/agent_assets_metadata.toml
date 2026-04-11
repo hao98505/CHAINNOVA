@@ -24,3 +24,15 @@ id = "Wryonss9P1cguJwbTQTgh"
 uri = "file://attached_assets/ChainNova_Feature_Breakdown.md"
 type = "text"
 title = "ChainNova Agents V2 — 功能详细拆解文档"
+
+[[outputs]]
+id = "XXKPYDDDAFNiGBqggRRYi"
+uri = "file://screenshots/my-dashboard-evm-first.png"
+type = "image"
+title = "My Dashboard - EVM First Empty State"
+
+[[outputs]]
+id = "AJpd2R1-eKwIhxf9g_z2o"
+uri = "file://screenshots/token-dashboard-full.png"
+type = "image"
+title = "Token Dashboard - Full Page (Bottom)"
