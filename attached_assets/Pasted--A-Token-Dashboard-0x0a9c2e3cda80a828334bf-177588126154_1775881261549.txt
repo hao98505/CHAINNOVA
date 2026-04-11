@@ -1,0 +1,215 @@
+先做两件事，但**不要部署主网**：
+
+## 任务 A：把当前首页 Token Dashboard 全部切到这个测试代币
+
+新测试代币地址：
+`0x0a9c2e3cda80a828334bfa2577a75a85229f7777`
+
+### A1. 先把 Dashboard 的代币配置全部改到这个新地址
+
+检查并更新所有与 token dashboard 相关的配置、adapter、explorer link、chart link、holders / market data 查询目标，统一切到：
+`0x0a9c2e3cda80a828334bfa2577a75a85229f7777`
+
+重点检查这些文件及其引用链：
+
+* `client/src/config/tokenDashboard.ts`
+* `client/src/hooks/useTokenDashboard.ts`
+* `client/src/lib/tokenDashboard/adapters.ts`
+* `client/src/lib/tokenDashboard/contracts.ts`
+* `client/src/lib/tokenDashboard/types.ts`
+* `client/src/components/home/TokenDashboard.tsx`
+* `client/src/lib/i18n.ts`
+
+### A2. 代币元数据不要继续写死旧值
+
+要求：
+
+1. 优先从链上读取并确认：
+
+* `name()`
+* `symbol()`
+* `decimals()`
+
+2. 如果能正常读取，就把 Dashboard 显示切到这个测试币的真实 name / symbol
+3. 如果读取失败，先保留地址驱动，但不要继续写死旧的 FORGAI / 旧地址相关文案
+4. 所有 explorer links 必须指向新地址
+5. 所有 DexScreener / GeckoTerminal / market adapters 查询目标必须改成新地址
+6. 如果新币尚未被索引：
+
+* 价格 / 市值 / 24h volume / holders 可显示 `--`
+* 但链上可读的 balance、地址、explorer links 必须正确
+
+### A3. 页面文案与透明度区一起对齐
+
+要求：
+
+1. Transparency 区的 Token Contract 改成新地址
+2. Hero 到 Dashboard 相关的 token analytics 文案，不要继续出现旧币地址导致的错误跳转
+3. View Contract / View Chart / Buy Token / Vault links 这类入口，全部检查是否已对齐新地址
+4. 如果 buy/chart 入口当前没有稳定目标链接，先走 config 占位，不要写死旧链接
+
+### A4. 做代码级核验
+
+完成后执行并回传结果：
+
+* 搜索旧地址是否残留
+* 搜索旧 token symbol / name 是否残留
+* 截图验证首页 Token Dashboard 已经切到新地址
+
+---
+
+## 任务 B：开始做链上奖励架构设计和第一阶段实现准备
+
+**只做合约草案 + 架构文档 + 前端数据结构预留，不要部署主网，不要接真实 claim 交易。**
+
+目标：
+采用二层架构：
+
+1. Holder dividend 走 Flap Tax Token V2 dividend（`minimumShareBalance = 200000`）
+2. 其余税收进入自定义 `MasterVault`
+3. `MasterVault` 再拆分到：
+
+   * `LPRewardVault`
+   * `ReferralVault`
+   * `MarketingVault`
+
+---
+
+### B1. 产出 solidity 合约草案
+
+先放在 `contracts/` 或 `docs/architecture/`，不要部署。
+
+#### 1）`MasterVault.sol`
+
+要求：
+
+* 接收 BNB
+* 按 `4286 / 4286 / 1428` bps 分配到 LP / Referral / Marketing
+* 记录累计流入、累计分配
+* 预留 `owner / multisig` 配置入口
+* 加 `ReentrancyGuard`
+* 加事件
+* 所有比例用 basis points
+* 不要设计成资金先到普通钱包
+
+建议至少包含：
+
+* recipient 配置
+* `dispatch()` / `distribute()` 逻辑
+* `receive()` / `fallback()` 处理
+* `totalReceived`
+* `totalDistributedToLP`
+* `totalDistributedToReferral`
+* `totalDistributedToMarketing`
+
+#### 2）`LPRewardVault.sol`
+
+要求：
+
+* `stake / unstake / claim`
+* 使用 `accRewardPerShare` 记账
+* 奖励资产为 BNB
+* 只认指定 LP token
+* 提供 `earned(address)` view
+* 加事件
+* 加重入保护
+
+#### 3）`ReferralVault.sol`
+
+要求：
+
+* `bindReferrer`
+* `claim(amount, nonce, deadline, sig)`
+* EIP-712 验签
+* nonce 防重放
+* 记录 `claimed`
+* 说明 `claimable` 设计占位
+* 不做“后台直接打钱”的思路
+
+#### 4）`MarketingVault.sol`
+
+要求：
+
+* `claimApprovedPayment(amount, nonce, deadline, sig)`
+* EIP-712 验签
+* nonce 防重放
+* 不做任意 `owner withdraw`
+* 以“批准后由收款人自己 claim”为设计方向
+
+---
+
+### B2. 产出架构文档
+
+新建一个架构文档，写清楚：
+
+1. 税收流向
+2. 各合约职责
+3. 页面字段分别对应哪个合约数据
+4. 哪些字段是 Phase 1 可接
+5. 哪些字段要到 Phase 2 / 3 才能接
+6. 为什么不能用“税先到普通钱包再人工分配”
+
+文档里要明确：
+
+* Holder dividend：依赖 Flap Tax Token V2 / dividend contract
+* LP reward：依赖 `LPRewardVault`
+* Referral：依赖 `ReferralVault`
+* Marketing：依赖 `MarketingVault`
+* Dashboard 上的哪些 pending 字段现在只能预留
+
+---
+
+### B3. 前端数据结构预留
+
+先不要接真实 claim 交易，只扩展现有 Dashboard 数据结构与配置。
+
+需要预留并接入 config/types/hook 的字段：
+
+* `dividendContract`
+* `masterVault`
+* `lpRewardVault`
+* `referralVault`
+* `marketingVault`
+* `earnedLP`
+* `pendingReferral`
+* `claimableHolderReward`（如能读）
+* 对应 explorer links
+
+要求：
+
+1. 配置集中管理
+2. hooks / adapters 分层
+3. 组件里不要散落地址和 raw url
+4. 未部署地址先允许为空，但类型和 UI 结构要预留好
+5. Transparency 区要能容纳这些未来地址
+
+---
+
+### B4. 重要要求
+
+* 不要用“税先到普通钱包再人工分配”的方案
+* 一律按“税进合约再分配”设计
+* 所有比例都写成 basis points
+* 所有关键函数加事件
+* 所有外部调用考虑重入保护
+* 先给我文件清单 + 合约接口 + 架构说明，再说部署
+* 不要自作主张部署主网
+* 不要修改无关业务页面
+
+---
+
+## 交付要求
+
+完成后按这个格式汇报：
+
+1. 新测试代币地址是否已全量切换完成
+2. 改动文件清单
+3. 旧地址 / 旧 symbol / 旧 name 残留搜索结果
+4. 新首页截图
+5. 当前可真实读取的数据有哪些
+6. 还不能读取、只能预留的字段有哪些
+7. 新增的合约草案文件清单
+8. 架构文档路径
+9. GitHub HEAD 提交号
+
+先完成“切新测试币 + 架构草案 + 前端预留”，不要部署。
