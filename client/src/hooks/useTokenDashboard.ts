@@ -63,10 +63,10 @@ export function useVaults() {
 
 export function useMyTokenDashboard() {
   const { publicKey, connected } = useWallet();
-  const solanaAddress = publicKey?.toBase58() ?? null;
+  const solanaAddress = connected ? (publicKey?.toBase58() ?? null) : null;
 
   return useQuery<MyDashboardData>({
-    queryKey: ["token-my-dashboard", solanaAddress],
+    queryKey: ["token-my-dashboard"],
     queryFn: async (): Promise<MyDashboardData> => {
       const evm = await detectEvmWallet();
 
@@ -96,7 +96,7 @@ export function useMyTokenDashboard() {
         pendingReferralCommission: null,
       };
     },
-    enabled: connected && !!solanaAddress,
+    enabled: true,
     staleTime: 15_000,
     refetchInterval: 30_000,
     retry: 1,

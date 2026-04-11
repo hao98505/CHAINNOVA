@@ -20,7 +20,7 @@ import {
 import {
   Copy, Check, ExternalLink, Users, Droplets, Link, Megaphone,
   ArrowRight, Shield, ShieldCheck, ShieldX, Wallet, Gift,
-  TrendingUp, Send, FileText, ChevronRight, Coins,
+  TrendingUp, Send, FileText, ChevronRight, ChevronDown, Coins,
   BadgeCheck, CircleDollarSign, Layers, AlertTriangle, RefreshCw,
   Globe, CheckCircle2, XCircle,
 } from "lucide-react";
@@ -266,28 +266,30 @@ function VaultsSection() {
 
 function MyDashboardSection() {
   const { t } = useLanguage();
-  const { connected } = useWallet();
   const { data, isLoading, isError, refetch } = useMyTokenDashboard();
   const { toast } = useToast();
   const td = t.tokenDashboard;
+  const [showSolana, setShowSolana] = useState(false);
 
   const handleClaim = useCallback((type: string) => {
     toast({ title: td.claimInitiated, description: `${type} ${td.claimPending}` });
   }, [toast, td]);
 
-  if (!connected) {
+  const hasEvmWallet = !!data?.evmAddress;
+  const isOnBsc = !!data?.isOnBsc;
+  const hasSolana = !!data?.solanaAddress;
+
+  if (!hasEvmWallet && !isLoading) {
     return (
       <GlowCard delay={0.3}>
         <div className="p-8 md:p-10 text-center">
           <Wallet className="w-12 h-12 text-purple-400/50 mx-auto mb-4" />
-          <div className="text-base text-purple-300" data-testid="text-connect-dashboard">{td.connectWalletDashboard}</div>
+          <div className="text-base text-purple-300 mb-2" data-testid="text-connect-dashboard">{td.connectEvmDashboard}</div>
+          <div className="text-sm text-purple-400/60">{td.connectEvmHint}</div>
         </div>
       </GlowCard>
     );
   }
-
-  const hasEvmWallet = !!data?.evmAddress;
-  const isOnBsc = !!data?.isOnBsc;
 
   return (
     <GlowCard delay={0.3}>
@@ -295,88 +297,54 @@ function MyDashboardSection() {
         <SectionTitle icon={Wallet}>{td.myDashboard}</SectionTitle>
         {isError && <ErrorBanner message={td.loadError} onRetry={() => refetch()} />}
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-          <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
-            <div className="flex items-center gap-2 mb-3">
-              <div className="w-2 h-2 rounded-full bg-green-400 status-dot" />
-              <span className="text-sm font-semibold text-green-300">Solana Connected</span>
+        <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15 mb-4">
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 rounded-full bg-green-400 status-dot" />
+              <span className="text-sm font-semibold text-green-300">{td.evmWalletConnected}</span>
             </div>
-            <div className="text-sm text-purple-300/80 mb-1">{td.walletAddress}</div>
-            <div data-testid="text-solana-address">
-              <SkeletonValue isLoading={isLoading} value={
-                data?.solanaAddress ? <CopyableAddress address={data.solanaAddress} context="solana-dashboard" /> : null
-              } />
-            </div>
-          </div>
-
-          <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
-            <div className="flex items-center gap-2 mb-3">
-              {hasEvmWallet ? (
-                <>
-                  <div className="w-2 h-2 rounded-full bg-green-400 status-dot" />
-                  <span className="text-sm font-semibold text-green-300">{td.evmWallet}</span>
-                </>
-              ) : (
-                <>
-                  <div className="w-2 h-2 rounded-full bg-purple-400/50" />
-                  <span className="text-sm font-semibold text-purple-400/70">{td.evmWallet}</span>
-                </>
-              )}
-            </div>
-            {hasEvmWallet ? (
-              <>
-                <div className="text-sm text-purple-300/80 mb-1">{td.walletAddress}</div>
-                <div className="flex items-center gap-2" data-testid="text-evm-address">
-                  <CopyableAddress address={data!.evmAddress!} context="evm-dashboard" />
-                  <a
-                    href={`${TOKEN_CONFIG.explorerAddressUrl}/${data!.evmAddress}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-purple-400 hover:text-purple-200 transition-colors"
-                    data-testid="link-evm-explorer"
-                  >
-                    <ExternalLink className="w-4 h-4" />
-                  </a>
-                </div>
-                <div className="flex items-center gap-2 mt-2">
-                  <Globe className="w-4 h-4 text-purple-400" />
-                  <span className="text-sm text-purple-200" data-testid="text-evm-network">
-                    <SkeletonValue isLoading={isLoading} value={data?.evmChainName} />
-                  </span>
-                  {isOnBsc ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm border border-green-500/40 bg-green-500/10 text-green-300" data-testid="status-bsc">
-                      <CheckCircle2 className="w-3.5 h-3.5" /> {td.onBsc}
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-sm border border-yellow-500/40 bg-yellow-500/10 text-yellow-300" data-testid="status-bsc">
-                      <XCircle className="w-3.5 h-3.5" /> {td.notOnBsc}
-                    </span>
-                  )}
-                </div>
-              </>
+            {isOnBsc ? (
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-sm border border-green-500/40 bg-green-500/10 text-green-300" data-testid="status-bsc">
+                <CheckCircle2 className="w-3.5 h-3.5" /> {td.onBsc}
+              </span>
             ) : (
-              <div className="text-sm text-purple-300/60" data-testid="text-no-evm">
-                {td.connectEvmWallet}
-              </div>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-sm border border-yellow-500/40 bg-yellow-500/10 text-yellow-300" data-testid="status-bsc">
+                <XCircle className="w-3.5 h-3.5" /> {td.notOnBsc}
+              </span>
             )}
+          </div>
+          <div className="flex items-center gap-2 mb-2" data-testid="text-evm-address">
+            <SkeletonValue isLoading={isLoading} value={
+              data?.evmAddress ? <CopyableAddress address={data.evmAddress} context="evm-dashboard" /> : null
+            } />
+            {data?.evmAddress && (
+              <a
+                href={`${TOKEN_CONFIG.explorerAddressUrl}/${data.evmAddress}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-purple-400 hover:text-purple-200 transition-colors"
+                data-testid="link-evm-explorer"
+              >
+                <ExternalLink className="w-4 h-4" />
+              </a>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <Globe className="w-4 h-4 text-purple-400" />
+            <span className="text-sm text-purple-200" data-testid="text-evm-network">
+              <SkeletonValue isLoading={isLoading} value={data?.evmChainName} />
+            </span>
           </div>
         </div>
 
-        {!hasEvmWallet && (
-          <div className="flex items-center gap-3 p-4 rounded-lg border border-purple-500/20 bg-purple-950/30 mb-6">
-            <AlertTriangle className="w-5 h-5 text-purple-400/70 flex-shrink-0" />
-            <span className="text-sm text-purple-300/80">{td.connectEvmWallet}</span>
-          </div>
-        )}
-
         {hasEvmWallet && !isOnBsc && (
-          <div className="flex items-center gap-3 p-4 rounded-lg border border-yellow-500/20 bg-yellow-500/5 mb-6">
+          <div className="flex items-center gap-3 p-4 rounded-lg border border-yellow-500/20 bg-yellow-500/5 mb-4">
             <AlertTriangle className="w-5 h-5 text-yellow-400/70 flex-shrink-0" />
             <span className="text-sm text-yellow-300/80">{td.switchToBsc}</span>
           </div>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-4">
           <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
             <div className="text-sm text-purple-300/80 mb-2">{td.myBalance}</div>
             <div className="font-mono text-lg font-bold text-purple-50" data-testid="text-my-balance">
@@ -415,7 +383,7 @@ function MyDashboardSection() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
           {[
             { label: td.pendingBnb, key: "pending-bnb", value: data?.pendingBnbRewards, unit: "BNB", type: "BNB" },
             { label: td.pendingLp, key: "pending-lp", value: data?.pendingLpRewards, unit: "LP", type: "LP" },
@@ -440,6 +408,30 @@ function MyDashboardSection() {
             </div>
           ))}
         </div>
+
+        {hasSolana && (
+          <div className="border-t border-purple-500/10 pt-4">
+            <button
+              onClick={() => setShowSolana(!showSolana)}
+              className="flex items-center gap-2 text-sm text-purple-400/70 hover:text-purple-300 transition-colors mb-3"
+              data-testid="button-toggle-solana"
+            >
+              <ChevronDown className={`w-4 h-4 transition-transform ${showSolana ? "rotate-180" : ""}`} />
+              {td.solanaSecondary}
+            </button>
+            {showSolana && (
+              <div className="p-3 rounded-lg bg-purple-950/30 border border-purple-500/10">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2 h-2 rounded-full bg-green-400/60" />
+                  <span className="text-sm text-purple-300/70">Solana</span>
+                </div>
+                <div className="text-sm" data-testid="text-solana-address">
+                  {data?.solanaAddress && <CopyableAddress address={data.solanaAddress} context="solana-dashboard" />}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GlowCard>
   );
