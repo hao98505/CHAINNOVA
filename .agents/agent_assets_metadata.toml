@@ -36,3 +36,15 @@ id = "AJpd2R1-eKwIhxf9g_z2o"
 uri = "file://screenshots/token-dashboard-full.png"
 type = "image"
 title = "Token Dashboard - Full Page (Bottom)"
+
+[[outputs]]
+id = "g1qXOGWqH_Qo8IikSBTMw"
+uri = "file://screenshots/homepage-hero-bsc-badge.png"
+type = "image"
+title = "Homepage Hero - BSC MAINNET • LIVE Badge"
+
+[[outputs]]
+id = "7V1XEEtokVVaKBUiK89zw"
+uri = "file://screenshots/homepage-bsc-first-header.png"
+type = "image"
+title = "Homepage - BSC TOKEN DASHBOARD Header + My Dashboard"
