@@ -283,6 +283,25 @@ function GlobalVaultStatsSection() {
 /* ─────────────────────────────────────────────
    BLOCK 3: Your Dividend
 ───────────────────────────────────────────── */
+function formatDuration(seconds: number, td: Record<string, string>): string {
+  if (seconds < 60) return `${seconds}${td.secs}`;
+  const m = Math.floor(seconds / 60);
+  if (m < 60) return `${m}${td.mins}`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}${td.hours} ${m % 60}${td.mins}`;
+  const d = Math.floor(h / 24);
+  return `${d}${td.days} ${h % 24}${td.hours}`;
+}
+
+function formatWeightDisplay(balance: number, holdingSecs: number): string {
+  const w = balance * holdingSecs;
+  if (w >= 1e15) return `${(w / 1e15).toFixed(2)}P`;
+  if (w >= 1e12) return `${(w / 1e12).toFixed(2)}T`;
+  if (w >= 1e9)  return `${(w / 1e9).toFixed(2)}G`;
+  if (w >= 1e6)  return `${(w / 1e6).toFixed(2)}M`;
+  return w.toFixed(0);
+}
+
 function YourDividendSection() {
   const { t } = useLanguage();
   const td = t.tokenDashboard;
@@ -317,6 +336,7 @@ function YourDividendSection() {
       <div className="p-6 md:p-8">
         <SectionTitle icon={Wallet}>{td.yourDividend}</SectionTitle>
 
+        {/* Wallet row */}
         <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15 mb-4">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
@@ -340,38 +360,41 @@ function YourDividendSection() {
           <CopyableAddress address={evm.address} context="evm-wallet" />
         </div>
 
-        {evm.address && !evm.isOnBsc && (
+        {!evm.isOnBsc && (
           <div className="flex items-center gap-2.5 p-3 rounded-lg border border-yellow-500/20 bg-yellow-500/5 mb-4 text-sm text-yellow-300/80">
             <AlertTriangle className="w-4 h-4 flex-shrink-0" />
             {td.switchToBsc}
           </div>
         )}
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+        {/* 7-field grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+
+          {/* Field 1: Registered Status */}
+          <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
+            <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.registeredStatus}</div>
+            <div data-testid="text-registered-status">
+              <NotConnectedBadge reason={td.contractNotDeployed} />
+            </div>
+          </div>
+
+          {/* Field 2: Balance (live from wallet) */}
           <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
             <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.myBalance}</div>
             <div className="font-mono font-bold text-purple-50 leading-tight" data-testid="text-balance">
               {evm.balanceLoading ? (
                 <Skeleton className="h-6 w-20 bg-primary/10" />
               ) : evm.balance != null ? (
-                <span className="text-base">{formatTokenCount(evm.balance)} <span className="text-xs text-purple-300/60">{tokenSymbol}</span></span>
-              ) : (
-                <Placeholder />
-              )}
-            </div>
-          </div>
-
-          <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
-            <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.holdingThreshold}</div>
-            <div className="text-base font-bold" data-testid="text-eligibility">
-              {evm.balanceLoading ? (
-                <Skeleton className="h-6 w-16 bg-primary/10" />
-              ) : evm.eligible != null ? (
-                evm.eligible ? (
-                  <span className="text-green-300 flex items-center gap-1"><CheckCircle2 className="w-4 h-4" /> {td.eligible}</span>
-                ) : (
-                  <span className="text-yellow-300 flex items-center gap-1"><XCircle className="w-4 h-4" /> {td.notEligible}</span>
-                )
+                <>
+                  <span className="text-base">{formatTokenCount(evm.balance)}</span>
+                  <span className="text-xs text-purple-300/60 ml-1">{tokenSymbol}</span>
+                  <div className="mt-1">
+                    {evm.eligible
+                      ? <span className="text-xs text-green-300 flex items-center gap-1"><CheckCircle2 className="w-3 h-3" />{td.eligible}</span>
+                      : <span className="text-xs text-yellow-300 flex items-center gap-1"><XCircle className="w-3 h-3" />{td.notEligible}</span>
+                    }
+                  </div>
+                </>
               ) : (
                 <Placeholder />
               )}
@@ -379,20 +402,53 @@ function YourDividendSection() {
             <div className="text-xs text-purple-400/50 mt-1">{td.minRequired}: {TOKEN_CONFIG.holdingThreshold.toLocaleString()}</div>
           </div>
 
+          {/* Field 3: Holding Time */}
           <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
-            <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.registeredStatus}</div>
-            <NotConnectedBadge reason={td.contractNotDeployed} />
+            <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.holdingTime}</div>
+            <div data-testid="text-holding-time">
+              <NotConnectedBadge reason={td.contractNotDeployed} />
+            </div>
+            <div className="text-xs text-purple-400/40 mt-1 italic">{td.claimNote}</div>
           </div>
 
+          {/* Field 4: Current Weight */}
+          <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
+            <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.currentWeightLabel}</div>
+            <div data-testid="text-current-weight">
+              <NotConnectedBadge reason={td.contractNotDeployed} />
+            </div>
+            <div className="text-xs text-purple-400/40 mt-1 italic">{td.weightFormula}</div>
+          </div>
+
+          {/* Field 5: Weight Share */}
+          <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
+            <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.weightShare}</div>
+            <div data-testid="text-weight-share">
+              <NotConnectedBadge reason={td.contractNotDeployed} />
+            </div>
+            <div className="text-xs text-purple-400/40 mt-1 italic">{td.topUpNote}</div>
+          </div>
+
+          {/* Field 6: Pending Dividend */}
           <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
             <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.pendingDividend}</div>
-            <NotConnectedBadge reason={td.contractNotDeployed} />
+            <div data-testid="text-pending-dividend">
+              <NotConnectedBadge reason={td.contractNotDeployed} />
+            </div>
           </div>
         </div>
 
+        {/* Field 7: Total Claimed */}
         <div className="p-3 rounded-lg bg-purple-950/40 border border-purple-500/15 flex items-center justify-between">
-          <div className="text-xs text-purple-300/60 uppercase tracking-wide">{td.totalClaimed}</div>
-          <NotConnectedBadge reason={td.contractNotDeployed} />
+          <div>
+            <div className="text-xs text-purple-300/60 uppercase tracking-wide">{td.totalClaimed}</div>
+            <div className="text-xs text-red-400/70 mt-0.5 flex items-center gap-1">
+              <AlertTriangle className="w-3 h-3" /> {td.sellInvalidation}
+            </div>
+          </div>
+          <div data-testid="text-total-claimed">
+            <NotConnectedBadge reason={td.contractNotDeployed} />
+          </div>
         </div>
       </div>
     </GlowCard>
