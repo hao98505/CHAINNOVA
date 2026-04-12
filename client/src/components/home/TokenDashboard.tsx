@@ -3,12 +3,14 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useTokenOverview, useOnChainTokenMeta } from "@/hooks/useTokenDashboard";
-import { TOKEN_CONFIG } from "@/config/tokenDashboard";
+import {
+  useTokenOverview, useOnChainTokenMeta, useHolderDividend,
+} from "@/hooks/useTokenDashboard";
+import { TOKEN_CONFIG, VAULT_CONTRACT_CONFIG } from "@/config/tokenDashboard";
 import {
   Copy, Check, ExternalLink, TrendingUp, Layers, CircleDollarSign,
   Droplets, AlertTriangle, RefreshCw, Wallet, CheckCircle2, XCircle,
-  Globe, Lock, Activity, BarChart2, Coins,
+  Globe, Lock, Activity, BarChart2, Coins, Zap,
 } from "lucide-react";
 import { formatUsd, formatTokenCount } from "@/lib/tokenDashboard/formatters";
 import { useEvmWallet } from "@/contexts/EvmWalletContext";
@@ -197,9 +199,18 @@ function TokenInfoSection() {
           ))}
         </div>
 
-        <div className="mt-3 p-3 rounded-lg border border-purple-500/15 bg-purple-950/20 text-xs text-purple-400/70">
-          <Activity className="w-3 h-3 inline mr-1.5" />
-          {td.dataSourcePortal} · GMGN Buy/Chart
+        <div className="mt-3 p-3 rounded-lg border border-purple-500/15 bg-purple-950/20 text-xs text-purple-400/70 flex items-center justify-between">
+          <span>
+            <Activity className="w-3 h-3 inline mr-1.5" />
+            {td.dataSourcePortal}
+          </span>
+          {data?.priceSource && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded border border-blue-500/25 bg-blue-500/8 text-blue-300/80 font-mono">
+              {data.priceSource === "gmgn"        ? td.priceSourceGmgn
+               : data.priceSource === "dexscreener" ? td.priceSourceDex
+               : td.priceSourcePortal}
+            </span>
+          )}
         </div>
       </div>
     </GlowCard>
@@ -283,9 +294,9 @@ function GlobalVaultStatsSection() {
 /* ─────────────────────────────────────────────
    BLOCK 3: Your Dividend
 ───────────────────────────────────────────── */
-function formatDuration(seconds: number, td: Record<string, string>): string {
-  if (seconds < 60) return `${seconds}${td.secs}`;
-  const m = Math.floor(seconds / 60);
+function fmtDuration(secs: number, td: Record<string, string>): string {
+  if (secs < 60) return `${secs}${td.secs}`;
+  const m = Math.floor(secs / 60);
   if (m < 60) return `${m}${td.mins}`;
   const h = Math.floor(m / 60);
   if (h < 24) return `${h}${td.hours} ${m % 60}${td.mins}`;
@@ -293,13 +304,15 @@ function formatDuration(seconds: number, td: Record<string, string>): string {
   return `${d}${td.days} ${h % 24}${td.hours}`;
 }
 
-function formatWeightDisplay(balance: number, holdingSecs: number): string {
-  const w = balance * holdingSecs;
-  if (w >= 1e15) return `${(w / 1e15).toFixed(2)}P`;
-  if (w >= 1e12) return `${(w / 1e12).toFixed(2)}T`;
-  if (w >= 1e9)  return `${(w / 1e9).toFixed(2)}G`;
-  if (w >= 1e6)  return `${(w / 1e6).toFixed(2)}M`;
-  return w.toFixed(0);
+function fmtWeight(wei: bigint): string {
+  const n = Number(wei);
+  if (n >= 1e21) return `${(n / 1e21).toFixed(2)}Z`;
+  if (n >= 1e18) return `${(n / 1e18).toFixed(2)}E`;
+  if (n >= 1e15) return `${(n / 1e15).toFixed(2)}P`;
+  if (n >= 1e12) return `${(n / 1e12).toFixed(2)}T`;
+  if (n >= 1e9)  return `${(n / 1e9).toFixed(2)}G`;
+  if (n >= 1e6)  return `${(n / 1e6).toFixed(2)}M`;
+  return n.toFixed(0);
 }
 
 function YourDividendSection() {
@@ -307,7 +320,9 @@ function YourDividendSection() {
   const td = t.tokenDashboard;
   const evm = useEvmWallet();
   const { data: meta } = useOnChainTokenMeta();
+  const { data: hd, isLoading: hdLoading } = useHolderDividend();
   const tokenSymbol = meta?.symbol || "CNOVA";
+  const contractDeployed = !!VAULT_CONTRACT_CONFIG.dividendContract;
 
   if (!evm.address) {
     return (
@@ -330,6 +345,8 @@ function YourDividendSection() {
       </GlowCard>
     );
   }
+
+  const registered = contractDeployed && hd?.registered;
 
   return (
     <GlowCard delay={0.2}>
@@ -374,8 +391,23 @@ function YourDividendSection() {
           <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
             <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.registeredStatus}</div>
             <div data-testid="text-registered-status">
-              <NotConnectedBadge reason={td.contractNotDeployed} />
+              {!contractDeployed ? (
+                <NotConnectedBadge reason={td.contractNotDeployed} />
+              ) : hdLoading ? (
+                <Skeleton className="h-5 w-20 bg-primary/10" />
+              ) : registered ? (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold border border-green-500/40 bg-green-500/10 text-green-300">
+                  <CheckCircle2 className="w-3 h-3" /> {td.eligible}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold border border-yellow-500/30 bg-yellow-500/5 text-yellow-400/80">
+                  <XCircle className="w-3 h-3" /> {td.notRegistered}
+                </span>
+              )}
             </div>
+            {contractDeployed && !registered && !hdLoading && (
+              <div className="text-xs text-purple-400/40 mt-1 italic">{td.registerFirst}</div>
+            )}
           </div>
 
           {/* Field 2: Balance (live from wallet) */}
@@ -405,8 +437,16 @@ function YourDividendSection() {
           {/* Field 3: Holding Time */}
           <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
             <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.holdingTime}</div>
-            <div data-testid="text-holding-time">
-              <NotConnectedBadge reason={td.contractNotDeployed} />
+            <div className="font-mono font-bold text-purple-50" data-testid="text-holding-time">
+              {!contractDeployed ? (
+                <NotConnectedBadge reason={td.contractNotDeployed} />
+              ) : hdLoading ? (
+                <Skeleton className="h-5 w-16 bg-primary/10" />
+              ) : registered && hd ? (
+                <span className="text-base">{fmtDuration(hd.holdingSeconds, td as Record<string,string>)}</span>
+              ) : (
+                <Placeholder />
+              )}
             </div>
             <div className="text-xs text-purple-400/40 mt-1 italic">{td.claimNote}</div>
           </div>
@@ -414,8 +454,16 @@ function YourDividendSection() {
           {/* Field 4: Current Weight */}
           <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
             <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.currentWeightLabel}</div>
-            <div data-testid="text-current-weight">
-              <NotConnectedBadge reason={td.contractNotDeployed} />
+            <div className="font-mono font-bold text-purple-50" data-testid="text-current-weight">
+              {!contractDeployed ? (
+                <NotConnectedBadge reason={td.contractNotDeployed} />
+              ) : hdLoading ? (
+                <Skeleton className="h-5 w-20 bg-primary/10" />
+              ) : registered && hd ? (
+                <span className="text-base">{fmtWeight(hd.currentWeightWei)}</span>
+              ) : (
+                <Placeholder />
+              )}
             </div>
             <div className="text-xs text-purple-400/40 mt-1 italic">{td.weightFormula}</div>
           </div>
@@ -423,8 +471,16 @@ function YourDividendSection() {
           {/* Field 5: Weight Share */}
           <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
             <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.weightShare}</div>
-            <div data-testid="text-weight-share">
-              <NotConnectedBadge reason={td.contractNotDeployed} />
+            <div className="font-mono font-bold text-purple-50" data-testid="text-weight-share">
+              {!contractDeployed ? (
+                <NotConnectedBadge reason={td.contractNotDeployed} />
+              ) : hdLoading ? (
+                <Skeleton className="h-5 w-16 bg-primary/10" />
+              ) : registered && hd ? (
+                <span className="text-base">{hd.weightSharePct.toFixed(2)}%</span>
+              ) : (
+                <Placeholder />
+              )}
             </div>
             <div className="text-xs text-purple-400/40 mt-1 italic">{td.topUpNote}</div>
           </div>
@@ -432,8 +488,16 @@ function YourDividendSection() {
           {/* Field 6: Pending Dividend */}
           <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
             <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.pendingDividend}</div>
-            <div data-testid="text-pending-dividend">
-              <NotConnectedBadge reason={td.contractNotDeployed} />
+            <div className="font-mono font-bold text-purple-50" data-testid="text-pending-dividend">
+              {!contractDeployed ? (
+                <NotConnectedBadge reason={td.contractNotDeployed} />
+              ) : hdLoading ? (
+                <Skeleton className="h-5 w-20 bg-primary/10" />
+              ) : registered && hd ? (
+                <span className="text-base">{hd.pendingBnb.toFixed(6)} BNB</span>
+              ) : (
+                <Placeholder />
+              )}
             </div>
           </div>
         </div>
@@ -446,8 +510,16 @@ function YourDividendSection() {
               <AlertTriangle className="w-3 h-3" /> {td.sellInvalidation}
             </div>
           </div>
-          <div data-testid="text-total-claimed">
-            <NotConnectedBadge reason={td.contractNotDeployed} />
+          <div className="font-mono font-bold text-purple-50" data-testid="text-total-claimed">
+            {!contractDeployed ? (
+              <NotConnectedBadge reason={td.contractNotDeployed} />
+            ) : hdLoading ? (
+              <Skeleton className="h-5 w-24 bg-primary/10" />
+            ) : registered && hd ? (
+              <span>{hd.totalClaimed.toFixed(6)} BNB</span>
+            ) : (
+              <Placeholder />
+            )}
           </div>
         </div>
       </div>
@@ -522,21 +594,35 @@ function RegisterClaimSection() {
 function LPStatusSection() {
   const { t } = useLanguage();
   const td = t.tokenDashboard;
+  const lpVaultDeployed = !!VAULT_CONTRACT_CONFIG.lpRewardVault;
 
   return (
     <GlowCard delay={0.3}>
       <div className="p-6 md:p-8">
         <SectionTitle icon={Activity}>{td.lpStatus}</SectionTitle>
 
-        <div className="flex items-start gap-4 p-5 rounded-lg border border-orange-500/20 bg-orange-500/5 mb-5">
-          <div className="w-10 h-10 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
-            <AlertTriangle className="w-5 h-5 text-orange-400" />
+        {/* Status banner */}
+        {lpVaultDeployed ? (
+          <div className="flex items-start gap-4 p-5 rounded-lg border border-blue-500/20 bg-blue-500/5 mb-5">
+            <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+              <Zap className="w-5 h-5 text-blue-400" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-blue-300 mb-1">{td.lpVaultDeployed} · {td.lpDeployedNotActive}</div>
+              <div className="text-sm text-blue-300/70">{td.lpAwaitingGraduation}</div>
+            </div>
           </div>
-          <div>
-            <div className="text-sm font-bold text-orange-300 mb-1">{td.lpNotStarted}</div>
-            <div className="text-sm text-orange-300/70">{td.lpStatusDesc}</div>
+        ) : (
+          <div className="flex items-start gap-4 p-5 rounded-lg border border-orange-500/20 bg-orange-500/5 mb-5">
+            <div className="w-10 h-10 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
+              <AlertTriangle className="w-5 h-5 text-orange-400" />
+            </div>
+            <div>
+              <div className="text-sm font-bold text-orange-300 mb-1">{td.lpNotStarted}</div>
+              <div className="text-sm text-orange-300/70">{td.lpStatusDesc}</div>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
@@ -553,8 +639,19 @@ function LPStatusSection() {
           </div>
 
           <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
-            <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">LP Dividend</div>
-            <NotConnectedBadge reason={td.graduateFirst} />
+            <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.lpVaultDeployed}</div>
+            {lpVaultDeployed ? (
+              <div>
+                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold border border-blue-500/30 bg-blue-500/8 text-blue-300">
+                  <Zap className="w-3 h-3" /> {td.lpDeployedNotActive}
+                </span>
+                <div className="mt-1 font-mono text-xs text-purple-400/60">
+                  {VAULT_CONTRACT_CONFIG.lpRewardVault.slice(0,10)}…
+                </div>
+              </div>
+            ) : (
+              <NotConnectedBadge reason={td.contractNotDeployed} />
+            )}
           </div>
         </div>
 

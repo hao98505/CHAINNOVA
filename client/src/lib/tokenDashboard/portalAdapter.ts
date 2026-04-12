@@ -1,9 +1,21 @@
+/**
+ * Portal on-chain price adapter — FALLBACK ONLY.
+ *
+ * Priority chain (implemented in adapters.ts):
+ *   1. GMGN API       — market aggregator price
+ *   2. DexScreener    — DEX pair price (post-graduation)
+ *   3. Portal lastPrice field (this file)   — last actual trade price from bonding curve
+ *   4. Portal reserve/supply formula        — spot price estimate (last resort)
+ *
+ * This adapter is NOT used as the primary price source.
+ */
+
 import { getBscPublicClient } from "./contracts";
 import { TOKEN_CONFIG } from "@/config/tokenDashboard";
 import type { MarketData } from "./types";
 
 const PORTAL_ADDRESS = "0xe2ce6ab80874fa9fa2aae65d277dd6b8e65c9de0" as const;
-const TOTAL_SUPPLY = 1_000_000_000;
+const TOTAL_SUPPLY   = 1_000_000_000;
 
 const PORTAL_ABI = [
   {
@@ -14,24 +26,24 @@ const PORTAL_ABI = [
         name: "",
         type: "tuple",
         components: [
-          { name: "exists", type: "bool" },
-          { name: "reserve", type: "uint256" },
-          { name: "supply", type: "uint256" },
-          { name: "createdAt", type: "uint256" },
-          { name: "status", type: "uint256" },
-          { name: "initialReserve", type: "uint256" },
-          { name: "maxSupply", type: "uint256" },
-          { name: "k", type: "uint256" },
-          { name: "sellableSupply", type: "uint256" },
-          { name: "field9", type: "uint256" },
-          { name: "field10", type: "uint256" },
-          { name: "field11", type: "uint256" },
-          { name: "buyFeeBps", type: "uint256" },
-          { name: "sellFeeBps", type: "uint256" },
-          { name: "field14", type: "uint256" },
-          { name: "lastPrice", type: "uint256" },
-          { name: "field16", type: "uint256" },
-          { name: "field17", type: "uint256" },
+          { name: "exists",          type: "bool"    },  // 0
+          { name: "reserve",         type: "uint256" },  // 1  BNB reserve in pool
+          { name: "supply",          type: "uint256" },  // 2  tokens in circulation from curve
+          { name: "createdAt",       type: "uint256" },  // 3
+          { name: "status",          type: "uint256" },  // 4  0=active bonding curve
+          { name: "initialReserve",  type: "uint256" },  // 5
+          { name: "maxSupply",       type: "uint256" },  // 6
+          { name: "k",               type: "uint256" },  // 7  constant product k
+          { name: "sellableSupply",  type: "uint256" },  // 8
+          { name: "field9",          type: "uint256" },  // 9
+          { name: "field10",         type: "uint256" },  // 10
+          { name: "field11",         type: "uint256" },  // 11
+          { name: "buyFeeBps",       type: "uint256" },  // 12
+          { name: "sellFeeBps",      type: "uint256" },  // 13
+          { name: "field14",         type: "uint256" },  // 14
+          { name: "lastPrice",       type: "uint256" },  // 15  last trade price in wei/token
+          { name: "field16",         type: "uint256" },  // 16
+          { name: "field17",         type: "uint256" },  // 17
         ],
       },
     ],
@@ -45,7 +57,7 @@ const COINGECKO_BNB_PRICE_URL =
 
 let _cachedBnbPrice: { price: number; ts: number } | null = null;
 
-async function fetchBnbUsdPrice(): Promise<number> {
+export async function fetchBnbUsdPrice(): Promise<number> {
   if (_cachedBnbPrice && Date.now() - _cachedBnbPrice.ts < 120_000) {
     return _cachedBnbPrice.price;
   }
@@ -65,17 +77,20 @@ async function fetchBnbUsdPrice(): Promise<number> {
 }
 
 export interface PortalTokenInfo {
-  exists: boolean;
-  reserveBnb: number;
-  supplyOnCurve: number;
-  buyFeeBps: number;
-  sellFeeBps: number;
-  status: number;
-  pricePerTokenBnb: number;
-  pricePerTokenUsd: number;
-  marketCapUsd: number;
-  liquidityUsd: number;
-  bnbPriceUsd: number;
+  exists:             boolean;
+  reserveBnb:         number;
+  supplyOnCurve:      number;
+  buyFeeBps:          number;
+  sellFeeBps:         number;
+  status:             number;
+  /** Last actual trade price from Portal (preferred over formula) */
+  lastPriceBnb:       number;
+  /** Spot estimate: reserveBnb / supplyOnCurve (use as last resort) */
+  formulaPriceBnb:    number;
+  pricePerTokenUsd:   number;
+  marketCapUsd:       number;
+  liquidityUsd:       number;
+  bnbPriceUsd:        number;
 }
 
 export async function fetchPortalTokenInfo(): Promise<PortalTokenInfo | null> {
@@ -92,23 +107,25 @@ export async function fetchPortalTokenInfo(): Promise<PortalTokenInfo | null> {
       fetchBnbUsdPrice(),
     ]);
 
-    const raw = result as any;
+    const raw = result as Record<string, unknown>;
     if (!raw || !raw.exists) return null;
 
-    const reserveWei = BigInt(raw.reserve);
-    const supplyWei = BigInt(raw.supply);
-    const buyFeeBps = Number(BigInt(raw.buyFeeBps));
-    const sellFeeBps = Number(BigInt(raw.sellFeeBps));
-    const status = Number(BigInt(raw.status));
+    const reserveBnb      = Number(BigInt(raw.reserve as string)) / 1e18;
+    const supplyOnCurve   = Number(BigInt(raw.supply  as string)) / 1e18;
+    const lastPriceWei    = BigInt(raw.lastPrice as string);
+    const buyFeeBps       = Number(BigInt(raw.buyFeeBps  as string));
+    const sellFeeBps      = Number(BigInt(raw.sellFeeBps as string));
+    const status          = Number(BigInt(raw.status as string));
 
-    const reserveBnb = Number(reserveWei) / 1e18;
-    const supplyOnCurve = Number(supplyWei) / 1e18;
+    // lastPrice is in wei per token (1e18 = 1 BNB per token)
+    const lastPriceBnb    = lastPriceWei > BigInt(0) ? Number(lastPriceWei) / 1e18 : 0;
+    const formulaPriceBnb = supplyOnCurve > 0 ? reserveBnb / supplyOnCurve : 0;
 
-    const pricePerTokenBnb =
-      supplyOnCurve > 0 ? reserveBnb / supplyOnCurve : 0;
-    const pricePerTokenUsd = pricePerTokenBnb * bnbPrice;
-    const marketCapUsd = pricePerTokenUsd * TOTAL_SUPPLY;
-    const liquidityUsd = reserveBnb * bnbPrice;
+    // Prefer lastPrice; fall back to formula
+    const effectivePriceBnb = lastPriceBnb > 0 ? lastPriceBnb : formulaPriceBnb;
+    const pricePerTokenUsd  = effectivePriceBnb * bnbPrice;
+    const marketCapUsd      = pricePerTokenUsd * TOTAL_SUPPLY;
+    const liquidityUsd      = reserveBnb * bnbPrice;
 
     return {
       exists: true,
@@ -117,7 +134,8 @@ export async function fetchPortalTokenInfo(): Promise<PortalTokenInfo | null> {
       buyFeeBps,
       sellFeeBps,
       status,
-      pricePerTokenBnb,
+      lastPriceBnb,
+      formulaPriceBnb,
       pricePerTokenUsd,
       marketCapUsd,
       liquidityUsd,
@@ -129,29 +147,38 @@ export async function fetchPortalTokenInfo(): Promise<PortalTokenInfo | null> {
   }
 }
 
+/**
+ * Returns MarketData using Portal as the data source.
+ * This is called only when GMGN and DexScreener both fail.
+ */
 export async function fetchPortalMarketData(): Promise<MarketData> {
   const info = await fetchPortalTokenInfo();
   if (!info) {
-    return {
-      currentPrice: null,
-      marketCap: null,
-      liquidity: null,
-      holders: null,
-      volume24h: null,
-      priceChange24h: null,
-      pairAddress: null,
-      dexId: null,
-    };
+    return nullMarketData();
   }
-
   return {
-    currentPrice: info.pricePerTokenUsd,
-    marketCap: info.marketCapUsd,
-    liquidity: info.liquidityUsd,
-    holders: null,
-    volume24h: null,
+    currentPrice:   info.pricePerTokenUsd,
+    marketCap:      info.marketCapUsd,
+    liquidity:      info.liquidityUsd,
+    holders:        null,
+    volume24h:      null,
     priceChange24h: null,
-    pairAddress: PORTAL_ADDRESS,
-    dexId: "flap-portal",
+    pairAddress:    PORTAL_ADDRESS,
+    dexId:          "flap-portal",
+    source:         "portal",
+  };
+}
+
+function nullMarketData(): MarketData {
+  return {
+    currentPrice:   null,
+    marketCap:      null,
+    liquidity:      null,
+    holders:        null,
+    volume24h:      null,
+    priceChange24h: null,
+    pairAddress:    null,
+    dexId:          null,
+    source:         null,
   };
 }
