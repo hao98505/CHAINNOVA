@@ -20,12 +20,29 @@ export const TOKEN_CONFIG = {
   githubUrl: "https://github.com/hao98505/CHAINNOVA",
 };
 
+/**
+ * Phase 1 contract addresses — fill after running scripts/deployDividend.cjs
+ *
+ *   dividendContract  → HolderDividend.sol   (holder registration + BNB claim)
+ *   masterVault       → TaxReceiver.sol       (single BNB sink from token tax)
+ *
+ * Phase 2 (post-graduation, after DEX launch):
+ *   lpRewardVault     → LPRewardVault.sol     (LP staker rewards)
+ *   referralVault     → ReferralVault.sol     (referral commission)
+ *   marketingVault    → MarketingVault.sol    (marketing budget)
+ *
+ * BSC mainnet deploy order:
+ *   1. npx hardhat run scripts/deployDividend.cjs --network bsc
+ *   2. Copy HolderDividend address → dividendContract below
+ *   3. Copy TaxReceiver address    → masterVault below
+ *   4. After token graduates from Portal: set tax receiver = masterVault address
+ */
 export const VAULT_CONTRACT_CONFIG = {
-  dividendContract: "",
-  masterVault: "",
-  lpRewardVault: "",
-  referralVault: "",
-  marketingVault: "",
+  dividendContract: "",   // HolderDividend.sol — backfill after deploy
+  masterVault: "",        // TaxReceiver.sol    — backfill after deploy
+  lpRewardVault: "",      // Phase 2
+  referralVault: "",      // Phase 2
+  marketingVault: "",     // Phase 2
 };
 
 export const VAULT_CONFIG = [
