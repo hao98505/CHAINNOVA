@@ -3,6 +3,7 @@ import { useState, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   useTokenOverview, useOnChainTokenMeta, useHolderDividend,
 } from "@/hooks/useTokenDashboard";
@@ -10,10 +11,22 @@ import { TOKEN_CONFIG, VAULT_CONTRACT_CONFIG } from "@/config/tokenDashboard";
 import {
   Copy, Check, ExternalLink, TrendingUp, Layers, CircleDollarSign,
   Droplets, AlertTriangle, RefreshCw, Wallet, CheckCircle2, XCircle,
-  Globe, Lock, Activity, BarChart2, Coins, Zap,
+  Globe, Lock, Activity, BarChart2, Coins, Zap, Info,
 } from "lucide-react";
 import { formatUsd, formatTokenCount } from "@/lib/tokenDashboard/formatters";
 import { useEvmWallet } from "@/contexts/EvmWalletContext";
+import { encodeFunctionData } from "viem";
+
+const ABI_REGISTER = [{ type: "function", name: "register", inputs: [], outputs: [] }] as const;
+const ABI_CLAIM    = [{ type: "function", name: "claim",    inputs: [], outputs: [] }] as const;
+
+async function sendContractCall(from: string, to: string, data: `0x${string}`): Promise<string> {
+  const txHash = await (window as any).ethereum.request({
+    method: "eth_sendTransaction",
+    params: [{ from, to, data, gas: "0x30d40" }], // 200_000 gas
+  });
+  return txHash as string;
+}
 
 function Placeholder() {
   return <span className="text-purple-300/50 font-mono">--</span>;
@@ -224,6 +237,7 @@ function GlobalVaultStatsSection() {
   const { t } = useLanguage();
   const td = t.tokenDashboard;
   const { data, isLoading } = useTokenOverview();
+  const contractDeployed = !!VAULT_CONTRACT_CONFIG.dividendContract;
 
   const stats = [
     {
@@ -240,22 +254,6 @@ function GlobalVaultStatsSection() {
       unavailable: true,
       reason: td.unavailable,
     },
-    {
-      label: td.dividendContractLabel,
-      key: "dividend-contract",
-      value: null,
-      unavailable: false,
-      notConnected: true,
-      reason: td.contractNotDeployed,
-    },
-    {
-      label: td.totalDistributedLabel,
-      key: "total-distributed",
-      value: null,
-      unavailable: false,
-      notConnected: true,
-      reason: td.contractNotDeployed,
-    },
   ];
 
   return (
@@ -263,12 +261,13 @@ function GlobalVaultStatsSection() {
       <div className="p-6 md:p-8">
         <SectionTitle icon={Layers}>{td.globalVaultStats}</SectionTitle>
 
-        <div className="mb-4 p-3 rounded-lg border border-yellow-500/20 bg-yellow-500/5 text-sm text-yellow-300/80 flex items-start gap-2.5">
-          <AlertTriangle className="w-4 h-4 flex-shrink-0 mt-0.5" />
-          <span>{td.taxFlowsToPortal}</span>
+        {/* Pre-graduation info — neutral, accurate */}
+        <div className="mb-4 p-3 rounded-lg border border-blue-500/20 bg-blue-500/5 text-sm text-blue-300/80 flex items-start gap-2.5">
+          <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
+          <span>{td.preGraduationNote}</span>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-4 mb-4">
           {stats.map((s) => (
             <div key={s.key} className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
               <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{s.label}</div>
@@ -277,14 +276,47 @@ function GlobalVaultStatsSection() {
                   <Skeleton className="h-5 w-20 bg-primary/10" />
                 ) : s.value != null ? (
                   <span className="font-mono font-bold text-purple-50">{s.value}</span>
-                ) : s.notConnected ? (
-                  <NotConnectedBadge reason={s.reason} />
                 ) : (
                   <UnavailableBadge reason={s.reason} />
                 )}
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Dividend contract status row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
+            <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.dividendContractLabel}</div>
+            <div data-testid="text-global-dividend-contract">
+              {contractDeployed ? (
+                <div>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold border border-green-500/30 bg-green-500/8 text-green-300">
+                    <CheckCircle2 className="w-3 h-3" /> {td.contractLive}
+                  </span>
+                  <div className="mt-1.5 font-mono text-xs text-purple-400/60">
+                    {VAULT_CONTRACT_CONFIG.dividendContract.slice(0, 10)}…
+                  </div>
+                </div>
+              ) : (
+                <NotConnectedBadge reason={td.contractNotDeployed} />
+              )}
+            </div>
+          </div>
+
+          <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
+            <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.totalDistributedLabel}</div>
+            <div data-testid="text-global-total-distributed">
+              {contractDeployed ? (
+                <span className="font-mono font-bold text-purple-50">0 BNB</span>
+              ) : (
+                <NotConnectedBadge reason={td.contractNotDeployed} />
+              )}
+            </div>
+            {contractDeployed && (
+              <div className="text-xs text-purple-400/40 mt-1 italic">{td.preGraduationNote.split(".")[0]}</div>
+            )}
+          </div>
         </div>
       </div>
     </GlowCard>
@@ -534,52 +566,188 @@ function RegisterClaimSection() {
   const { t } = useLanguage();
   const td = t.tokenDashboard;
   const evm = useEvmWallet();
+  const { data: hd, isLoading: hdLoading, refetch: refetchHd } = useHolderDividend();
+  const queryClient = useQueryClient();
+
+  const [regPending, setRegPending] = useState(false);
+  const [claimPending, setClaimPending] = useState(false);
+  const [regTx, setRegTx] = useState<string | null>(null);
+  const [claimTx, setClaimTx] = useState<string | null>(null);
+  const [txError, setTxError] = useState<string | null>(null);
+
+  const contractDeployed = !!VAULT_CONTRACT_CONFIG.dividendContract;
+  const registered = contractDeployed && !!hd?.registered;
+  const pendingBnb = hd?.pendingBnb ?? 0;
+
+  // Conditions for each button
+  const canRegister =
+    contractDeployed &&
+    !!evm.address &&
+    evm.isOnBsc &&
+    evm.eligible &&
+    !registered &&
+    !regPending &&
+    !hdLoading;
+
+  const canClaim =
+    contractDeployed &&
+    !!evm.address &&
+    evm.isOnBsc &&
+    registered &&
+    pendingBnb > 0 &&
+    !claimPending &&
+    !hdLoading;
+
+  const handleRegister = useCallback(async () => {
+    if (!evm.address || !VAULT_CONTRACT_CONFIG.dividendContract) return;
+    setTxError(null);
+    setRegTx(null);
+    setRegPending(true);
+    try {
+      const data = encodeFunctionData({ abi: ABI_REGISTER, functionName: "register" });
+      const hash = await sendContractCall(evm.address, VAULT_CONTRACT_CONFIG.dividendContract, data);
+      setRegTx(hash);
+      // Refresh dividend data after 4 s (give chain time to mine)
+      setTimeout(() => { refetchHd(); queryClient.invalidateQueries({ queryKey: ["/holder-dividend"] }); }, 4000);
+    } catch (err: any) {
+      setTxError(err?.message ?? "Transaction failed");
+    } finally {
+      setRegPending(false);
+    }
+  }, [evm.address, refetchHd, queryClient]);
+
+  const handleClaim = useCallback(async () => {
+    if (!evm.address || !VAULT_CONTRACT_CONFIG.dividendContract) return;
+    setTxError(null);
+    setClaimTx(null);
+    setClaimPending(true);
+    try {
+      const data = encodeFunctionData({ abi: ABI_CLAIM, functionName: "claim" });
+      const hash = await sendContractCall(evm.address, VAULT_CONTRACT_CONFIG.dividendContract, data);
+      setClaimTx(hash);
+      setTimeout(() => { refetchHd(); queryClient.invalidateQueries({ queryKey: ["/holder-dividend"] }); }, 4000);
+    } catch (err: any) {
+      setTxError(err?.message ?? "Transaction failed");
+    } finally {
+      setClaimPending(false);
+    }
+  }, [evm.address, refetchHd, queryClient]);
+
+  // Derive hint text for each button
+  const registerHint = !contractDeployed
+    ? td.contractNotDeployed
+    : !evm.address
+    ? td.connectToView
+    : !evm.isOnBsc
+    ? td.switchToBsc
+    : !evm.eligible
+    ? `${td.notEligible} — ${td.minRequired} ${TOKEN_CONFIG.holdingThreshold.toLocaleString()} CNOVA`
+    : registered
+    ? td.alreadyRegistered
+    : td.registerHint;
+
+  const claimHint = !contractDeployed
+    ? td.contractNotDeployed
+    : !evm.address
+    ? td.connectToView
+    : !evm.isOnBsc
+    ? td.switchToBsc
+    : !registered
+    ? td.registerFirst
+    : pendingBnb <= 0
+    ? td.noPendingRewards
+    : td.claimHint;
 
   return (
     <GlowCard delay={0.25}>
       <div className="p-6 md:p-8">
         <SectionTitle icon={Coins}>{td.registerClaim}</SectionTitle>
 
-        <div className="p-4 rounded-lg border border-yellow-500/20 bg-yellow-500/5 mb-5 flex items-start gap-3">
-          <Lock className="w-5 h-5 text-yellow-400/70 flex-shrink-0 mt-0.5" />
-          <div>
-            <div className="text-sm font-semibold text-yellow-300 mb-1">{td.contractNotDeployed}</div>
-            <div className="text-xs text-yellow-300/70">{td.taxFlowsToPortal}</div>
+        {/* Status banner */}
+        {contractDeployed ? (
+          <div className="p-4 rounded-lg border border-green-500/20 bg-green-500/5 mb-5 flex items-start gap-3">
+            <CheckCircle2 className="w-5 h-5 text-green-400/80 flex-shrink-0 mt-0.5" />
+            <div>
+              <div className="text-sm font-semibold text-green-300 mb-1">{td.contractLive}</div>
+              <div className="text-xs text-green-300/60 font-mono">{VAULT_CONTRACT_CONFIG.dividendContract}</div>
+            </div>
           </div>
-        </div>
+        ) : (
+          <div className="p-4 rounded-lg border border-yellow-500/20 bg-yellow-500/5 mb-5 flex items-start gap-3">
+            <Lock className="w-5 h-5 text-yellow-400/70 flex-shrink-0 mt-0.5" />
+            <div className="text-sm font-semibold text-yellow-300">{td.contractNotDeployed}</div>
+          </div>
+        )}
+
+        {/* Tx feedback */}
+        {txError && (
+          <div className="mb-4 p-3 rounded-lg border border-red-500/20 bg-red-500/5 text-sm text-red-400 flex items-start gap-2">
+            <XCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <span className="break-all">{txError}</span>
+          </div>
+        )}
+        {(regTx || claimTx) && (
+          <div className="mb-4 p-3 rounded-lg border border-green-500/20 bg-green-500/5 text-sm text-green-300 flex items-start gap-2">
+            <CheckCircle2 className="w-4 h-4 flex-shrink-0 mt-0.5" />
+            <div>
+              <div>{td.txSentDesc}</div>
+              <a
+                href={`https://bscscan.com/tx/${regTx ?? claimTx}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono text-xs text-purple-300/70 hover:text-purple-200 flex items-center gap-1 mt-1"
+              >
+                {(regTx ?? claimTx)?.slice(0, 20)}… <ExternalLink className="w-3 h-3" />
+              </a>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          {/* Register card */}
           <div className="p-5 rounded-lg border border-purple-500/15 bg-purple-950/40">
             <div className="text-sm font-semibold text-purple-100 mb-1">{td.registerDividend}</div>
-            <div className="text-xs text-purple-400/60 mb-4">{td.graduationRequired}</div>
+            <div className="text-xs text-purple-400/60 mb-4 min-h-[2.5rem]">{registerHint}</div>
             <Button
-              disabled
+              onClick={handleRegister}
+              disabled={!canRegister}
               size="default"
-              className="w-full text-sm font-semibold opacity-40 cursor-not-allowed"
+              className="w-full text-sm font-semibold"
               data-testid="button-register-dividend"
-              title={td.contractNotDeployed}
+              style={canRegister ? { background: "linear-gradient(135deg, #7c3aed, #6d28d9)", border: "1px solid rgba(139,92,246,0.4)" } : {}}
             >
-              <Lock className="w-4 h-4 mr-2" />
-              {td.registerDividend}
-              <span className="ml-2 text-xs border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 px-1.5 py-0.5 rounded">{td.comingSoon}</span>
+              {regPending ? (
+                <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />{td.submitting}</>
+              ) : registered ? (
+                <><CheckCircle2 className="w-4 h-4 mr-2 text-green-400" />{td.alreadyRegistered}</>
+              ) : (
+                <><Coins className="w-4 h-4 mr-2" />{td.registerDividend}</>
+              )}
             </Button>
           </div>
 
+          {/* Claim card */}
           <div className="p-5 rounded-lg border border-purple-500/15 bg-purple-950/40">
             <div className="text-sm font-semibold text-purple-100 mb-1">{td.claimDividend}</div>
-            <div className="text-xs text-purple-400/60 mb-4">
-              {!evm.address ? td.connectToView : !evm.isOnBsc ? td.switchToBsc : td.contractNotDeployed}
+            <div className="text-xs text-purple-400/60 mb-4 min-h-[2.5rem]">
+              {registered && pendingBnb > 0
+                ? <span className="text-green-300/80">{pendingBnb.toFixed(6)} BNB {td.pendingDividend}</span>
+                : claimHint
+              }
             </div>
             <Button
-              disabled
+              onClick={handleClaim}
+              disabled={!canClaim}
               size="default"
-              className="w-full text-sm font-semibold opacity-40 cursor-not-allowed"
+              className="w-full text-sm font-semibold"
               data-testid="button-claim-dividend"
-              title={td.contractNotDeployed}
+              style={canClaim ? { background: "linear-gradient(135deg, #F0B90B, #D4A00A)", border: "1px solid rgba(240,185,11,0.4)", color: "#1a1a2e" } : {}}
             >
-              <Lock className="w-4 h-4 mr-2" />
-              {td.claimDividend}
-              <span className="ml-2 text-xs border border-yellow-500/30 bg-yellow-500/10 text-yellow-400 px-1.5 py-0.5 rounded">{td.comingSoon}</span>
+              {claimPending ? (
+                <><RefreshCw className="w-4 h-4 mr-2 animate-spin" />{td.submitting}</>
+              ) : (
+                <><Zap className="w-4 h-4 mr-2" />{td.claimDividend}</>
+              )}
             </Button>
           </div>
         </div>
