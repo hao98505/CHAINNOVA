@@ -1,5 +1,10 @@
 uploads = []
-generated = []
+
+[[generated]]
+id = "Kjh6mfiJBJCtXe9A2L0gJ"
+uri = "file://client/public/chainnova_twitter_banner_bsc.png"
+type = "image"
+title = "chainnova BSC twitter banner"
 
 [[outputs]]
 id = "0Vga3cCaw6-UiDngZXzB4"
@@ -60,3 +65,9 @@ id = "TItenogj_AA1TwnXG93KL"
 uri = "file://screenshots/hero-to-dashboard-transition.png"
 type = "image"
 title = "Homepage - Hero to ForgAI Analytics Transition"
+
+[[outputs]]
+id = "xC_YPs7ki6V1WicTVkEve"
+uri = "file://client/public/chainnova_twitter_banner_bsc.png"
+type = "image"
+title = "ChainNova BSC 推特背景图"
