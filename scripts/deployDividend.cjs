@@ -103,12 +103,23 @@ async function main() {
 
   // ─────────────────────────────────────────────────
   // Step 4: Wire TaxReceiver into HolderDividend
+  //   Only possible if deployer == owner.
+  //   If OWNER_ADDRESS is a multisig/different wallet, skip and print manual instructions.
   // ─────────────────────────────────────────────────
-  console.log(`\n[4/5] Setting taxReceiver on HolderDividend...`);
-  const hdContract = await hre.ethers.getContractAt("HolderDividend", holderDividendAddress);
-  const tx4 = await hdContract.setTaxReceiver(taxReceiverAddress);
-  await tx4.wait();
-  console.log(`  ✓ setTaxReceiver(${taxReceiverAddress})`);
+  const isDeployerOwner = deployer.address.toLowerCase() === ownerAddress.toLowerCase();
+  if (isDeployerOwner) {
+    console.log(`\n[4/5] Setting taxReceiver on HolderDividend...`);
+    const hdContract = await hre.ethers.getContractAt("HolderDividend", holderDividendAddress);
+    const tx4 = await hdContract.setTaxReceiver(taxReceiverAddress);
+    await tx4.wait();
+    console.log(`  ✓ setTaxReceiver(${taxReceiverAddress})`);
+  } else {
+    console.log(`\n[4/5] SKIP — deployer (${deployer.address}) is not owner (${ownerAddress}).`);
+    console.log(`  ⚠️  Owner must call manually on BSCScan (Write Contract):`);
+    console.log(`      Contract : ${holderDividendAddress}`);
+    console.log(`      Function : setTaxReceiver`);
+    console.log(`      Value    : ${taxReceiverAddress}`);
+  }
 
   // ─────────────────────────────────────────────────
   // Step 5: Set allocation if not 100%

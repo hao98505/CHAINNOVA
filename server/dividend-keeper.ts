@@ -166,13 +166,19 @@ async function main() {
 
 // ─── Sync registered cache ────────────────────────────────────────────────────
 
+// Deployment block of HolderDividend — skip all blocks before this to avoid RPC range limits.
+// If unknown, set to 0n and the keeper will fall back to state.lastBlock.
+const DIVIDEND_DEPLOY_BLOCK = BigInt(process.env.DIVIDEND_DEPLOY_BLOCK ?? 0);
+
 async function syncRegisteredCache(publicClient: ReturnType<typeof createPublicClient>, state: KeeperState) {
-  // Read Registered events from HolderDividend to get all ever-registered addresses
+  // Read Registered events from HolderDividend to get all ever-registered addresses.
+  // Start from the deployment block (or the current polling cursor) to stay within RPC log limits.
+  const fromBlock = DIVIDEND_DEPLOY_BLOCK > BigInt(0) ? DIVIDEND_DEPLOY_BLOCK : state.lastBlock;
   try {
     const logs = await publicClient.getLogs({
       address: DIVIDEND_ADDRESS,
       event: parseAbiItem("event Registered(address indexed user, uint256 balance)"),
-      fromBlock: 0n,
+      fromBlock,
     });
     const addrs = new Set<string>(state.registeredCache.map(a => a.toLowerCase()));
     for (const log of logs) {

@@ -35,9 +35,9 @@ export const TOKEN_CONFIG = {
  *   npx hardhat run scripts/deployDividend.cjs --network bsc
  */
 export const VAULT_CONTRACT_CONFIG = {
-  dividendContract: "",   // HolderDividend.sol — backfill after deploy
-  masterVault:      "",   // TaxReceiver.sol    — backfill after deploy
-  lpRewardVault:    "",   // LPRewardVault.sol  — backfill after deploy (active=false until graduation)
+  dividendContract: "0xF7D702DFCe841b164661F62D851b7DE85aD9dDf0",   // HolderDividend.sol
+  masterVault:      "0x8f2E4fF9CF43D8f1cF7c117870C06722919dF7F9",   // TaxReceiver.sol
+  lpRewardVault:    "0xeBe4C576C6BAd406Ee656B3B3eA978f4c4F0d0e9",   // LPRewardVault.sol (active=false until graduation)
   referralVault:    "",   // Phase 2
   marketingVault:   "",   // Phase 2
 };
