@@ -49,27 +49,27 @@ if (process.env.BSC_BRIDGE) {
     viemChain: bsc,
     rpc: process.env.BSC_LOGS_RPC_URL || "https://bsc-rpc.publicnode.com",
     bridge: process.env.BSC_BRIDGE as Address,
-    token: (process.env.SOURCE_TOKEN_BSC || "0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff") as Address,
+    token: (process.env.SOURCE_TOKEN_BSC || "0x0a9c2e3cda80a828334bfa2577a75a85229f7777") as Address,
   });
 }
-if (process.env.ARBITRUM_BRIDGE && process.env.WRAPPED_FORGAI_ARBITRUM) {
+if (process.env.ARBITRUM_BRIDGE && (process.env.WRAPPED_CNOVA_ARBITRUM || process.env.WRAPPED_FORGAI_ARBITRUM)) {
   EVM_CHAINS.push({
     name: "Arbitrum",
     chainId: 42161,
     viemChain: arbitrum,
     rpc: process.env.ARBITRUM_RPC_URL || "https://arb1.arbitrum.io/rpc",
     bridge: process.env.ARBITRUM_BRIDGE as Address,
-    token: process.env.WRAPPED_FORGAI_ARBITRUM as Address,
+    token: (process.env.WRAPPED_CNOVA_ARBITRUM || process.env.WRAPPED_FORGAI_ARBITRUM) as Address,
   });
 }
-if (process.env.ETHEREUM_BRIDGE && process.env.WRAPPED_FORGAI_ETHEREUM) {
+if (process.env.ETHEREUM_BRIDGE && (process.env.WRAPPED_CNOVA_ETHEREUM || process.env.WRAPPED_FORGAI_ETHEREUM)) {
   EVM_CHAINS.push({
     name: "Ethereum",
     chainId: 1,
     viemChain: mainnet,
     rpc: process.env.ETHEREUM_RPC_URL || "https://ethereum-rpc.publicnode.com",
     bridge: process.env.ETHEREUM_BRIDGE as Address,
-    token: process.env.WRAPPED_FORGAI_ETHEREUM as Address,
+    token: (process.env.WRAPPED_CNOVA_ETHEREUM || process.env.WRAPPED_FORGAI_ETHEREUM) as Address,
   });
 }
 

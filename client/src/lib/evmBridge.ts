@@ -33,7 +33,7 @@ export const EVM_CHAINS: Record<string, EvmChainConfig> = {
     rpcUrl: "https://bsc-dataseed1.binance.org",
     explorerUrl: "https://bscscan.com",
     bridgeAddress: (import.meta.env.VITE_BRIDGE_BSC || "0x0000000000000000000000000000000000000000") as Address,
-    wrappedToken: (import.meta.env.VITE_BSC_TOKEN || "0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff") as Address,
+    wrappedToken: (import.meta.env.VITE_BSC_TOKEN || "0x0a9c2e3cda80a828334bfa2577a75a85229f7777") as Address,
     nativeCurrency: { name: "BNB", symbol: "BNB", decimals: 18 },
   },
   arbitrum: {
@@ -43,7 +43,7 @@ export const EVM_CHAINS: Record<string, EvmChainConfig> = {
     rpcUrl: "https://arb1.arbitrum.io/rpc",
     explorerUrl: "https://arbiscan.io",
     bridgeAddress: (import.meta.env.VITE_BRIDGE_ARBITRUM || "0x0000000000000000000000000000000000000000") as Address,
-    wrappedToken: (import.meta.env.VITE_WRAPPED_FORGAI_ARBITRUM || undefined) as Address | undefined,
+    wrappedToken: (import.meta.env.VITE_WRAPPED_CNOVA_ARBITRUM || undefined) as Address | undefined,
     nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
   },
   ethereum: {
@@ -53,7 +53,7 @@ export const EVM_CHAINS: Record<string, EvmChainConfig> = {
     rpcUrl: "https://eth.llamarpc.com",
     explorerUrl: "https://etherscan.io",
     bridgeAddress: (import.meta.env.VITE_BRIDGE_ETHEREUM || "0x0000000000000000000000000000000000000000") as Address,
-    wrappedToken: (import.meta.env.VITE_WRAPPED_FORGAI_ETHEREUM || undefined) as Address | undefined,
+    wrappedToken: (import.meta.env.VITE_WRAPPED_CNOVA_ETHEREUM || undefined) as Address | undefined,
     nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
   },
 };
@@ -262,7 +262,7 @@ export function getSourceTokenForChain(chainKey: string): Address | undefined {
   const config = EVM_CHAINS[chainKey];
   if (!config) return undefined;
   if (chainKey === "bsc") {
-    return (import.meta.env.VITE_BSC_TOKEN || "0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff") as Address;
+    return (import.meta.env.VITE_BSC_TOKEN || "0x0a9c2e3cda80a828334bfa2577a75a85229f7777") as Address;
   }
   return config.wrappedToken;
 }

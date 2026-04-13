@@ -102,20 +102,25 @@ async function tryDexScreener(): Promise<MarketData | null> {
 }
 
 /**
- * Fetch market data with priority: GMGN → DexScreener → Portal on-chain.
- * Never surfaces Portal bonding curve formula as the primary displayed price.
+ * Fetch market data with priority: Portal on-chain → GMGN → DexScreener.
+ * Portal is primary during the bonding curve phase (most reliable source).
+ * GMGN is secondary (aggregator). DexScreener is tertiary (post-graduation DEX pair).
  */
 export async function fetchMarketData(): Promise<MarketData> {
-  // 1. GMGN
+  // 1. Portal on-chain (primary — always available on bonding curve)
+  const portal = await fetchPortalMarketData();
+  if (portal.currentPrice != null && portal.currentPrice > 0) return portal;
+
+  // 2. GMGN aggregator
   const gmgn = await tryGmgn();
   if (gmgn) return gmgn;
 
-  // 2. DexScreener
+  // 3. DexScreener (useful post-graduation when a DEX pair exists)
   const dex = await tryDexScreener();
   if (dex) return dex;
 
-  // 3. Portal on-chain (lastPrice field, falling back to reserve/supply formula)
-  return fetchPortalMarketData();
+  // Return whatever Portal data we have (may be all-null if token not found)
+  return portal;
 }
 
 // ─── Vault BNB balances ───────────────────────────────────────────────────────

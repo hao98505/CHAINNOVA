@@ -285,7 +285,7 @@ function GlobalVaultStatsSection() {
         </div>
 
         {/* Dividend contract status row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
             <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.dividendContractLabel}</div>
             <div data-testid="text-global-dividend-contract">
@@ -316,6 +316,48 @@ function GlobalVaultStatsSection() {
             {contractDeployed && (
               <div className="text-xs text-purple-400/40 mt-1 italic">{td.preGraduationNote.split(".")[0]}</div>
             )}
+          </div>
+        </div>
+
+        {/* Vault & contract status grid */}
+        <div className="border-t border-purple-500/10 pt-4">
+          <div className="text-xs text-purple-300/50 mb-3 uppercase tracking-wide font-semibold">{td.vaultStatusTitle}</div>
+          <div className="grid grid-cols-2 gap-2.5 mb-3">
+            {/* Phase 1: HolderDividend */}
+            <div className="p-3 rounded-lg bg-purple-950/40 border border-green-500/20" data-testid="vault-holder-dividend">
+              <div className="text-xs text-purple-300/50 mb-1.5 uppercase tracking-wide">{td.holderDividendVault}</div>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border border-green-500/30 bg-green-500/8 text-green-300">
+                <CheckCircle2 className="w-2.5 h-2.5" /> {td.deployedPhase1}
+              </span>
+              <div className="mt-1 font-mono text-xs text-purple-400/50">{VAULT_CONTRACT_CONFIG.dividendContract.slice(0,8)}…</div>
+            </div>
+            {/* Phase 1: LPRewardVault */}
+            <div className="p-3 rounded-lg bg-purple-950/40 border border-blue-500/20" data-testid="vault-lp-reward">
+              <div className="text-xs text-purple-300/50 mb-1.5 uppercase tracking-wide">{td.lpRewardVaultLabel}</div>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border border-blue-500/30 bg-blue-500/8 text-blue-300">
+                <Zap className="w-2.5 h-2.5" /> {td.lpDeployedNotActive}
+              </span>
+              <div className="mt-1 font-mono text-xs text-purple-400/50">{VAULT_CONTRACT_CONFIG.lpRewardVault.slice(0,8)}…</div>
+            </div>
+            {/* Phase 2: ReferralVault */}
+            <div className="p-3 rounded-lg bg-purple-950/40 border border-purple-500/10" data-testid="vault-referral">
+              <div className="text-xs text-purple-300/50 mb-1.5 uppercase tracking-wide">{td.referralVaultLabel}</div>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border border-orange-500/25 bg-orange-500/5 text-orange-400/80">
+                <AlertTriangle className="w-2.5 h-2.5" /> {td.phase2NotDeployed}
+              </span>
+            </div>
+            {/* Phase 2: MarketingVault */}
+            <div className="p-3 rounded-lg bg-purple-950/40 border border-purple-500/10" data-testid="vault-marketing">
+              <div className="text-xs text-purple-300/50 mb-1.5 uppercase tracking-wide">{td.marketingVaultLabel}</div>
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border border-orange-500/25 bg-orange-500/5 text-orange-400/80">
+                <AlertTriangle className="w-2.5 h-2.5" /> {td.phase2NotDeployed}
+              </span>
+            </div>
+          </div>
+          {/* Current tax mechanism */}
+          <div className="p-3 rounded-lg border border-purple-500/15 bg-purple-950/20 flex items-center gap-2 text-xs text-purple-400/70">
+            <CircleDollarSign className="w-3.5 h-3.5 text-purple-400/60 flex-shrink-0" />
+            <span><span className="text-purple-300/70 font-semibold">{td.currentTaxMechanism}:</span> {td.portalFeeInfo}</span>
           </div>
         </div>
       </div>
@@ -535,7 +577,7 @@ function YourDividendSection() {
         </div>
 
         {/* Field 7: Total Claimed */}
-        <div className="p-3 rounded-lg bg-purple-950/40 border border-purple-500/15 flex items-center justify-between">
+        <div className="p-3 rounded-lg bg-purple-950/40 border border-purple-500/15 flex items-center justify-between mb-4">
           <div>
             <div className="text-xs text-purple-300/60 uppercase tracking-wide">{td.totalClaimed}</div>
             <div className="text-xs text-red-400/70 mt-0.5 flex items-center gap-1">
@@ -552,6 +594,24 @@ function YourDividendSection() {
             ) : (
               <Placeholder />
             )}
+          </div>
+        </div>
+
+        {/* Phase 2 reward fields — not deployed yet */}
+        <div className="border-t border-purple-500/10 pt-4 grid grid-cols-2 gap-3">
+          <div className="p-3 rounded-lg bg-purple-950/30 border border-purple-500/10" data-testid="field-lp-rewards-phase2">
+            <div className="text-xs text-purple-300/50 mb-2 uppercase tracking-wide">{td.lpRewardsPhase2}</div>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border border-orange-500/25 bg-orange-500/5 text-orange-400/80">
+              <AlertTriangle className="w-2.5 h-2.5" /> {td.phase2NotDeployed}
+            </span>
+            <div className="text-xs text-purple-400/40 mt-1 italic">{td.phase2ActivatesNote}</div>
+          </div>
+          <div className="p-3 rounded-lg bg-purple-950/30 border border-purple-500/10" data-testid="field-referral-rewards-phase2">
+            <div className="text-xs text-purple-300/50 mb-2 uppercase tracking-wide">{td.referralRewardsPhase2}</div>
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border border-orange-500/25 bg-orange-500/5 text-orange-400/80">
+              <AlertTriangle className="w-2.5 h-2.5" /> {td.phase2NotDeployed}
+            </span>
+            <div className="text-xs text-purple-400/40 mt-1 italic">{td.phase2ActivatesNote}</div>
           </div>
         </div>
       </div>

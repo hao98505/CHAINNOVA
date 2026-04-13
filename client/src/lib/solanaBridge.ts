@@ -76,7 +76,7 @@ export async function initiateSolanaDeposit(_params: {
   targetChain: string;
   recipientEvmAddress: string;
 }): Promise<SolanaBridgeResult> {
-  throw new Error("Solana bridge is disabled pending wFORGAI rewrite. Please use EVM↔EVM bridge.");
+  throw new Error("Solana bridge is disabled pending wCNOVA rewrite. Please use EVM↔EVM bridge.");
 }
 
 export function quoteSolanaToEvm(
@@ -86,7 +86,7 @@ export function quoteSolanaToEvm(
   return {
     receiveAmount: "0",
     protocolFee: "N/A",
-    route: "Solana bridge disabled — pending wFORGAI rewrite",
+    route: "Solana bridge disabled — pending wCNOVA rewrite",
     eta: "N/A",
   };
 }

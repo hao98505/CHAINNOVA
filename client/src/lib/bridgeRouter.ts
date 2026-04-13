@@ -94,7 +94,7 @@ export function quoteBridge(
 
   return {
     receiveAmount: receive.toFixed(4),
-    protocolFee: `${fee.toFixed(4)} ForgAI + gas`,
+    protocolFee: `${fee.toFixed(4)} CNOVA + gas`,
     route: `${fromName} → Bridge → Relayer → ${toName}`,
     eta,
   };

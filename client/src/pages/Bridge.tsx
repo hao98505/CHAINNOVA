@@ -44,12 +44,12 @@ type BridgeStatus = "idle" | "switching" | "approving" | "bridging" | "complete"
 
 const AMOUNT_PRESETS = [100, 500, 1000, 5000];
 
-const BSC_TOKEN_FULL = "0x3e9fc4f2acf5d6f7815cb9f38b2c69576088ffff";
+const BSC_TOKEN_FULL = "0x0a9c2e3cda80a828334bfa2577a75a85229f7777";
 
 function getSourceTokenDisplay(chain: ChainKey): { label: string; address: string; short: string } | null {
   if (isChainDisabled(chain)) return null;
   if (chain === "bsc") {
-    return { label: "BSC Token", address: BSC_TOKEN_FULL, short: "0x3e9f...ffff" };
+    return { label: "BSC Token", address: BSC_TOKEN_FULL, short: "0x0a9c...7777" };
   }
   const token = getSourceTokenForChain(chain);
   if (token) {
@@ -201,7 +201,7 @@ export default function Bridge() {
       });
       setBridgeResult({ txHash: result.txHash, explorerUrl: result.explorerUrl });
       setStatus("complete");
-      toast({ title: "Bridge Initiated!", description: `${amount} ForgAI → ${ALL_CHAINS[targetChain].shortName}` });
+      toast({ title: "Bridge Initiated!", description: `${amount} CNOVA → ${ALL_CHAINS[targetChain].shortName}` });
       await loadBalance();
     } catch (err: any) {
       setStatus("idle");
@@ -235,7 +235,7 @@ export default function Bridge() {
       <div className="max-w-2xl mx-auto">
         <div className="mb-6">
           <h1 className="font-orbitron text-2xl font-black uppercase tracking-wider text-foreground neon-glow-text mb-1" data-testid="text-bridge-title">
-            ForgAI Cross-Chain Bridge
+            CNOVA Cross-Chain Bridge
           </h1>
           <p className="text-sm text-muted-foreground tracking-wide">
             EVM Cross-Chain Bridge — BSC / Arbitrum / Ethereum
@@ -259,7 +259,7 @@ export default function Bridge() {
         <div className="glass-card rounded-md border border-yellow-500/30 p-3 mb-4 flex items-start gap-2" data-testid="banner-solana-upgrading">
           <Construction className="w-4 h-4 text-yellow-400 flex-shrink-0 mt-0.5" />
           <div className="text-sm text-yellow-400/90 leading-relaxed">
-            <span className="font-semibold">Solana Bridge Upgrading</span> — Solana direction is temporarily disabled while we migrate to the new wrapped SPL (wFORGAI) model. EVM↔EVM bridging remains fully operational.
+            <span className="font-semibold">Solana Bridge Upgrading</span> — Solana direction is temporarily disabled while we migrate to the new wrapped SPL (wCNOVA) model. EVM↔EVM bridging remains fully operational.
           </div>
         </div>
 
@@ -355,7 +355,7 @@ export default function Bridge() {
                   </div>
                   <div>
                     <div className="flex justify-between mb-1.5">
-                      <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Amount (ForgAI)</label>
+                      <label className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Amount (CNOVA)</label>
                       <span className="text-sm text-muted-foreground">
                         Balance: {loadingMeta ? "..." : parseFloat(balance).toLocaleString()}
                       </span>
@@ -398,8 +398,8 @@ export default function Bridge() {
                 className="glass-card rounded-md border border-primary/15 p-4 space-y-2">
                 <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-2">Quote</div>
                 {[
-                  { label: "You Send", value: `${parsedAmount} ForgAI` },
-                  { label: "You Receive", value: `≈ ${quote.receiveAmount} ForgAI` },
+                  { label: "You Send", value: `${parsedAmount} CNOVA` },
+                  { label: "You Receive", value: `≈ ${quote.receiveAmount} CNOVA` },
                   { label: "Protocol Fee", value: quote.protocolFee },
                   { label: "Route", value: quote.route },
                   { label: "ETA", value: quote.eta },
@@ -416,7 +416,7 @@ export default function Bridge() {
               <div className="flex items-start gap-2 p-3 rounded-md bg-yellow-500/5 border border-yellow-500/20">
                 <Info className="w-3.5 h-3.5 text-yellow-400 flex-shrink-0 mt-0.5" />
                 <p className="text-sm text-yellow-400/90 leading-relaxed">
-                  Approve the Bridge contract to use your ForgAI tokens first.
+                  Approve the Bridge contract to use your CNOVA tokens first.
                 </p>
               </div>
             )}
@@ -450,7 +450,7 @@ export default function Bridge() {
             </motion.div>
             <div>
               <div className="font-orbitron text-lg font-bold text-foreground uppercase tracking-wider mb-1">Bridge Initiated!</div>
-              <p className="text-sm text-muted-foreground">{amount} ForgAI → {ALL_CHAINS[targetChain].name}</p>
+              <p className="text-sm text-muted-foreground">{amount} CNOVA → {ALL_CHAINS[targetChain].name}</p>
               <p className="text-sm text-muted-foreground/80 mt-1">Relayer will auto-complete the transfer on {ALL_CHAINS[targetChain].name}</p>
             </div>
             <div className="p-3 rounded-md bg-primary/5 border border-primary/15 space-y-2 text-left">
@@ -477,8 +477,8 @@ export default function Bridge() {
           <div className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Contract Addresses</div>
           {[
             { label: "Bridge (all chains)", value: "0x49daa7A1109d061BF67b56676def0Bc439289Cb8" },
-            { label: "BSC ForgAI", value: BSC_TOKEN_FULL },
-            { label: "ARB/ETH wForgAI", value: "0x1452280dDa6Fa4C815f95B06cc15d429aEb0d917" },
+            { label: "BSC CNOVA", value: BSC_TOKEN_FULL },
+            { label: "ARB/ETH wCNOVA", value: "0x1452280dDa6Fa4C815f95B06cc15d429aEb0d917" },
           ].map(({ label, value }) => (
             <div key={label} className="flex justify-between items-center">
               <span className="text-sm text-muted-foreground">{label}</span>
