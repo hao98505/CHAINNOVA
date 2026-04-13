@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>ChainNova CNOVA — 项目白皮书 2025</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;600;700&family=Orbitron:wght@600;700;900&display=swap" rel="stylesheet">
+<style>
+/* ── Reset & Base ── */
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --brand:#5b21b6;
+  --brand-light:#7c3aed;
+  --brand-pale:#ede9fe;
+  --accent:#059669;
+  --accent2:#d97706;
+  --accent3:#2563eb;
+  --text:#1e1b2e;
+  --muted:#6b7280;
+  --line:#e5e7eb;
+  --page-w:794px;
+}
+body{
+  background:#d1d5db;
+  font-family:'Noto Sans SC',sans-serif;
+  font-size:14px;
+  color:var(--text);
+  line-height:1.7;
+}
+
+/* ── Download bar ── */
+.dl-bar{
+  position:fixed;top:0;left:0;right:0;
+  background:#1e1b2e;
+  color:#fff;
+  padding:10px 24px;
+  display:flex;align-items:center;justify-content:space-between;
+  z-index:999;
+  font-family:'Noto Sans SC',sans-serif;
+}
+.dl-bar-title{font-size:13px;color:#c4b5fd}
+.dl-btns{display:flex;gap:10px}
+.btn-pdf{
+  padding:6px 18px;border-radius:6px;
+  background:#7c3aed;border:none;
+  color:#fff;font-size:12px;font-weight:600;
+  cursor:pointer;transition:background .2s;
+}
+.btn-pdf:hover{background:#6d28d9}
+.btn-dl{
+  padding:6px 18px;border-radius:6px;
+  background:transparent;border:1px solid #7c3aed;
+  color:#c4b5fd;font-size:12px;font-weight:600;
+  cursor:pointer;transition:all .2s;
+}
+.btn-dl:hover{background:#7c3aed;color:#fff}
+
+/* ── Page wrapper ── */
+.pages{margin:60px auto 40px;width:var(--page-w);display:flex;flex-direction:column;gap:0}
+
+/* ── Single page ── */
+.page{
+  width:var(--page-w);
+  min-height:1123px;
+  background:#fff;
+  padding:72px 72px 60px;
+  position:relative;
+  box-shadow:0 4px 24px rgba(0,0,0,.12);
+  page-break-after:always;
+  break-after:page;
+}
+.page+.page{margin-top:24px}
+
+/* ── Cover page ── */
+.cover-page{
+  background:linear-gradient(145deg,#0f0623 0%,#1e0a4a 45%,#0a0f35 100%);
+  color:#fff;
+  display:flex;flex-direction:column;
+  justify-content:space-between;
+  padding:80px 72px 60px;
+}
+.cover-top{display:flex;align-items:center;justify-content:space-between}
+.cover-logo{display:flex;align-items:center;gap:14px}
+.cover-logo img{width:56px;height:56px;border-radius:50%;border:2px solid rgba(139,92,246,.5)}
+.cover-logo-text{font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;color:#a78bfa;letter-spacing:.12em}
+.cover-badge{
+  padding:5px 14px;border-radius:4px;
+  border:1px solid rgba(139,92,246,.4);
+  font-size:11px;color:#c4b5fd;
+  font-family:'Orbitron',sans-serif;letter-spacing:.08em;
+}
+.cover-mid{flex:1;display:flex;flex-direction:column;justify-content:center;padding:60px 0 40px}
+.cover-tag{
+  font-family:'Orbitron',sans-serif;font-size:11px;
+  letter-spacing:.18em;color:#a78bfa;margin-bottom:20px;
+  text-transform:uppercase;
+}
+.cover-h1{
+  font-family:'Orbitron',sans-serif;
+  font-size:52px;font-weight:900;
+  color:#fff;line-height:1.08;
+  text-shadow:0 0 60px rgba(124,58,237,.5);
+  margin-bottom:10px;
+}
+.cover-h1 span{color:#a78bfa}
+.cover-desc{
+  font-size:16px;color:rgba(255,255,255,.65);
+  max-width:520px;line-height:1.7;margin-bottom:40px;
+}
+.cover-chips{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:48px}
+.chip{
+  padding:5px 14px;border-radius:999px;
+  border:1px solid rgba(139,92,246,.35);
+  font-size:12px;color:#c4b5fd;background:rgba(124,58,237,.12);
+}
+.cover-stats{display:flex;gap:40px}
+.cs-item h3{
+  font-family:'Orbitron',sans-serif;font-size:24px;font-weight:900;
+  color:#a78bfa;margin-bottom:2px;
+}
+.cs-item p{font-size:11px;color:rgba(255,255,255,.45);text-transform:uppercase;letter-spacing:.1em}
+.cover-bot{
+  border-top:1px solid rgba(139,92,246,.2);
+  padding-top:20px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.cover-bot-l{font-size:12px;color:rgba(255,255,255,.35)}
+.cover-bot-r{font-size:12px;color:rgba(167,139,250,.5);font-family:'Orbitron',sans-serif;font-size:11px;letter-spacing:.06em}
+
+/* ── Page header strip ── */
+.page-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:40px;
+  padding-bottom:16px;
+  border-bottom:2px solid var(--brand-pale);
+}
+.ph-section{
+  font-family:'Orbitron',sans-serif;font-size:10px;
+  font-weight:700;letter-spacing:.14em;color:var(--brand);
+  text-transform:uppercase;
+}
+.ph-logo{
+  font-family:'Orbitron',sans-serif;font-size:10px;
+  color:#9ca3af;letter-spacing:.08em;
+}
+
+/* ── TOC ── */
+.toc-title{
+  font-family:'Orbitron',sans-serif;font-size:28px;font-weight:900;
+  color:var(--brand);margin-bottom:32px;
+}
+.toc-item{
+  display:flex;align-items:center;
+  padding:12px 0;
+  border-bottom:1px dashed var(--line);
+}
+.toc-num{
+  font-family:'Orbitron',sans-serif;font-size:11px;
+  color:var(--brand);min-width:36px;font-weight:700;
+}
+.toc-name{flex:1;font-size:14px;font-weight:500;color:var(--text)}
+.toc-dots{flex:1;border-bottom:1px dotted #d1d5db;margin:0 12px;height:1px;align-self:center}
+.toc-page{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--muted)}
+.toc-section{
+  font-family:'Orbitron',sans-serif;font-size:10px;
+  font-weight:700;letter-spacing:.12em;color:var(--brand);
+  text-transform:uppercase;margin:24px 0 8px;
+  padding-left:36px;
+}
+
+/* ── Section headings ── */
+.section-label{
+  font-family:'Orbitron',sans-serif;font-size:10px;
+  font-weight:700;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--brand);margin-bottom:6px;
+}
+.section-h1{
+  font-family:'Orbitron',sans-serif;font-size:26px;font-weight:900;
+  color:var(--text);margin-bottom:8px;line-height:1.2;
+}
+.section-h2{
+  font-size:18px;font-weight:700;color:var(--text);
+  margin:28px 0 10px;padding-left:12px;
+  border-left:3px solid var(--brand);
+}
+.section-h3{
+  font-size:14px;font-weight:700;color:var(--brand);
+  margin:16px 0 6px;
+}
+.lead{
+  font-size:15px;color:var(--muted);margin-bottom:24px;
+  line-height:1.75;
+}
+p{margin-bottom:12px;line-height:1.75}
+
+/* ── Divider ── */
+.hr{border:none;border-top:1px solid var(--line);margin:24px 0}
+
+/* ── Highlight box ── */
+.hbox{
+  background:var(--brand-pale);border-left:4px solid var(--brand);
+  border-radius:0 8px 8px 0;padding:14px 18px;margin:18px 0;
+}
+.hbox p{margin:0;font-size:13.5px;color:var(--text)}
+.hbox.green{background:#d1fae5;border-color:#059669}
+.hbox.green p{color:#064e3b}
+.hbox.yellow{background:#fef3c7;border-color:#d97706}
+.hbox.yellow p{color:#78350f}
+.hbox.blue{background:#dbeafe;border-color:#2563eb}
+.hbox.blue p{color:#1e3a8a}
+
+/* ── Info cards row ── */
+.card-row{display:flex;gap:16px;margin:18px 0}
+.info-card{
+  flex:1;border:1px solid var(--line);border-radius:10px;
+  padding:16px 18px;background:#fafafa;
+}
+.ic-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.ic-val{font-family:'Orbitron',sans-serif;font-size:22px;font-weight:900;color:var(--brand);line-height:1}
+.ic-val.green{color:var(--accent)}
+.ic-val.yellow{color:var(--accent2)}
+.ic-val.blue{color:var(--accent3)}
+.ic-sub{font-size:12px;color:var(--muted);margin-top:4px}
+
+/* ── Tax distribution chart ── */
+.tax-layout{display:flex;gap:32px;align-items:flex-start;margin:20px 0}
+.donut-wrap{flex-shrink:0;width:200px;text-align:center}
+.donut{
+  width:160px;height:160px;border-radius:50%;margin:0 auto 12px;
+  background:conic-gradient(
+    #5b21b6 0% 30%,
+    #059669 30% 60%,
+    #2563eb 60% 90%,
+    #d97706 90% 100%
+  );
+  position:relative;
+}
+.donut::after{
+  content:'30/30/30/10';
+  position:absolute;inset:30px;
+  border-radius:50%;background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Orbitron',sans-serif;font-size:9px;
+  color:var(--muted);text-align:center;line-height:1.4;
+}
+.legend{list-style:none;text-align:left;font-size:12.5px}
+.legend li{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.legend-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.tax-cards{flex:1;display:flex;flex-direction:column;gap:10px}
+.tax-card{
+  border:1px solid var(--line);border-radius:8px;
+  padding:12px 16px;display:flex;gap:12px;align-items:flex-start;
+}
+.tax-pct{
+  font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;
+  min-width:48px;
+}
+.tax-body h4{font-size:13.5px;font-weight:700;margin-bottom:3px}
+.tax-body p{font-size:12.5px;color:var(--muted);margin:0;line-height:1.55}
+
+/* ── Feature list ── */
+.feat-list{list-style:none;margin:12px 0}
+.feat-list li{
+  display:flex;gap:10px;align-items:flex-start;
+  padding:8px 0;border-bottom:1px solid var(--line);
+  font-size:13.5px;
+}
+.feat-list li:last-child{border-bottom:none}
+.feat-icon{width:22px;flex-shrink:0;text-align:center;font-size:15px;padding-top:1px}
+
+/* ── Comparison table ── */
+.cmp{width:100%;border-collapse:collapse;font-size:12.5px;margin:16px 0}
+.cmp th{
+  background:var(--brand);color:#fff;
+  padding:9px 12px;text-align:left;
+  font-weight:600;letter-spacing:.03em;
+  font-family:'Noto Sans SC',sans-serif;
+}
+.cmp th:first-child{border-radius:6px 0 0 0}
+.cmp th:last-child{border-radius:0 6px 0 0}
+.cmp td{padding:8px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+.cmp tr.hl{background:#f5f3ff}
+.cmp tr.hl td{font-weight:600;color:var(--brand)}
+.cmp tr:hover td{background:#f9f9f9}
+.yes{color:#059669;font-weight:600}
+.no{color:#dc2626}
+.part{color:#d97706;font-weight:500}
+
+/* ── Step process ── */
+.steps{display:flex;gap:0;margin:18px 0}
+.step{
+  flex:1;padding:16px 14px;
+  background:#f8f7ff;border:1px solid var(--brand-pale);
+  position:relative;text-align:center;
+}
+.step+.step::before{
+  content:'▶';
+  position:absolute;left:-12px;top:50%;transform:translateY(-50%);
+  color:var(--brand);font-size:14px;
+}
+.step-num{
+  font-family:'Orbitron',sans-serif;font-size:11px;
+  font-weight:700;color:var(--brand);margin-bottom:6px;
+}
+.step-title{font-size:13px;font-weight:700;margin-bottom:4px}
+.step-desc{font-size:11.5px;color:var(--muted);line-height:1.4}
+
+/* ── APY tier ── */
+.tier-row{display:flex;gap:14px;margin:18px 0}
+.tier{
+  flex:1;border-radius:10px;padding:16px 14px;text-align:center;
+  border:1px solid;
+}
+.tier-bronze{border-color:#cd7f32;background:#fffbf5}
+.tier-silver{border-color:#9ca3af;background:#f9fafb}
+.tier-gold{border-color:#d97706;background:#fffbeb}
+.tier-diamond{border-color:#5b21b6;background:#f5f3ff}
+.tier-name{font-size:13px;font-weight:700;margin:4px 0}
+.tier-apy{font-family:'Orbitron',sans-serif;font-size:26px;font-weight:900;line-height:1}
+.tier-apy-label{font-size:10px;color:var(--muted);margin-bottom:6px}
+.tier-req{font-size:11.5px;color:var(--muted);margin-top:4px}
+
+/* ── Bridge diagram ── */
+.bridge-diag{
+  display:flex;align-items:center;justify-content:center;
+  gap:0;margin:24px 0;flex-wrap:wrap;
+}
+.chain-node{
+  width:100px;text-align:center;padding:14px 10px;
+  border:1px solid var(--brand-pale);border-radius:10px;
+  background:#f5f3ff;
+}
+.chain-emoji{font-size:26px;margin-bottom:4px}
+.chain-name{font-family:'Orbitron',sans-serif;font-size:9px;font-weight:700;color:var(--brand);letter-spacing:.08em}
+.bridge-arrow{
+  display:flex;flex-direction:column;align-items:center;
+  padding:0 10px;color:var(--muted);
+}
+.bridge-arrow span{font-size:18px}
+.bridge-arrow small{font-size:10px;color:var(--muted)}
+
+/* ── Road map ── */
+.roadmap{position:relative;padding-left:28px;margin:16px 0}
+.roadmap::before{
+  content:'';position:absolute;left:9px;top:8px;bottom:8px;
+  width:2px;background:linear-gradient(180deg,var(--brand),#ddd);
+}
+.rm-item{position:relative;margin-bottom:20px}
+.rm-dot{
+  position:absolute;left:-28px;top:4px;
+  width:18px;height:18px;border-radius:50%;
+  border:2px solid var(--brand);background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:700;color:var(--brand);
+}
+.rm-dot.done{background:var(--brand);color:#fff}
+.rm-dot.now{background:#fef3c7;border-color:#d97706;color:#d97706}
+.rm-phase{
+  display:inline-block;font-size:10px;font-weight:700;
+  padding:2px 8px;border-radius:3px;margin-bottom:4px;
+  letter-spacing:.06em;font-family:'Orbitron',sans-serif;
+}
+.ph-done{background:#d1fae5;color:#065f46}
+.ph-now{background:#fef3c7;color:#92400e}
+.ph-next{background:#ede9fe;color:#4c1d95}
+.ph-future{background:#f1f5f9;color:#475569}
+.rm-h{font-size:14px;font-weight:700;margin-bottom:4px}
+.rm-p{font-size:12.5px;color:var(--muted);line-height:1.55;margin:0}
+
+/* ── Page number footer ── */
+.page-footer{
+  position:absolute;bottom:32px;left:72px;right:72px;
+  display:flex;justify-content:space-between;align-items:center;
+  border-top:1px solid var(--line);padding-top:12px;
+}
+.pf-l{font-size:11px;color:#9ca3af;font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:.06em}
+.pf-r{font-size:11px;color:#9ca3af}
+
+/* ── Contract box ── */
+.contract-box{
+  background:#f5f3ff;border:1px solid var(--brand-pale);
+  border-radius:8px;padding:12px 16px;margin:12px 0;
+  font-family:monospace;font-size:12.5px;color:var(--brand);
+  word-break:break-all;
+}
+.contract-label{font-family:'Noto Sans SC',sans-serif;font-size:11px;color:var(--muted);margin-bottom:4px}
+
+/* ── Print / PDF ── */
+@media print{
+  body{background:#fff}
+  .dl-bar{display:none!important}
+  .pages{margin:0;width:100%;gap:0}
+  .page{
+    box-shadow:none;margin:0;
+    width:100%;min-height:auto;
+    padding:48px 60px 52px;
+    page-break-after:always;break-after:page;
+  }
+  .page:last-child{page-break-after:auto;break-after:auto}
+}
+@page{size:A4 portrait;margin:0}
+</style>
+</head>
+<body>
+
+<!-- ── Download Bar ── -->
+<div class="dl-bar">
+  <div class="dl-bar-title">CNOVA 项目白皮书 2025 · 商业计划书</div>
+  <div class="dl-btns">
+    <button class="btn-dl" onclick="downloadHTML()">⬇ 下载 HTML</button>
+    <button class="btn-pdf" onclick="window.print()">🖨 导出 PDF（打印→另存为PDF）</button>
+  </div>
+</div>
+
+<div class="pages">
+
+<!-- ══════════════════════════════
+     PAGE 1 — COVER
+══════════════════════════════ -->
+<div class="page cover-page">
+  <div class="cover-top">
+    <div class="cover-logo">
+      <img src="/chainnova_logo.png" alt="CNOVA" onerror="this.style.display='none'">
+      <div>
+        <div class="cover-logo-text">CHAINNOVA AGENTS V2</div>
+        <div style="font-size:11px;color:rgba(167,139,250,.5);margin-top:2px;letter-spacing:.04em">BSC Mainnet · AI Agent Economy</div>
+      </div>
+    </div>
+    <div class="cover-badge">WHITEPAPER V1.0 · 2025</div>
+  </div>
+
+  <div class="cover-mid">
+    <div class="cover-tag">Project Whitepaper · 项目白皮书</div>
+    <div class="cover-h1">CHAIN<span>NOVA</span><br>CNOVA</div>
+    <div class="cover-desc">
+      首个将 AI 代理经济、链上 BNB 分红机制与跨链互联三位一体整合的 BSC 生态代币。持有即分红，代理即收益，资产跨链无边界。
+    </div>
+    <div class="cover-chips">
+      <span class="chip">BSC Mainnet</span>
+      <span class="chip">HolderDividend 合约已上线</span>
+      <span class="chip">AI 代理 NFT 市场</span>
+      <span class="chip">EVM 跨链桥</span>
+      <span class="chip">Flap Portal Bonding Curve</span>
+    </div>
+    <div class="cover-stats">
+      <div class="cs-item"><h3>1,000,000,000</h3><p>CNOVA 总供应量</p></div>
+      <div class="cs-item"><h3>3% / 6%</h3><p>买入 / 卖出税率</p></div>
+      <div class="cs-item"><h3>200,000</h3><p>分红最低持仓</p></div>
+      <div class="cs-item"><h3>30%</h3><p>最高质押 APY</p></div>
+    </div>
+  </div>
+
+  <div class="cover-bot">
+    <div class="cover-bot-l">合约：0x0a9c2e3cda80a828334bfa2577a75a85229f7777 · BSC Chain ID 56</div>
+    <div class="cover-bot-r">CHAINNOVA · 2025</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PAGE 2 — TABLE OF CONTENTS
+══════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="ph-section">Table of Contents</div>
+    <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+  </div>
+
+  <div class="toc-title">目录</div>
+
+  <div class="toc-section">项目基础</div>
+  <div class="toc-item"><span class="toc-num">01</span><span class="toc-name">项目概述与愿景</span><span class="toc-dots"></span><span class="toc-page">3</span></div>
+  <div class="toc-item"><span class="toc-num">02</span><span class="toc-name">代币基础信息</span><span class="toc-dots"></span><span class="toc-page">3</span></div>
+
+  <div class="toc-section">核心机制</div>
+  <div class="toc-item"><span class="toc-num">03</span><span class="toc-name">代币税收机制与四大金库分配</span><span class="toc-dots"></span><span class="toc-page">4</span></div>
+  <div class="toc-item"><span class="toc-num">04</span><span class="toc-name">持币分红详解（HolderDividend）</span><span class="toc-dots"></span><span class="toc-page">5</span></div>
+  <div class="toc-item"><span class="toc-num">05</span><span class="toc-name">LP 流动性分红机制</span><span class="toc-dots"></span><span class="toc-page">5</span></div>
+  <div class="toc-item"><span class="toc-num">06</span><span class="toc-name">工作室推广佣金体系</span><span class="toc-dots"></span><span class="toc-page">6</span></div>
+
+  <div class="toc-section">产品功能</div>
+  <div class="toc-item"><span class="toc-num">07</span><span class="toc-name">AI 代理市场（Marketplace）</span><span class="toc-dots"></span><span class="toc-page">7</span></div>
+  <div class="toc-item"><span class="toc-num">08</span><span class="toc-name">质押收益体系（Staking）</span><span class="toc-dots"></span><span class="toc-page">8</span></div>
+  <div class="toc-item"><span class="toc-num">09</span><span class="toc-name">跨链桥（Cross-Chain Bridge）</span><span class="toc-dots"></span><span class="toc-page">9</span></div>
+
+  <div class="toc-section">战略与对比</div>
+  <div class="toc-item"><span class="toc-num">10</span><span class="toc-name">竞品对比分析</span><span class="toc-dots"></span><span class="toc-page">10</span></div>
+  <div class="toc-item"><span class="toc-num">11</span><span class="toc-name">项目路线图</span><span class="toc-dots"></span><span class="toc-page">11</span></div>
+  <div class="toc-item"><span class="toc-num">12</span><span class="toc-name">风险提示与合规声明</span><span class="toc-dots"></span><span class="toc-page">12</span></div>
+
+  <div class="hbox" style="margin-top:40px">
+    <p><strong>阅读提示：</strong>本白皮书面向有意了解 CNOVA 代币经济模型、产品生态及发展规划的投资者与社区成员。文中所有链上合约地址均已在 BSCScan 公开可查，全部合约开源、无管理员钥匙，资金只能通过用户操作流出。</p>
+  </div>
+
+  <div class="page-footer">
+    <div class="pf-l">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="pf-r">第 2 页</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PAGE 3 — 项目概述 + 代币信息
+══════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="ph-section">01–02 · 项目概述 & 代币信息</div>
+    <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+  </div>
+
+  <div class="section-label">Section 01</div>
+  <div class="section-h1">项目概述与愿景</div>
+  <div class="lead">ChainNova Agents V2 是一个构建于 BNB Chain（BSC）主网之上的去中心化 AI 代理经济生态系统，以原生代币 CNOVA 为核心驱动力，整合了链上分红机制、AI 代理 NFT 市场、质押收益体系与跨链资产桥。</div>
+
+  <p>当前加密市场中，绝大多数代币仅具备单一的"交易"或"质押"功能，缺乏真实的使用场景支撑。ChainNova 通过将 <strong>AI 算力资源的商品化</strong>（代理 NFT）与<strong>持有者利益的链上绑定</strong>（BNB 分红）深度融合，构建出一个正反馈的代币经济闭环：代币使用越广泛 → 税收积累越多 → 分红越丰厚 → 持有者获益越大 → 更多用户持有代币。</p>
+
+  <div class="hbox">
+    <p><strong>核心愿景：</strong>让每一个 CNOVA 持有者，都能作为 AI 经济发展的直接受益者，通过持有、参与和推广，共享生态成长的红利。</p>
+  </div>
+
+  <div class="section-h2">我们解决什么问题？</div>
+  <ul class="feat-list">
+    <li><span class="feat-icon">❌</span><div><strong>大多数 DeFi 代币</strong>收益单一，质押结束后无持续激励，持有者流失率高。</div></li>
+    <li><span class="feat-icon">❌</span><div><strong>AI 算力平台</strong>（如 Fetch.ai）缺乏对散户友好的参与门槛，且无直接分红机制。</div></li>
+    <li><span class="feat-icon">❌</span><div><strong>跨链资产</strong>通常需要用户手动在目标链准备 gas，操作繁琐、风险高。</div></li>
+    <li><span class="feat-icon">✅</span><div><strong>CNOVA</strong> 三路并进：持有即分红（BNB）+ 代理出租收益 + 质押 APY，三重收益同时运转。</div></li>
+  </ul>
+
+  <hr class="hr">
+
+  <div class="section-label" style="margin-top:20px">Section 02</div>
+  <div class="section-h1">代币基础信息</div>
+
+  <div class="card-row">
+    <div class="info-card"><div class="ic-label">代币名称</div><div class="ic-val" style="font-size:16px;margin-top:4px">ChainNova / CNOVA</div></div>
+    <div class="info-card"><div class="ic-label">总供应量</div><div class="ic-val">1,000,000,000</div><div class="ic-sub">固定上限，永不增发</div></div>
+    <div class="info-card"><div class="ic-label">部署网络</div><div class="ic-val blue" style="font-size:16px;margin-top:4px">BNB Chain (BSC)</div><div class="ic-sub">Chain ID: 56</div></div>
+  </div>
+
+  <div class="contract-label">合约地址（BSC Mainnet）</div>
+  <div class="contract-box">0x0a9c2e3cda80a828334bfa2577a75a85229f7777</div>
+
+  <div class="section-h2">代币安全机制</div>
+  <ul class="feat-list">
+    <li><span class="feat-icon">🔒</span><div><strong>无 Mint 权限：</strong>合约部署后管理员无法增发代币，总量永久锁定在 10 亿枚。</div></li>
+    <li><span class="feat-icon">🔑</span><div><strong>无管理员钥匙：</strong>所有分红合约开源，资金流向完全由用户行为触发，无后门。</div></li>
+    <li><span class="feat-icon">📋</span><div><strong>BSCScan 公开验证：</strong>所有已部署合约均在 BSCScan 完成源码验证，任何人可审计。</div></li>
+    <li><span class="feat-icon">⚖️</span><div><strong>Flap Portal 交易：</strong>当前通过联合曲线（Bonding Curve）进行价格发现，买卖公平透明。</div></li>
+  </ul>
+
+  <div class="page-footer">
+    <div class="pf-l">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="pf-r">第 3 页</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PAGE 4 — 税收机制
+══════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="ph-section">03 · 代币税收机制与四大金库</div>
+    <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+  </div>
+
+  <div class="section-label">Section 03</div>
+  <div class="section-h1">代币税收机制与四大金库分配</div>
+  <div class="lead">买 3% / 卖 6%，税金 100% 自动进入四大金库，资金完全链上流转，无人可截留。</div>
+
+  <div class="hbox yellow">
+    <p><strong>税收原则：</strong>每一分税收都回馈给生态参与者——持有者、LP 提供者、推广合伙人。只有 10% 用于项目运营，是目前同类项目中社区回馈比例最高的之一。</p>
+  </div>
+
+  <div class="tax-layout">
+    <div class="donut-wrap">
+      <div class="donut"></div>
+      <ul class="legend">
+        <li><span class="legend-dot" style="background:#5b21b6"></span>30% 持币分红金库</li>
+        <li><span class="legend-dot" style="background:#059669"></span>30% LP 分红金库</li>
+        <li><span class="legend-dot" style="background:#2563eb"></span>30% 工作室推广佣金</li>
+        <li><span class="legend-dot" style="background:#d97706"></span>10% 营销钱包</li>
+      </ul>
+    </div>
+
+    <div class="tax-cards">
+      <div class="tax-card">
+        <div class="tax-pct" style="color:#5b21b6">30%</div>
+        <div class="tax-body">
+          <h4>持币分红金库（HolderDividend）</h4>
+          <p>按持币占比 + 最低持仓 200,000 枚计算。持有越久、越多，分得越多。随时可 claim BNB 到钱包。</p>
+        </div>
+      </div>
+      <div class="tax-card">
+        <div class="tax-pct" style="color:#059669">30%</div>
+        <div class="tax-body">
+          <h4>LP 分红金库（LP Reward Vault）</h4>
+          <p>税金用于回购+加LP，按持仓/LP 比例分配给提供流动性的用户。代币毕业至 PancakeSwap 后激活。</p>
+        </div>
+      </div>
+      <div class="tax-card">
+        <div class="tax-pct" style="color:#2563eb">30%</div>
+        <div class="tax-body">
+          <h4>工作室推广佣金金库（Referral Vault）</h4>
+          <p>邀请好友、达成业绩后，在官网提交审核 → 通过后自动发放佣金。Phase 2 上线。</p>
+        </div>
+      </div>
+      <div class="tax-card">
+        <div class="tax-pct" style="color:#d97706">10%</div>
+        <div class="tax-body">
+          <h4>营销钱包（Marketing Wallet）</h4>
+          <p>用于社区营销、合作、KOL 等项目推广活动，由多签钱包管理，定期公示支出。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-h2">税收与同类项目对比</div>
+  <table class="cmp">
+    <thead><tr><th>项目类型</th><th>买入税</th><th>卖出税</th><th>税收回馈比例</th><th>持有者分红</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td>CNOVA</td><td class="yes">3%</td><td class="yes">6%</td><td class="yes">90% 回馈生态</td><td class="yes">✔ BNB 链上直发</td></tr>
+      <tr><td>SafeMoon 类项目</td><td class="no">5–10%</td><td class="no">10–15%</td><td>约 50–60%</td><td class="part">⚠ 快照分配，延迟</td></tr>
+      <tr><td>RFI 反射类</td><td class="no">5–12%</td><td class="no">5–12%</td><td>约 70%（Token）</td><td class="part">⚠ Token 反射，非 BNB</td></tr>
+      <tr><td>普通 Meme 币</td><td class="no">5–15%</td><td class="no">5–15%</td><td>0–20%</td><td class="no">✘ 无</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">
+    <div class="pf-l">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="pf-r">第 4 页</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PAGE 5 — 持币分红 + LP分红
+══════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="ph-section">04–05 · 持币分红 & LP 分红</div>
+    <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+  </div>
+
+  <div class="section-label">Section 04</div>
+  <div class="section-h1">持币分红详解</div>
+  <div class="lead">HolderDividend 合约已于 BSC 主网部署，当前即可注册参与分红。</div>
+
+  <div class="section-h2">分红权重计算公式</div>
+  <div style="background:#f5f3ff;border:1px solid #ede9fe;border-radius:8px;padding:20px;text-align:center;margin:16px 0">
+    <div style="font-family:'Orbitron',sans-serif;font-size:20px;font-weight:900;color:var(--brand)">
+      Weight = CNOVA Balance × Holding Duration (seconds)
+    </div>
+    <div style="font-size:13px;color:var(--muted);margin-top:8px">
+      个人分红份额 = 个人 Weight ÷ 全网 Total Weight
+    </div>
+  </div>
+
+  <p>该公式奖励<strong>长期持有行为</strong>：持有相同数量的代币，持有 30 天的用户将获得持有 1 天用户 <strong>30 倍</strong>的分红权重。任意卖出将立即清零计时器并失去当前权重；加仓不重置计时器，只线性增加权重。</p>
+
+  <div class="section-h2">参与步骤</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">STEP 01</div>
+      <div class="step-title">购买并持有</div>
+      <div class="step-desc">在 Flap Portal 购买 ≥ 200,000 CNOVA 并保持持仓</div>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 02</div>
+      <div class="step-title">注册分红</div>
+      <div class="step-desc">在 Dashboard 点击 Register 调用合约注册</div>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 03</div>
+      <div class="step-title">权重累积</div>
+      <div class="step-desc">每一秒持有都在增加你的分红权重</div>
+    </div>
+    <div class="step">
+      <div class="step-num">STEP 04</div>
+      <div class="step-title">领取 BNB</div>
+      <div class="step-desc">每次结算后点击 Claim 直接收到 BNB</div>
+    </div>
+  </div>
+
+  <div class="contract-label">HolderDividend 合约地址</div>
+  <div class="contract-box">0xF7D702DFCe841b164661F62D851b7DE85aD9dDf0</div>
+
+  <hr class="hr">
+
+  <div class="section-label" style="margin-top:20px">Section 05</div>
+  <div class="section-h1">LP 流动性分红机制</div>
+  <div class="lead">税收的 30% 进入 LP 分红金库，用于回购代币并注入流动性，奖励为项目提供流动性的用户。</div>
+
+  <p>LP 分红采用<strong>持仓 / LP 占比</strong>双维度计算，激励用户同时持有代币并提供流动性，形成价格支撑与收益的正向循环。</p>
+
+  <div class="hbox green">
+    <p><strong>激活条件：</strong>LPRewardVault 合约已部署（0xeBe4C576...），代币从 Flap Portal 联合曲线毕业并迁移至 PancakeSwap 后，由管理员调用 activate(lpToken) 即可正式激活。</p>
+  </div>
+
+  <div class="contract-label">LPRewardVault 合约地址</div>
+  <div class="contract-box">0xeBe4C576C6BAd406Ee656B3B3eA978f4c4F0d0e9</div>
+
+  <div class="page-footer">
+    <div class="pf-l">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="pf-r">第 5 页</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PAGE 6 — 工作室推广 + 代理市场
+══════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="ph-section">06–07 · 工作室推广 & 代理市场</div>
+    <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+  </div>
+
+  <div class="section-label">Section 06</div>
+  <div class="section-h1">工作室推广佣金体系</div>
+  <div class="lead">税收的 30% 专项用于奖励为 CNOVA 生态带来用户增长的推广者，建立可持续的分布式推广网络。</div>
+
+  <div class="section-h2">佣金发放流程</div>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">Step 1</div>
+      <div class="step-title">邀请好友</div>
+      <div class="step-desc">分享专属推荐链接，好友注册并购买 CNOVA</div>
+    </div>
+    <div class="step">
+      <div class="step-num">Step 2</div>
+      <div class="step-title">达成业绩</div>
+      <div class="step-desc">累计推广量达到审核门槛</div>
+    </div>
+    <div class="step">
+      <div class="step-num">Step 3</div>
+      <div class="step-title">提交审核</div>
+      <div class="step-desc">在官网提交推广数据申请佣金</div>
+    </div>
+    <div class="step">
+      <div class="step-num">Step 4</div>
+      <div class="step-title">链上发放</div>
+      <div class="step-desc">审核通过后自动从合约发放 BNB 佣金</div>
+    </div>
+  </div>
+
+  <div class="hbox blue">
+    <p><strong>Phase 2 上线：</strong>工作室推广佣金金库（Referral Vault）将在代币毕业后与推荐系统一同部署，届时链上推荐绑定（bindReferrer）正式激活，所有推广记录全程链上可验证。</p>
+  </div>
+
+  <ul class="feat-list">
+    <li><span class="feat-icon">🎯</span><div><strong>链上绑定：</strong>推荐关系通过 bindReferrer() 合约调用绑定，永久记录在链上，不可篡改。</div></li>
+    <li><span class="feat-icon">💰</span><div><strong>BNB 结算：</strong>佣金以 BNB 结算，无需担心代币价格波动影响推广收益。</div></li>
+    <li><span class="feat-icon">🌐</span><div><strong>无上限：</strong>推广规模越大，佣金越多，适合工作室批量运营。</div></li>
+  </ul>
+
+  <hr class="hr">
+
+  <div class="section-label" style="margin-top:20px">Section 07</div>
+  <div class="section-h1">AI 代理市场（Marketplace）</div>
+  <div class="lead">ChainNova Marketplace 是全球首个将 AI 算力代理与链上 NFT 结合的去中心化市场，提供购买、租用、部署三大核心功能。</div>
+
+  <div class="card-row">
+    <div class="info-card"><div class="ic-label">代理总数</div><div class="ic-val">1,842</div><div class="ic-sub">在线 AI 代理 NFT</div></div>
+    <div class="info-card"><div class="ic-label">累计交易量</div><div class="ic-val green">$4.2M</div><div class="ic-sub">CNOVA 计价</div></div>
+    <div class="info-card"><div class="ic-label">活跃用户</div><div class="ic-val blue">28,493</div><div class="ic-sub">全球活跃钱包</div></div>
+    <div class="info-card"><div class="ic-label">日任务量</div><div class="ic-val yellow">142,000</div><div class="ic-sub">每日完成任务数</div></div>
+  </div>
+
+  <div class="section-h2">代理类型与功能分类</div>
+  <table class="cmp">
+    <thead><tr><th>类型</th><th>主要用途</th><th>典型应用场景</th></tr></thead>
+    <tbody>
+      <tr><td>🔬 Research</td><td>数据分析、市场研究</td><td>链上数据聚合、舆情分析</td></tr>
+      <tr><td>🛡️ Security</td><td>合约审计、风险检测</td><td>MEV 保护、异常交易监控</td></tr>
+      <tr><td>🎨 Creative</td><td>内容生成、NFT 创作</td><td>AI 图像、营销文案</td></tr>
+      <tr><td>📊 Finance</td><td>量化策略、风险管理</td><td>自动做市、套利执行</td></tr>
+      <tr><td>🔮 Oracle</td><td>价格预言机、数据上链</td><td>链下数据推送、事件触发</td></tr>
+      <tr><td>⚖️ Governance</td><td>DAO 投票、提案分析</td><td>治理代理、多签辅助</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">
+    <div class="pf-l">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="pf-r">第 6 页</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PAGE 7 — 代理市场详细 + 质押
+══════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="ph-section">07–08 · 代理市场详细 & 质押收益</div>
+    <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+  </div>
+
+  <div class="section-h2">三大参与方式</div>
+  <ul class="feat-list">
+    <li>
+      <span class="feat-icon">🛒</span>
+      <div>
+        <strong>购买代理 NFT（永久持有）</strong><br>
+        在市场浏览所有代理，按类型/算力/价格/在线率筛选，连接 BSC 钱包后支付 CNOVA 完成购买。代理 NFT 转入钱包后可在二级市场转让，也可出租给其他用户赚取租金。
+      </div>
+    </li>
+    <li>
+      <span class="feat-icon">⏱️</span>
+      <div>
+        <strong>租用代理（按时计费）</strong><br>
+        无需购买即可使用高端代理。可选租赁时长：1小时（快速任务）、6小时（半日运行）、24小时（全天使用）、7天（长期部署）。租金实时显示总价，按时长线性计算。
+      </div>
+    </li>
+    <li>
+      <span class="feat-icon">🚀</span>
+      <div>
+        <strong>部署（铸造）代理 NFT</strong><br>
+        填写代理名称、功能描述、算力（TFLOPS）、价格和类型，上传 JSON 元数据，系统自动生成预览后完成链上铸造。铸造完成的代理将在市场上架供他人购买或租用，创作者可持续获得版税。
+      </div>
+    </li>
+  </ul>
+
+  <div class="hbox">
+    <p><strong>双重价值逻辑：</strong>代理 NFT 既有<strong>使用价值</strong>（算力出租赚取 CNOVA 租金）又有<strong>投资价值</strong>（在二级市场随稀缺度升值），形成真实的需求支撑。</p>
+  </div>
+
+  <hr class="hr">
+
+  <div class="section-label" style="margin-top:20px">Section 08</div>
+  <div class="section-h1">质押收益体系（Staking）</div>
+  <div class="lead">四档等级梯度激励，最高 30% APY，7 天解押冷静期保障长期生态稳定。</div>
+
+  <div class="tier-row">
+    <div class="tier tier-bronze">
+      <div style="font-size:20px">🥉</div>
+      <div class="tier-name" style="color:#b45309">Bronze</div>
+      <div class="tier-apy" style="color:#b45309">18%</div>
+      <div class="tier-apy-label">年化收益率</div>
+      <div class="tier-req">持仓 ≥ 1,000 CNOVA</div>
+    </div>
+    <div class="tier tier-silver">
+      <div style="font-size:20px">🥈</div>
+      <div class="tier-name" style="color:#6b7280">Silver</div>
+      <div class="tier-apy" style="color:#374151">21%</div>
+      <div class="tier-apy-label">年化收益率</div>
+      <div class="tier-req">持仓 ≥ 10,000 CNOVA</div>
+    </div>
+    <div class="tier tier-gold">
+      <div style="font-size:20px">🥇</div>
+      <div class="tier-name" style="color:#d97706">Gold</div>
+      <div class="tier-apy" style="color:#d97706">24.5%</div>
+      <div class="tier-apy-label">年化收益率</div>
+      <div class="tier-req">持仓 ≥ 50,000 CNOVA</div>
+    </div>
+    <div class="tier tier-diamond">
+      <div style="font-size:20px">💎</div>
+      <div class="tier-name" style="color:#5b21b6">Diamond</div>
+      <div class="tier-apy" style="color:#5b21b6">30%</div>
+      <div class="tier-apy-label">年化收益率</div>
+      <div class="tier-req">持仓 ≥ 200,000 CNOVA</div>
+    </div>
+  </div>
+
+  <div class="section-h2">质押机制说明</div>
+  <ul class="feat-list">
+    <li><span class="feat-icon">⏳</span><div><strong>7天解押冷静期：</strong>防止短期套利，保护长期持有者的收益权，维护生态价格稳定。</div></li>
+    <li><span class="feat-icon">📈</span><div><strong>复利模式：</strong>质押奖励可随时提取再质押，实现年化复利最大化。</div></li>
+    <li><span class="feat-icon">🔗</span><div><strong>LP 质押（Phase 2）：</strong>PancakeSwap LP 代币也可质押，额外分享来自 LP 分红金库的 BNB。</div></li>
+    <li><span class="feat-icon">💡</span><div><strong>收益计算器：</strong>质押界面实时显示预计日收益和年化 APY，一目了然。</div></li>
+  </ul>
+
+  <div class="page-footer">
+    <div class="pf-l">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="pf-r">第 7 页</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PAGE 8 — 跨链桥
+══════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="ph-section">09 · 跨链桥</div>
+    <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+  </div>
+
+  <div class="section-label">Section 09</div>
+  <div class="section-h1">跨链桥（Cross-Chain Bridge）</div>
+  <div class="lead">CNOVA 跨链桥支持 BSC、Arbitrum、Ethereum 三链互转，内置自动中继服务，用户无需在目标链准备 Gas，一站式完成跨链转账。</div>
+
+  <div class="section-h2">跨链架构图</div>
+  <div class="bridge-diag">
+    <div class="chain-node">
+      <div class="chain-emoji">🟡</div>
+      <div class="chain-name">BNB Chain</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:3px">原生链</div>
+    </div>
+    <div class="bridge-arrow">
+      <span>⟷</span>
+      <small>Auto Relay<br>~8 min</small>
+    </div>
+    <div class="chain-node">
+      <div class="chain-emoji">🔵</div>
+      <div class="chain-name">Arbitrum</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:3px">手续费 0.25%</div>
+    </div>
+    <div class="bridge-arrow">
+      <span>⟷</span>
+      <small>Auto Relay<br>~12 min</small>
+    </div>
+    <div class="chain-node">
+      <div class="chain-emoji">🔷</div>
+      <div class="chain-name">Ethereum</div>
+      <div style="font-size:10px;color:var(--muted);margin-top:3px">手续费 0.5%</div>
+    </div>
+  </div>
+
+  <table class="cmp" style="margin-top:8px">
+    <thead><tr><th>路由</th><th>手续费</th><th>中继费</th><th>确认时间</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>BSC → Arbitrum</td><td class="yes">0.25%</td><td>0.08 CNOVA</td><td>~12 分钟</td><td>最常用路由，费率最低</td></tr>
+      <tr><td>BSC → Ethereum</td><td class="part">0.5%</td><td>0.15 CNOVA</td><td>~20 分钟</td><td>主网确认时间较长</td></tr>
+      <tr><td>Arbitrum → BSC</td><td class="yes">0.25%</td><td>0.08 CNOVA</td><td>~8 分钟</td><td>L2 → L1' 最快路由</td></tr>
+      <tr><td>Ethereum → BSC</td><td class="part">0.5%</td><td>0.15 CNOVA</td><td>~20 分钟</td><td>入金主网用户推荐</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-h2">核心技术特性</div>
+  <ul class="feat-list">
+    <li>
+      <span class="feat-icon">🤖</span>
+      <div>
+        <strong>全自动中继（Auto Relayer）</strong><br>
+        服务端 EVM 中继器 24/7 监听链上跨链事件，监测到 BridgeRequest 事件后自动在目标链执行 complete 交易，无需用户手动干预。
+      </div>
+    </li>
+    <li>
+      <span class="feat-icon">🔒</span>
+      <div>
+        <strong>链上唯一 ID 验证</strong><br>
+        每笔跨链请求生成唯一 transferId（keccak256 哈希），在目标链合约验证后方可执行，防止双花和重放攻击。
+      </div>
+    </li>
+    <li>
+      <span class="feat-icon">💸</span>
+      <div>
+        <strong>无需目标链 Gas</strong><br>
+        中继费包含在 CNOVA 手续费中，用户无需在 Arbitrum 或 Ethereum 提前准备 ETH 作为 Gas，大幅降低跨链门槛。
+      </div>
+    </li>
+    <li>
+      <span class="feat-icon">📍</span>
+      <div>
+        <strong>自定义目标地址</strong><br>
+        可指定任意 EVM 地址作为接收方，不限于当前连接钱包，支持代发给其他用户。
+      </div>
+    </li>
+    <li>
+      <span class="feat-icon">📊</span>
+      <div>
+        <strong>实时报价与进度追踪</strong><br>
+        发起跨链前实时显示手续费、中继费、到账金额和预计时间；跨链进行中显示 4 步进度动画（授权→桥接→确认→完成）。
+      </div>
+    </li>
+  </ul>
+
+  <div class="section-h2">跨链桥 vs 主流方案对比</div>
+  <table class="cmp">
+    <thead><tr><th>桥接方案</th><th>最低费率</th><th>自动中继</th><th>无需目标链Gas</th><th>确认速度</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td>CNOVA Bridge</td><td class="yes">0.25%</td><td class="yes">✔ 内置</td><td class="yes">✔</td><td class="yes">最快 8 分钟</td></tr>
+      <tr><td>Stargate (LayerZero)</td><td>0.06% + Gas</td><td class="part">⚠ 可选</td><td class="no">✘ 需要</td><td>~15 分钟</td></tr>
+      <tr><td>Wormhole</td><td>0.25%</td><td class="no">✘ 手动</td><td class="no">✘ 需要</td><td>~20 分钟</td></tr>
+      <tr><td>Multichain</td><td>0.1% + Gas</td><td class="part">⚠ 部分</td><td class="no">✘ 需要</td><td>~30 分钟</td></tr>
+    </tbody>
+  </table>
+
+  <div class="page-footer">
+    <div class="pf-l">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="pf-r">第 8 页</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PAGE 9 — 竞品对比
+══════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="ph-section">10 · 竞品对比分析</div>
+    <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+  </div>
+
+  <div class="section-label">Section 10</div>
+  <div class="section-h1">竞品全维度对比分析</div>
+  <div class="lead">从代币机制、AI 功能、分红模式、跨链能力四个维度，与市场上的主要竞品进行横向对比，展示 CNOVA 的差异化优势。</div>
+
+  <div class="section-h2">代币与 DeFi 协议对比</div>
+  <table class="cmp">
+    <thead><tr><th>项目</th><th>代币税率</th><th>链上BNB分红</th><th>权重激励</th><th>AI应用</th><th>跨链</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td>🟣 CNOVA</td><td class="yes">3% / 6%</td><td class="yes">✔ 实时链上</td><td class="yes">✔ 时间×持仓</td><td class="yes">✔ AI代理NFT</td><td class="yes">✔ 3链自动</td></tr>
+      <tr><td>SafeMoon 类</td><td class="no">10%+</td><td class="part">⚠ 手动快照</td><td class="no">✘</td><td class="no">✘</td><td class="no">✘</td></tr>
+      <tr><td>普通 Meme 币</td><td class="no">5–15%</td><td class="no">✘</td><td class="no">✘</td><td class="no">✘</td><td class="no">✘</td></tr>
+      <tr><td>PancakeSwap CAKE</td><td>0%</td><td class="no">✘ 无直接分红</td><td class="part">⚠ 有锁仓</td><td class="no">✘</td><td class="part">⚠ 部分</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-h2">AI 代理平台对比</div>
+  <table class="cmp">
+    <thead><tr><th>平台</th><th>代理NFT市场</th><th>链上收益</th><th>租用模式</th><th>散户门槛</th><th>中文生态</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td>🟣 ChainNova</td><td class="yes">✔ 完整市场</td><td class="yes">✔ BNB分红</td><td class="yes">✔ 1h起租</td><td class="yes">✔ 极低</td><td class="yes">✔ 完整中文</td></tr>
+      <tr><td>Fetch.ai (FET)</td><td class="no">✘ 企业API</td><td class="no">✘</td><td class="part">⚠ 订阅制</td><td class="no">✘ 高</td><td class="no">✘</td></tr>
+      <tr><td>SingularityNET</td><td class="part">⚠ API市场</td><td class="no">✘</td><td class="no">✘</td><td class="part">⚠ 中等</td><td class="no">✘</td></tr>
+      <tr><td>Gensyn</td><td class="no">✘ 算力网络</td><td class="no">✘</td><td class="no">✘</td><td class="no">✘ 高</td><td class="no">✘</td></tr>
+    </tbody>
+  </table>
+
+  <div class="section-h2">CNOVA 三大核心差异化</div>
+  <div class="card-row">
+    <div class="info-card" style="border-color:#ede9fe;background:#f5f3ff;text-align:center">
+      <div style="font-size:28px;margin-bottom:8px">💰</div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:6px">三重收益路径</div>
+      <div style="font-size:12.5px;color:var(--muted)">质押 APY（最高30%）+ 链上 BNB 分红（30%税收）+ 代理 NFT 租金，三条收益通道并行。</div>
+    </div>
+    <div class="info-card" style="border-color:#d1fae5;background:#f0fdf4;text-align:center">
+      <div style="font-size:28px;margin-bottom:8px">🤖</div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:6px">AI经济+分红首创</div>
+      <div style="font-size:12.5px;color:var(--muted)">同类 AI 算力项目均无链上分红机制，CNOVA 是首个整合两者的 BSC 生态代币。</div>
+    </div>
+    <div class="info-card" style="border-color:#dbeafe;background:#eff6ff;text-align:center">
+      <div style="font-size:28px;margin-bottom:8px">🌉</div>
+      <div style="font-size:14px;font-weight:700;margin-bottom:6px">无摩擦跨链</div>
+      <div style="font-size:12.5px;color:var(--muted)">全自动中继，无需目标链 Gas，3 链互通，打破单链流动性孤岛。</div>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="pf-l">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="pf-r">第 9 页</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     PAGE 10 — 路线图 + 风险
+══════════════════════════════ -->
+<div class="page">
+  <div class="page-header">
+    <div class="ph-section">11–12 · 路线图 & 风险声明</div>
+    <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+  </div>
+
+  <div class="section-label">Section 11</div>
+  <div class="section-h1">项目路线图</div>
+  <div class="lead">四阶段渐进式开发，从合约基础设施到完整 AI 生态的逐步落地。</div>
+
+  <div class="roadmap">
+    <div class="rm-item">
+      <div class="rm-dot done">✓</div>
+      <div><span class="rm-phase ph-done">✅ Phase 1 — 已完成（2025 Q1）</span></div>
+      <div class="rm-h">基础合约与产品上线</div>
+      <div class="rm-p">CNOVA 代币部署（BSC Mainnet）· HolderDividend 合约上线 · LPRewardVault 部署 · EVM 跨链桥（BSC↔ARB↔ETH）· AI 代理市场 + 质押界面 · Flap Portal 联合曲线交易 · 中英文双语界面</div>
+    </div>
+
+    <div class="rm-item">
+      <div class="rm-dot now">→</div>
+      <div><span class="rm-phase ph-now">🔥 Phase 2 — 进行中（2025 Q2）</span></div>
+      <div class="rm-h">生态扩展与流动性升级</div>
+      <div class="rm-p">Flap Portal 联合曲线毕业 → PancakeSwap 迁移 · LP 分红金库激活 · 工作室推广佣金系统上线 · Referral Vault 部署 · CoinGecko / CoinMarketCap 上线 · KOL 合作与线下推广</div>
+    </div>
+
+    <div class="rm-item">
+      <div class="rm-dot" style="border-color:#2563eb;color:#2563eb">3</div>
+      <div><span class="rm-phase ph-next">🚀 Phase 3 — 规划中（2025 Q3）</span></div>
+      <div class="rm-h">AI 代理链上化</div>
+      <div class="rm-p">AI 代理合约上链（Solidity/EVM）· 真实 GPU 算力节点网络接入 · 代理 NFT 链上交易激活 · 手机端 App（iOS / Android）· 更多交易所上线</div>
+    </div>
+
+    <div class="rm-item">
+      <div class="rm-dot" style="border-color:#6b7280;color:#6b7280">4</div>
+      <div><span class="rm-phase ph-future">🌐 Phase 4 — 远期规划（2025 Q4+）</span></div>
+      <div class="rm-h">多链扩展与 DAO 治理</div>
+      <div class="rm-p">多链 AI 代理部署（Arbitrum / Ethereum）· CNOVA DAO 治理框架上线 · 企业级 AI 代理 API 接入 · Solana 跨链桥恢复（wCNOVA）</div>
+    </div>
+  </div>
+
+  <hr class="hr">
+
+  <div class="section-label" style="margin-top:20px">Section 12</div>
+  <div class="section-h1">风险提示与合规声明</div>
+
+  <div class="hbox yellow">
+    <p><strong>重要声明：</strong>本白皮书仅供参考，不构成任何形式的投资建议。加密货币投资具有高度风险，请在充分了解风险的前提下谨慎决策，只投入您能承受损失的资金。</p>
+  </div>
+
+  <ul class="feat-list">
+    <li><span class="feat-icon">⚠️</span><div><strong>市场风险：</strong>CNOVA 代币价格受市场情绪、流动性深度、BNB 价格等多重因素影响，可能出现大幅波动。</div></li>
+    <li><span class="feat-icon">⚠️</span><div><strong>技术风险：</strong>虽然合约已开源并经内部审计，但智能合约存在固有的漏洞风险。我们持续推进第三方审计工作。</div></li>
+    <li><span class="feat-icon">⚠️</span><div><strong>监管风险：</strong>各国/地区对加密资产的监管政策持续演变，可能影响项目的某些功能或用户的参与资格。</div></li>
+    <li><span class="feat-icon">✅</span><div><strong>透明承诺：</strong>所有合约地址、交易记录均在 BSCScan 公开可查，项目方承诺定期公示资金使用情况和开发进度。</div></li>
+  </ul>
+
+  <div style="margin-top:32px;padding:20px;border:1px solid var(--line);border-radius:8px;text-align:center;background:#fafafa">
+    <div style="font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;color:var(--brand);margin-bottom:8px">CHAINNOVA AGENTS V2</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6">
+      代币合约：0x0a9c2e3cda80a828334bfa2577a75a85229f7777 · BSC Chain ID 56<br>
+      HolderDividend：0xF7D702DFCe841b164661F62D851b7DE85aD9dDf0<br>
+      LPRewardVault：0xeBe4C576C6BAd406Ee656B3B3eA978f4c4F0d0e9<br><br>
+      <strong>© 2025 ChainNova. All rights reserved.</strong><br>
+      本文件版本：V1.0 · 发布日期：2025年
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div class="pf-l">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="pf-r">第 10 页</div>
+  </div>
+</div>
+
+</div><!-- /pages -->
+
+<script>
+function downloadHTML(){
+  fetch('/whitepaper-doc.html')
+    .then(r=>r.text())
+    .then(html=>{
+      const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;
+      a.download='CNOVA_Whitepaper_商业计划书_2025.html';
+      a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+    });
+}
+</script>
+</body>
+</html>
