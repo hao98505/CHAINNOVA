@@ -389,16 +389,54 @@ p{margin-bottom:12px;line-height:1.75}
 @media print{
   body{background:#fff}
   .dl-bar{display:none!important}
-  .pages{margin:0;width:100%;gap:0}
-  .page{
-    box-shadow:none;margin:0;
-    width:100%;min-height:auto;
-    padding:48px 60px 52px;
-    page-break-after:always;break-after:page;
+  .pages{
+    margin:0;width:100%;gap:0;
+    display:block;
   }
-  .page:last-child{page-break-after:auto;break-after:auto}
+  .page{
+    box-shadow:none;
+    margin:0;
+    width:100%;
+    min-height:0 !important;
+    height:auto !important;
+    padding:40px 60px 36px;
+    page-break-after:avoid;
+    break-after:avoid;
+    position:static;
+  }
+  /* 封面单独一页 */
+  .cover-page{
+    min-height:100vh !important;
+    page-break-after:always !important;
+    break-after:page !important;
+    display:flex;
+  }
+  /* 每个大章节页面前强制分页 */
+  .page.section-break{
+    page-break-before:always;
+    break-before:page;
+  }
+  /* 页脚改为流式定位 */
+  .page-footer{
+    position:static;
+    margin-top:24px;
+    border-top:1px solid var(--line);
+    padding-top:10px;
+  }
+  /* 避免表格/卡片内部断页 */
+  .cmp tr{page-break-inside:avoid;break-inside:avoid}
+  .card-row{page-break-inside:avoid;break-inside:avoid}
+  .tier-row{page-break-inside:avoid;break-inside:avoid}
+  .tier{page-break-inside:avoid;break-inside:avoid}
+  .tax-layout{page-break-inside:avoid;break-inside:avoid}
+  .steps{page-break-inside:avoid;break-inside:avoid}
+  .hbox{page-break-inside:avoid;break-inside:avoid}
+  .rm-item{page-break-inside:avoid;break-inside:avoid}
+  .feat-list li{page-break-inside:avoid;break-inside:avoid}
+  .bridge-diag{page-break-inside:avoid;break-inside:avoid}
+  h2,h3,.section-h1,.section-h2{page-break-after:avoid;break-after:avoid}
 }
-@page{size:A4 portrait;margin:0}
+@page{size:A4 portrait;margin:16mm 14mm}
 </style>
 </head>
 <body>
@@ -459,7 +497,7 @@ p{margin-bottom:12px;line-height:1.75}
 <!-- ══════════════════════════════
      PAGE 2 — TABLE OF CONTENTS
 ══════════════════════════════ -->
-<div class="page">
+<div class="page section-break">
   <div class="page-header">
     <div class="ph-section">Table of Contents</div>
     <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
@@ -500,7 +538,7 @@ p{margin-bottom:12px;line-height:1.75}
 <!-- ══════════════════════════════
      PAGE 3 — 项目概述 + 代币信息
 ══════════════════════════════ -->
-<div class="page">
+<div class="page section-break">
   <div class="page-header">
     <div class="ph-section">01–02 · 项目概述 & 代币信息</div>
     <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
@@ -555,7 +593,7 @@ p{margin-bottom:12px;line-height:1.75}
 <!-- ══════════════════════════════
      PAGE 4 — 税收机制
 ══════════════════════════════ -->
-<div class="page">
+<div class="page section-break">
   <div class="page-header">
     <div class="ph-section">03 · 代币税收机制与四大金库</div>
     <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
@@ -632,7 +670,7 @@ p{margin-bottom:12px;line-height:1.75}
 <!-- ══════════════════════════════
      PAGE 5 — 持币分红 + LP分红
 ══════════════════════════════ -->
-<div class="page">
+<div class="page section-break">
   <div class="page-header">
     <div class="ph-section">04–05 · 持币分红 & LP 分红</div>
     <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
@@ -705,7 +743,7 @@ p{margin-bottom:12px;line-height:1.75}
 <!-- ══════════════════════════════
      PAGE 6 — 工作室推广 + 代理市场
 ══════════════════════════════ -->
-<div class="page">
+<div class="page section-break">
   <div class="page-header">
     <div class="ph-section">06–07 · 工作室推广 & 代理市场</div>
     <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
@@ -784,7 +822,7 @@ p{margin-bottom:12px;line-height:1.75}
 <!-- ══════════════════════════════
      PAGE 7 — 代理市场详细 + 质押
 ══════════════════════════════ -->
-<div class="page">
+<div class="page section-break">
   <div class="page-header">
     <div class="ph-section">07–08 · 代理市场详细 & 质押收益</div>
     <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
@@ -873,7 +911,7 @@ p{margin-bottom:12px;line-height:1.75}
 <!-- ══════════════════════════════
      PAGE 8 — 跨链桥
 ══════════════════════════════ -->
-<div class="page">
+<div class="page section-break">
   <div class="page-header">
     <div class="ph-section">09 · 跨链桥</div>
     <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
@@ -979,7 +1017,7 @@ p{margin-bottom:12px;line-height:1.75}
 <!-- ══════════════════════════════
      PAGE 9 — 竞品对比
 ══════════════════════════════ -->
-<div class="page">
+<div class="page section-break">
   <div class="page-header">
     <div class="ph-section">10 · 竞品对比分析</div>
     <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
@@ -1039,7 +1077,7 @@ p{margin-bottom:12px;line-height:1.75}
 <!-- ══════════════════════════════
      PAGE 10 — 路线图 + 风险
 ══════════════════════════════ -->
-<div class="page">
+<div class="page section-break">
   <div class="page-header">
     <div class="ph-section">11–12 · 路线图 & 风险声明</div>
     <div class="ph-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
