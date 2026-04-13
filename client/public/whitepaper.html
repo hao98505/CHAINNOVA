@@ -1400,6 +1400,61 @@ document.addEventListener('touchend',e=>{
   const dx=e.changedTouches[0].clientX-tx;
   if(Math.abs(dx)>50) go(dx<0?1:-1);
 });
+
+function downloadHTML(){
+  fetch('/whitepaper.html')
+    .then(r=>r.text())
+    .then(html=>{
+      const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=url;
+      a.download='CNOVA_Whitepaper_2025.html';
+      a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+    });
+}
 </script>
+
+<!-- ── Download / Print Buttons ── -->
+<div style="position:fixed;top:16px;right:16px;z-index:200;display:flex;gap:8px">
+  <button onclick="downloadHTML()" title="下载 HTML 文件" style="
+    display:flex;align-items:center;gap:6px;
+    padding:8px 14px;
+    background:rgba(124,58,237,.85);
+    border:1px solid rgba(139,92,246,.6);
+    border-radius:8px;
+    color:#fff;
+    font-family:'Orbitron',sans-serif;
+    font-size:11px;font-weight:700;letter-spacing:.06em;
+    cursor:pointer;backdrop-filter:blur(8px);
+    transition:all .2s;
+  " onmouseover="this.style.background='rgba(109,40,217,.95)'" onmouseout="this.style.background='rgba(124,58,237,.85)'">
+    ⬇ 下载 HTML
+  </button>
+  <button onclick="window.print()" title="打印 / 保存为 PDF" style="
+    display:flex;align-items:center;gap:6px;
+    padding:8px 14px;
+    background:rgba(15,10,42,.85);
+    border:1px solid rgba(124,58,237,.35);
+    border-radius:8px;
+    color:#a78bfa;
+    font-family:'Orbitron',sans-serif;
+    font-size:11px;font-weight:700;letter-spacing:.06em;
+    cursor:pointer;backdrop-filter:blur(8px);
+    transition:all .2s;
+  " onmouseover="this.style.borderColor='rgba(124,58,237,.7)'" onmouseout="this.style.borderColor='rgba(124,58,237,.35)'">
+    🖨 保存 PDF
+  </button>
+</div>
+
+<style>
+@media print{
+  .nav,.slide:not(.active){display:none!important}
+  body,html{overflow:visible!important;height:auto!important}
+  .slide.active{position:relative!important;opacity:1!important;transform:none!important;page-break-after:always;height:100vh}
+  [style*="position:fixed"]{display:none!important}
+}
+</style>
 </body>
 </html>
