@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChainNova CNOVA — 项目白皮书 2025</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#09061a;
+  --card:#0f0a2a;
+  --primary:#7c3aed;
+  --primary-light:#a78bfa;
+  --primary-dim:rgba(124,58,237,0.15);
+  --green:#10b981;
+  --yellow:#f0b90b;
+  --blue:#3b82f6;
+  --pink:#ec4899;
+  --text:#e2d9f3;
+  --muted:#9986c8;
+  --border:rgba(124,58,237,0.25);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);font-family:'Inter',sans-serif;color:var(--text)}
+.deck{width:100%;height:100%;position:relative}
+
+/* ── Slides ── */
+.slide{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  opacity:0;pointer-events:none;
+  transition:opacity .45s cubic-bezier(.4,0,.2,1),transform .45s cubic-bezier(.4,0,.2,1);
+  transform:translateX(60px);
+  overflow:hidden;
+}
+.slide.active{opacity:1;pointer-events:all;transform:translateX(0)}
+.slide.prev{opacity:0;transform:translateX(-60px)}
+
+/* ── Backgrounds ── */
+.slide::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(124,58,237,.08) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(124,58,237,.08) 1px,transparent 1px);
+  background-size:48px 48px;
+  pointer-events:none;z-index:0;
+}
+.slide::after{
+  content:'';position:absolute;
+  width:700px;height:700px;border-radius:50%;
+  background:radial-gradient(circle,rgba(124,58,237,.18) 0%,transparent 70%);
+  top:-200px;right:-200px;pointer-events:none;z-index:0;
+}
+.slide>*{position:relative;z-index:1}
+
+/* ── Layout ── */
+.slide-inner{flex:1;display:flex;flex-direction:column;padding:44px 64px 24px;gap:24px;max-width:1400px;margin:0 auto;width:100%}
+.slide-header{display:flex;flex-direction:column;gap:6px}
+.slide-tag{font-family:'Orbitron',sans-serif;font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--primary-light);opacity:.7}
+.slide-title{font-family:'Orbitron',sans-serif;font-size:clamp(24px,3vw,36px);font-weight:900;color:#fff;line-height:1.15;text-shadow:0 0 40px rgba(124,58,237,.5)}
+.slide-sub{font-size:15px;color:var(--muted);margin-top:4px;line-height:1.5}
+
+/* ── Nav Bar ── */
+.nav{
+  position:fixed;bottom:32px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:12px;z-index:100;
+  background:rgba(9,6,26,.85);border:1px solid var(--border);
+  backdrop-filter:blur(12px);border-radius:40px;padding:8px 20px;
+}
+.nav-btn{
+  width:36px;height:36px;border-radius:50%;border:1px solid var(--border);
+  background:var(--primary-dim);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .2s;color:var(--primary-light);
+  font-size:18px;
+}
+.nav-btn:hover{background:var(--primary);border-color:var(--primary)}
+.nav-dots{display:flex;gap:6px;align-items:center}
+.nav-dot{width:7px;height:7px;border-radius:50%;background:rgba(124,58,237,.3);cursor:pointer;transition:all .2s}
+.nav-dot.active{background:var(--primary-light);transform:scale(1.3)}
+.slide-counter{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--muted);min-width:48px;text-align:center}
+
+/* ── Cards ── */
+.card{background:rgba(15,10,42,.7);border:1px solid var(--border);border-radius:16px;padding:20px 24px;backdrop-filter:blur(8px)}
+.card-sm{padding:14px 18px;border-radius:12px}
+.card-glow{box-shadow:0 0 32px rgba(124,58,237,.12)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+
+/* ── Typography ── */
+.h3{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--primary-light);margin-bottom:10px}
+.label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.1em;margin-bottom:4px}
+.val{font-family:'Orbitron',sans-serif;font-size:clamp(20px,2.5vw,28px);font-weight:700;color:#fff}
+.desc{font-size:13.5px;color:var(--muted);line-height:1.65}
+.accent{color:var(--primary-light)}
+.green{color:var(--green)}
+.yellow{color:var(--yellow)}
+.blue{color:var(--blue)}
+
+/* ── Badge ── */
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.06em}
+.badge-green{background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:var(--green)}
+.badge-purple{background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.35);color:var(--primary-light)}
+.badge-yellow{background:rgba(240,185,11,.1);border:1px solid rgba(240,185,11,.3);color:var(--yellow)}
+.badge-blue{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);color:var(--blue)}
+.badge-red{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);color:#f87171}
+
+/* ── Progress bars ── */
+.bar-wrap{background:rgba(124,58,237,.1);border-radius:999px;height:8px;overflow:hidden;flex:1}
+.bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--primary),var(--primary-light))}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.bar-label{font-size:12px;color:var(--text);min-width:100px}
+.bar-pct{font-family:'Orbitron',sans-serif;font-size:11px;color:var(--primary-light);min-width:36px;text-align:right}
+
+/* ── Table ── */
+.cmp-table{width:100%;border-collapse:separate;border-spacing:0;font-size:13px}
+.cmp-table th{font-family:'Orbitron',sans-serif;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:8px 14px;border-bottom:1px solid var(--border);text-align:left}
+.cmp-table td{padding:10px 14px;border-bottom:1px solid rgba(124,58,237,.1);color:var(--text)}
+.cmp-table tr:last-child td{border-bottom:none}
+.cmp-table .hl{background:rgba(124,58,237,.06)}
+.cmp-table .hl td{color:#fff}
+.check{color:var(--green);font-size:15px}
+.cross{color:#ef4444;font-size:15px}
+.semi{color:var(--yellow);font-size:13px}
+
+/* ── Pie Chart (CSS) ── */
+.pie-wrap{display:flex;align-items:center;gap:28px}
+.pie{width:140px;height:140px;border-radius:50%;flex-shrink:0;
+  background:conic-gradient(
+    #7c3aed 0% 60%,
+    #10b981 60% 90%,
+    #3b82f6 90% 97%,
+    #f0b90b 97% 100%
+  );
+  box-shadow:0 0 30px rgba(124,58,237,.35);
+}
+.pie-labels{display:flex;flex-direction:column;gap:8px}
+.pie-item{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--text)}
+.pie-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+/* ── Icon boxes ── */
+.icon-box{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.icon-row{display:flex;align-items:flex-start;gap:14px}
+.icon-row-text h4{font-size:14px;font-weight:600;color:#fff;margin-bottom:3px}
+.icon-row-text p{font-size:12.5px;color:var(--muted);line-height:1.5}
+
+/* ── Cover ── */
+.cover-bg{
+  position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse 80% 60% at 70% 30%,rgba(124,58,237,.22) 0%,transparent 70%),
+    radial-gradient(ellipse 50% 40% at 20% 80%,rgba(59,130,246,.1) 0%,transparent 70%);
+}
+.cover-content{position:relative;z-index:1;display:flex;flex-direction:column;height:100%;justify-content:center;padding:0 80px}
+.logo-badge{display:flex;align-items:center;gap:14px;margin-bottom:24px}
+.logo-img{width:60px;height:60px;border-radius:50%;border:2px solid rgba(124,58,237,.5);padding:4px;background:rgba(124,58,237,.1)}
+.logo-text{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;color:var(--primary-light)}
+.cover-title{font-family:'Orbitron',sans-serif;font-size:clamp(36px,5vw,60px);font-weight:900;color:#fff;line-height:1.1;text-shadow:0 0 60px rgba(124,58,237,.6);margin-bottom:12px}
+.cover-subtitle{font-size:18px;color:var(--muted);margin-bottom:32px;max-width:600px;line-height:1.6}
+.cover-tags{display:flex;gap:10px;flex-wrap:wrap}
+.cover-stat-row{display:flex;gap:32px;margin-top:40px}
+.cover-stat h2{font-family:'Orbitron',sans-serif;font-size:26px;font-weight:900;color:var(--primary-light)}
+.cover-stat p{font-size:12px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.1em}
+.scan-line{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,rgba(124,58,237,.6),transparent);animation:scan 4s linear infinite}
+@keyframes scan{0%{top:0}100%{top:100%}}
+
+/* ── Tier cards ── */
+.tier-card{border-radius:14px;padding:18px;border:1px solid;display:flex;flex-direction:column;gap:6px}
+.tier-bronze{border-color:rgba(205,127,50,.4);background:rgba(205,127,50,.07)}
+.tier-silver{border-color:rgba(192,192,192,.3);background:rgba(192,192,192,.06)}
+.tier-gold{border-color:rgba(240,185,11,.4);background:rgba(240,185,11,.08)}
+.tier-diamond{border-color:rgba(124,58,237,.5);background:rgba(124,58,237,.1)}
+.tier-name{font-family:'Orbitron',sans-serif;font-size:13px;font-weight:700}
+.tier-apy{font-family:'Orbitron',sans-serif;font-size:28px;font-weight:900;line-height:1}
+.tier-req{font-size:12px;color:var(--muted)}
+
+/* ── Bridge diagram ── */
+.chain-box{border-radius:12px;padding:14px 16px;border:1px solid var(--border);background:rgba(124,58,237,.08);text-align:center;min-width:100px}
+.chain-name{font-family:'Orbitron',sans-serif;font-size:11px;font-weight:700;color:var(--primary-light);margin-top:6px}
+.arrow-line{display:flex;align-items:center;gap:4px;padding:0 8px;color:var(--muted)}
+.arrow-label{font-size:10px;color:var(--muted);text-align:center;margin-top:4px}
+.bridge-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:center}
+
+/* ── Highlight number ── */
+.big-num{font-family:'Orbitron',sans-serif;font-size:clamp(32px,4vw,48px);font-weight:900;background:linear-gradient(135deg,var(--primary-light),#c4b5fd);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+/* ── Roadmap ── */
+.road-item{display:flex;gap:14px;align-items:flex-start}
+.road-dot-col{display:flex;flex-direction:column;align-items:center;gap:0;padding-top:4px}
+.road-dot{width:14px;height:14px;border-radius:50%;border:2px solid var(--primary);background:var(--bg);flex-shrink:0;z-index:1}
+.road-dot.done{background:var(--primary)}
+.road-line{width:2px;flex:1;min-height:24px;background:rgba(124,58,237,.25)}
+.road-content h4{font-size:14px;font-weight:600;color:#fff;margin-bottom:2px}
+.road-content p{font-size:12.5px;color:var(--muted);line-height:1.5}
+.road-phase{font-family:'Orbitron',sans-serif;font-size:10px;font-weight:700;letter-spacing:.1em;padding:2px 8px;border-radius:4px;border:1px solid;margin-bottom:4px;display:inline-block}
+.phase-done{border-color:rgba(16,185,129,.4);color:var(--green);background:rgba(16,185,129,.08)}
+.phase-now{border-color:rgba(240,185,11,.4);color:var(--yellow);background:rgba(240,185,11,.08)}
+.phase-next{border-color:rgba(124,58,237,.4);color:var(--primary-light);background:rgba(124,58,237,.08)}
+
+/* ── Footer bar ── */
+.slide-footer{padding:10px 64px 14px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(124,58,237,.12)}
+.footer-logo{font-family:'Orbitron',sans-serif;font-size:11px;color:rgba(167,139,250,.5);letter-spacing:.08em}
+.footer-chain{font-size:11px;color:rgba(167,139,250,.4)}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+<!-- ══════════════════════════════════════════
+     SLIDE 01 — COVER
+══════════════════════════════════════════ -->
+<div class="slide active" id="s1">
+  <div class="cover-bg"></div>
+  <div class="scan-line"></div>
+  <div class="cover-content">
+    <div class="logo-badge">
+      <img src="/chainnova_logo.png" alt="CNOVA" class="logo-img" onerror="this.style.display='none'">
+      <div>
+        <div class="logo-text">CHAINNOVA AGENTS V2</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:2px">BSC Mainnet · 0x0a9c...7777</div>
+      </div>
+    </div>
+    <div class="cover-title">CNOVA<br><span style="color:var(--primary-light)">项目白皮书</span></div>
+    <div class="cover-subtitle">AI 代理经济 × 链上分红 × 跨链互联——下一代去中心化智能代理生态</div>
+    <div class="cover-tags">
+      <span class="badge badge-purple">BSC Mainnet</span>
+      <span class="badge badge-green">HolderDividend Live</span>
+      <span class="badge badge-blue">EVM Cross-Chain</span>
+      <span class="badge badge-yellow">Flap Portal Bonding Curve</span>
+    </div>
+    <div class="cover-stat-row">
+      <div class="cover-stat"><h2>1B</h2><p>总供应量</p></div>
+      <div class="cover-stat"><h2>3% / 6%</h2><p>买入/卖出税</p></div>
+      <div class="cover-stat"><h2>200K</h2><p>分红门槛</p></div>
+      <div class="cover-stat"><h2>4链</h2><p>跨链支持</p></div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="footer-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="footer-chain">BSC · ARB · ETH · SOL</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 02 — 目录
+══════════════════════════════════════════ -->
+<div class="slide" id="s2">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="slide-tag">Table of Contents</div>
+      <div class="slide-title">白皮书目录</div>
+    </div>
+    <div class="grid-2" style="flex:1;align-content:start">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card card-sm" style="border-left:3px solid var(--primary)">
+          <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--primary-light);margin-bottom:4px">SECTION 01</div>
+          <div style="font-size:16px;font-weight:600;color:#fff">代币机制与税收分配</div>
+          <div class="desc" style="margin-top:4px;font-size:12px">买卖税、四大金库分配比例、持有者分红机制、对比同类代币优势</div>
+        </div>
+        <div class="card card-sm" style="border-left:3px solid var(--green)">
+          <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--green);margin-bottom:4px">SECTION 02</div>
+          <div style="font-size:16px;font-weight:600;color:#fff">代理市场功能与使用</div>
+          <div class="desc" style="margin-top:4px;font-size:12px">AI 代理 NFT、买入/租用/部署、六大分类、市场竞争优势</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card card-sm" style="border-left:3px solid var(--yellow)">
+          <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--yellow);margin-bottom:4px">SECTION 03</div>
+          <div style="font-size:16px;font-weight:600;color:#fff">质押收益体系</div>
+          <div class="desc" style="margin-top:4px;font-size:12px">四档质押等级、APY 梯度、LP 奖励机制、与竞品横向对比</div>
+        </div>
+        <div class="card card-sm" style="border-left:3px solid var(--blue)">
+          <div style="font-family:'Orbitron',sans-serif;font-size:11px;color:var(--blue);margin-bottom:4px">SECTION 04</div>
+          <div style="font-size:16px;font-weight:600;color:#fff">跨链桥架构与优势</div>
+          <div class="desc" style="margin-top:4px;font-size:12px">自动中继、BSC↔ARB↔ETH、链上验证、极低手续费</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="background:rgba(124,58,237,.06);text-align:center;padding:14px">
+      <span class="desc" style="font-size:13px">CNOVA 是首个将 <span class="accent">AI 代理经济</span> 与 <span class="green">链上BNB分红</span> + <span class="yellow">跨链流动性</span> 三位一体整合的 BSC 生态代币</span>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="footer-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="footer-chain">目录 / Contents</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 03 — 代币概览
+══════════════════════════════════════════ -->
+<div class="slide" id="s3">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="slide-tag">Section 01 · Token Mechanism</div>
+      <div class="slide-title">CNOVA 代币概览</div>
+      <div class="slide-sub">BSC Mainnet · 1,000,000,000 Total Supply · Flap Portal Bonding Curve</div>
+    </div>
+    <div class="grid-4">
+      <div class="card text-center" style="text-align:center">
+        <div class="label">总供应量</div>
+        <div class="val">1<span style="font-size:16px">B</span></div>
+        <div style="margin-top:8px"><span class="badge badge-purple">固定上限</span></div>
+        <div class="desc" style="font-size:12px;margin-top:6px">永不增发，智能合约锁定</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="label">买入税</div>
+        <div class="val green">3%</div>
+        <div style="margin-top:8px"><span class="badge badge-green">市场最低之一</span></div>
+        <div class="desc" style="font-size:12px;margin-top:6px">Flap Portal 自动收取</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="label">卖出税</div>
+        <div class="val" style="color:#f87171">6%</div>
+        <div style="margin-top:8px"><span class="badge badge-red">防倾销设计</span></div>
+        <div class="desc" style="font-size:12px;margin-top:6px">引导长期持有行为</div>
+      </div>
+      <div class="card" style="text-align:center">
+        <div class="label">分红门槛</div>
+        <div class="val yellow">200K</div>
+        <div style="margin-top:8px"><span class="badge badge-yellow">CNOVA</span></div>
+        <div class="desc" style="font-size:12px;margin-top:6px">持有即可注册参与分红</div>
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <div class="h3">合约地址</div>
+        <div style="font-family:monospace;font-size:12px;color:var(--primary-light);word-break:break-all;background:rgba(124,58,237,.08);padding:10px;border-radius:8px;border:1px solid var(--border)">
+          0x0a9c2e3cda80a828334bfa2577a75a85229f7777
+        </div>
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+          <span class="badge badge-green">✅ HolderDividend 已部署</span>
+          <span class="badge badge-blue">✅ LP Vault 已部署</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="h3">代币机制亮点</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="icon-row">
+            <div class="icon-box" style="background:rgba(124,58,237,.15)">🔒</div>
+            <div class="icon-row-text"><h4>不可增发</h4><p>totalSupply 锁定，管理员无 mint 权限</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-box" style="background:rgba(16,185,129,.15)">💰</div>
+            <div class="icon-row-text"><h4>链上 BNB 分红</h4><p>税收自动转入 HolderDividend 合约，一键 claim</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-box" style="background:rgba(240,185,11,.15)">⚖️</div>
+            <div class="icon-row-text"><h4>权重激励</h4><p>持有时间×余额=权重，越久持有分红越多</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="footer-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="footer-chain">Section 01 · Token Overview</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 04 — 税收分配
+══════════════════════════════════════════ -->
+<div class="slide" id="s4">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="slide-tag">Section 01 · Tax Distribution</div>
+      <div class="slide-title">税收四大金库分配</div>
+      <div class="slide-sub">每笔卖出税的 6% 按比例自动分流至四个链上金库</div>
+    </div>
+    <div class="grid-2" style="flex:1;align-content:start">
+      <div class="card card-glow" style="display:flex;flex-direction:column;gap:16px;justify-content:center">
+        <div class="pie-wrap" style="justify-content:center">
+          <div class="pie"></div>
+          <div class="pie-labels">
+            <div class="pie-item"><div class="pie-dot" style="background:#7c3aed"></div><span><b style="color:#fff">60%</b> 持有者分红</span></div>
+            <div class="pie-item"><div class="pie-dot" style="background:#10b981"></div><span><b style="color:#fff">30%</b> LP 奖励金库</span></div>
+            <div class="pie-item"><div class="pie-dot" style="background:#3b82f6"></div><span><b style="color:#fff">7%</b> 推荐佣金</span></div>
+            <div class="pie-item"><div class="pie-dot" style="background:#f0b90b"></div><span><b style="color:#fff">3%</b> 营销预算</span></div>
+          </div>
+        </div>
+        <div style="text-align:center;font-size:12px;color:var(--muted)">合约地址：0xF7D7...dDf0（HolderDividend）</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card" style="border-color:rgba(124,58,237,.4)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div class="h3" style="margin:0">持有者分红金库</div>
+            <span class="badge badge-purple">60%</span>
+          </div>
+          <div class="desc">BSC 钱包 ≥ 200K CNOVA + 调用 register() 即可加入分红池。持有时间越长权重越高，BNB 分红按权重比例发放。</div>
+        </div>
+        <div class="card" style="border-color:rgba(16,185,129,.4)">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <div class="h3" style="margin:0;color:var(--green)">LP 奖励金库</div>
+            <span class="badge badge-green">30%</span>
+          </div>
+          <div class="desc">已部署 LPRewardVault 合约，代币毕业至 PancakeSwap 后激活。LP 提供者自动分享这部分 BNB。</div>
+        </div>
+        <div class="grid-2" style="gap:8px">
+          <div class="card card-sm" style="border-color:rgba(59,130,246,.3)">
+            <div class="h3" style="color:var(--blue);margin-bottom:4px">推荐佣金 <span style="float:right">7%</span></div>
+            <div class="desc" style="font-size:12px">推荐新用户购买，链上绑定佣金，Phase 2 上线</div>
+          </div>
+          <div class="card card-sm" style="border-color:rgba(240,185,11,.3)">
+            <div class="h3" style="color:var(--yellow);margin-bottom:4px">营销预算 <span style="float:right">3%</span></div>
+            <div class="desc" style="font-size:12px">用于市场推广、KOL 合作、社区建设</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="background:rgba(124,58,237,.06)">
+      <div style="display:flex;gap:6px;align-items:center">
+        <span style="font-size:16px">💡</span>
+        <span class="desc" style="font-size:13px"><b style="color:#fff">核心设计：</b>90% 的税收直接回流给持有者和 LP 提供者，只有 10% 用于运营，真正做到社区导向。</span>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="footer-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="footer-chain">Section 01 · Tax Distribution</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 05 — 分红机制详解
+══════════════════════════════════════════ -->
+<div class="slide" id="s5">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="slide-tag">Section 01 · Dividend Mechanism</div>
+      <div class="slide-title">链上 BNB 分红机制</div>
+      <div class="slide-sub">HolderDividend 合约 · Weight = Balance × Holding Seconds</div>
+    </div>
+    <div class="grid-3" style="flex:1;align-content:start">
+      <div class="card" style="grid-column:1/3">
+        <div class="h3">分红权重公式</div>
+        <div style="background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center;margin-bottom:12px">
+          <div style="font-family:'Orbitron',sans-serif;font-size:18px;color:var(--primary-light)">Weight = Balance × Holding Seconds</div>
+          <div style="font-size:12px;color:var(--muted);margin-top:6px">分红份额 = 你的 Weight ÷ 全网 Total Weight</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="bar-row"><span class="bar-label" style="font-size:12px">200K CNOVA × 7天</span><div class="bar-wrap"><div class="bar-fill" style="width:20%"></div></div><span class="bar-pct">1x</span></div>
+          <div class="bar-row"><span class="bar-label" style="font-size:12px">500K CNOVA × 7天</span><div class="bar-wrap"><div class="bar-fill" style="width:50%"></div></div><span class="bar-pct">2.5x</span></div>
+          <div class="bar-row"><span class="bar-label" style="font-size:12px">1M CNOVA × 30天</span><div class="bar-wrap"><div class="bar-fill" style="width:100%"></div></div><span class="bar-pct">21x</span></div>
+        </div>
+        <div class="desc" style="font-size:12px;margin-top:10px;color:rgba(167,139,250,.6)">⚠️ 卖出任意数量立即失去资格；加仓不重置计时器，只增加权重</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card card-sm" style="border-color:rgba(16,185,129,.3)">
+          <div class="h3" style="color:var(--green)">3 步参与</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;gap:8px;align-items:center">
+              <div style="width:22px;height:22px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</div>
+              <span class="desc" style="font-size:12px">持有 ≥ 200K CNOVA</span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <div style="width:22px;height:22px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">2</div>
+              <span class="desc" style="font-size:12px">调用 register() 注册</span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <div style="width:22px;height:22px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">3</div>
+              <span class="desc" style="font-size:12px">每次结算后 claim() BNB</span>
+            </div>
+          </div>
+        </div>
+        <div class="card card-sm" style="border-color:rgba(240,185,11,.3)">
+          <div class="h3" style="color:var(--yellow)">已部署合约</div>
+          <div class="desc" style="font-size:11px;word-break:break-all;font-family:monospace">0xF7D702DFCe841b164661F62D851b7DE85aD9dDf0</div>
+          <div style="margin-top:6px"><span class="badge badge-green" style="font-size:10px">✅ Live on BSC</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="footer-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="footer-chain">Section 01 · Dividend Mechanism</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 06 — 竞品对比（代币）
+══════════════════════════════════════════ -->
+<div class="slide" id="s6">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="slide-tag">Section 01 · Competitive Analysis</div>
+      <div class="slide-title">CNOVA vs. 市场同类代币</div>
+      <div class="slide-sub">税收机制、分红模式、跨链能力三维对比</div>
+    </div>
+    <div class="card" style="flex:1;overflow:auto">
+      <table class="cmp-table">
+        <thead>
+          <tr>
+            <th>项目</th>
+            <th>税收 (买/卖)</th>
+            <th>链上 BNB 分红</th>
+            <th>权重激励</th>
+            <th>跨链支持</th>
+            <th>AI 应用场景</th>
+            <th>合约透明</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="hl">
+            <td><b>🟣 CNOVA</b></td>
+            <td><span class="green">3% / 6%</span></td>
+            <td><span class="check">✅ 实时链上</span></td>
+            <td><span class="check">✅ 时间×持仓</span></td>
+            <td><span class="check">✅ 4链自动中继</span></td>
+            <td><span class="check">✅ AI 代理 NFT</span></td>
+            <td><span class="check">✅ 开源+审计</span></td>
+          </tr>
+          <tr>
+            <td>SafeMoon 类</td>
+            <td><span style="color:#f87171">10%+</span></td>
+            <td><span class="semi">⚠️ 手动快照</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="semi">⚠️ 部分</span></td>
+          </tr>
+          <tr>
+            <td>Reflect/RFI 类</td>
+            <td><span style="color:#f87171">5–12%</span></td>
+            <td><span class="semi">⚠️ Token 反射</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="semi">⚠️ 部分</span></td>
+          </tr>
+          <tr>
+            <td>普通 Meme 币</td>
+            <td><span style="color:#f87171">5–15%</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="cross">❌</span></td>
+          </tr>
+          <tr>
+            <td>DeFi 质押代币</td>
+            <td><span class="semi">0–3%</span></td>
+            <td><span class="semi">⚠️ 需主动质押</span></td>
+            <td><span class="semi">⚠️ 部分</span></td>
+            <td><span class="semi">⚠️ 部分</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="check">✅</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="grid-3">
+      <div class="card card-sm" style="text-align:center;border-color:rgba(124,58,237,.4)">
+        <div style="font-size:24px;margin-bottom:4px">🏆</div>
+        <div style="font-size:13px;font-weight:600;color:#fff">最低同类税率</div>
+        <div class="desc" style="font-size:12px">3%买/6%卖 vs 市场平均 8–12%</div>
+      </div>
+      <div class="card card-sm" style="text-align:center;border-color:rgba(16,185,129,.4)">
+        <div style="font-size:24px;margin-bottom:4px">⛓️</div>
+        <div style="font-size:13px;font-weight:600;color:#fff">唯一 AI+分红</div>
+        <div class="desc" style="font-size:12px">同类项目无 AI 代理经济整合</div>
+      </div>
+      <div class="card card-sm" style="text-align:center;border-color:rgba(59,130,246,.4)">
+        <div style="font-size:24px;margin-bottom:4px">🌉</div>
+        <div style="font-size:13px;font-weight:600;color:#fff">4链自动中继</div>
+        <div class="desc" style="font-size:12px">大多数竞品无跨链能力</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="footer-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="footer-chain">Section 01 · Competitive Analysis</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 07 — 代理市场概览
+══════════════════════════════════════════ -->
+<div class="slide" id="s7">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="slide-tag">Section 02 · Agent Marketplace</div>
+      <div class="slide-title">AI 代理市场</div>
+      <div class="slide-sub">全球首个链上 AI 代理 NFT 交易平台——购买、租用、部署、创建</div>
+    </div>
+    <div class="grid-2" style="flex:1;align-content:start">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card">
+          <div class="h3">什么是 AI 代理 NFT？</div>
+          <div class="desc" style="margin-bottom:12px">每个 AI 代理是一个独特的链上 NFT，代表一个具备特定技能的智能算力单元。持有者可通过租用/运行代理赚取 CNOVA 收益。</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:15px">🤖</span>
+              <span class="desc" style="font-size:13px">算力（TFLOPS）+ 在线率 + 任务完成数</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:15px">💎</span>
+              <span class="desc" style="font-size:13px">稀有度分级 · 六大功能类型</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:15px">⚡</span>
+              <span class="desc" style="font-size:13px">实时状态 Active / Idle / Rented</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="h3">六大代理类型</div>
+          <div class="grid-2" style="gap:8px">
+            <span class="badge badge-purple" style="justify-content:center;padding:6px 10px">🔬 Research</span>
+            <span class="badge badge-red" style="justify-content:center;padding:6px 10px">🛡️ Security</span>
+            <span class="badge badge-green" style="justify-content:center;padding:6px 10px">🎨 Creative</span>
+            <span class="badge badge-yellow" style="justify-content:center;padding:6px 10px">📊 Finance</span>
+            <span class="badge badge-blue" style="justify-content:center;padding:6px 10px">🔮 Oracle</span>
+            <span class="badge badge-purple" style="justify-content:center;padding:6px 10px;border-color:rgba(236,72,153,.4);color:#f9a8d4;background:rgba(236,72,153,.08)">⚖️ Governance</span>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="grid-2" style="gap:10px">
+          <div class="card card-sm" style="text-align:center">
+            <div class="big-num" style="font-size:28px">1,842</div>
+            <div class="label">代理总数</div>
+          </div>
+          <div class="card card-sm" style="text-align:center">
+            <div class="big-num" style="font-size:28px;background:linear-gradient(135deg,var(--green),#6ee7b7);-webkit-background-clip:text">$4.2M</div>
+            <div class="label">总交易量</div>
+          </div>
+          <div class="card card-sm" style="text-align:center">
+            <div class="big-num" style="font-size:28px;background:linear-gradient(135deg,var(--yellow),#fcd34d);-webkit-background-clip:text">28K+</div>
+            <div class="label">活跃用户</div>
+          </div>
+          <div class="card card-sm" style="text-align:center">
+            <div class="big-num" style="font-size:28px;background:linear-gradient(135deg,var(--blue),#93c5fd);-webkit-background-clip:text">142K</div>
+            <div class="label">日任务量</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="h3">用 CNOVA 购买/租用</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div class="bar-row"><span class="bar-label" style="font-size:12px">购买代理</span><div class="bar-wrap"><div class="bar-fill" style="width:80%;background:linear-gradient(90deg,var(--primary),var(--primary-light))"></div></div><span class="bar-pct" style="color:#fff;font-size:11px">永久持有</span></div>
+            <div class="bar-row"><span class="bar-label" style="font-size:12px">租用代理</span><div class="bar-wrap"><div class="bar-fill" style="width:60%;background:linear-gradient(90deg,var(--green),#6ee7b7)"></div></div><span class="bar-pct" style="color:var(--green);font-size:11px">1h–7d</span></div>
+            <div class="bar-row"><span class="bar-label" style="font-size:12px">部署代理</span><div class="bar-wrap"><div class="bar-fill" style="width:45%;background:linear-gradient(90deg,var(--yellow),#fcd34d)"></div></div><span class="bar-pct" style="color:var(--yellow);font-size:11px">铸造NFT</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="footer-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="footer-chain">Section 02 · Agent Marketplace</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 08 — 市场功能详解
+══════════════════════════════════════════ -->
+<div class="slide" id="s8">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="slide-tag">Section 02 · How It Works</div>
+      <div class="slide-title">市场核心功能与使用流程</div>
+    </div>
+    <div class="grid-2" style="flex:1;align-content:start">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card">
+          <div class="h3">🛒 购买代理 NFT</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div class="icon-row">
+              <div style="width:24px;height:24px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</div>
+              <div class="desc" style="font-size:13px">在市场浏览 → 按类型/算力/价格筛选</div>
+            </div>
+            <div class="icon-row">
+              <div style="width:24px;height:24px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">2</div>
+              <div class="desc" style="font-size:13px">连接 BSC 钱包 → 支付 CNOVA</div>
+            </div>
+            <div class="icon-row">
+              <div style="width:24px;height:24px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">3</div>
+              <div class="desc" style="font-size:13px">代理 NFT 转入钱包，永久拥有</div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="h3">⏱️ 租用代理</div>
+          <div class="grid-2" style="gap:6px">
+            <div class="card card-sm" style="text-align:center;padding:10px">
+              <div class="label">1小时</div><div style="font-size:14px;font-weight:700;color:var(--primary-light)">最低入门</div>
+            </div>
+            <div class="card card-sm" style="text-align:center;padding:10px">
+              <div class="label">6小时</div><div style="font-size:14px;font-weight:700;color:var(--green)">短期任务</div>
+            </div>
+            <div class="card card-sm" style="text-align:center;padding:10px">
+              <div class="label">24小时</div><div style="font-size:14px;font-weight:700;color:var(--yellow)">全天运行</div>
+            </div>
+            <div class="card card-sm" style="text-align:center;padding:10px">
+              <div class="label">7天</div><div style="font-size:14px;font-weight:700;color:var(--blue)">长期收益</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card">
+          <div class="h3">🚀 部署 (铸造) 代理</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;gap:8px;align-items:center">
+              <span class="badge badge-purple">Step 1</span>
+              <span class="desc" style="font-size:13px">填写代理名称、描述、算力、类型</span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span class="badge badge-blue">Step 2</span>
+              <span class="desc" style="font-size:13px">上传 JSON 元数据（自动生成预览）</span>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center">
+              <span class="badge badge-green">Step 3</span>
+              <span class="desc" style="font-size:13px">确认铸造，代理上架市场销售</span>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="h3">🔍 智能搜索与过滤</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <span class="badge badge-purple">实时关键词搜索</span>
+              <span class="badge badge-green">6类标签过滤</span>
+              <span class="badge badge-yellow">5维排序</span>
+            </div>
+            <div class="desc" style="font-size:13px;margin-top:6px">支持按 TFLOPS 算力、在线率、任务数、价格（升降）快速定位最优代理</div>
+          </div>
+        </div>
+        <div class="card card-sm" style="background:rgba(16,185,129,.05);border-color:rgba(16,185,129,.3)">
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:18px">💡</span>
+            <span class="desc" style="font-size:13px"><b style="color:var(--green)">市场优势：</b>代理 NFT 兼具使用价值（算力出租）和投资价值（二级市场交易），形成双重收益闭环。</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="footer-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="footer-chain">Section 02 · How It Works</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 09 — 竞品对比（市场）
+══════════════════════════════════════════ -->
+<div class="slide" id="s9">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="slide-tag">Section 02 · Market Comparison</div>
+      <div class="slide-title">代理市场竞争优势</div>
+      <div class="slide-sub">ChainNova vs. 同类 AI/NFT 平台对比</div>
+    </div>
+    <div class="card" style="overflow:auto;margin-bottom:16px">
+      <table class="cmp-table">
+        <thead>
+          <tr>
+            <th>平台</th>
+            <th>AI 代理功能</th>
+            <th>链上收益</th>
+            <th>租用模式</th>
+            <th>CNOVA 生态联动</th>
+            <th>跨链</th>
+            <th>中文社区</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="hl">
+            <td><b>🟣 ChainNova</b></td>
+            <td><span class="check">✅ 完整 NFT 市场</span></td>
+            <td><span class="check">✅ BNB 链上分红</span></td>
+            <td><span class="check">✅ 1h/6h/24h/7d</span></td>
+            <td><span class="check">✅ 持有分红+LP</span></td>
+            <td><span class="check">✅ 4链</span></td>
+            <td><span class="check">✅</span></td>
+          </tr>
+          <tr>
+            <td>Fetch.ai</td>
+            <td><span class="semi">⚠️ 企业级 API</span></td>
+            <td><span class="cross">❌ 无直接分红</span></td>
+            <td><span class="semi">⚠️ 订阅制</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="semi">⚠️ 部分</span></td>
+            <td><span class="cross">❌</span></td>
+          </tr>
+          <tr>
+            <td>SingularityNET</td>
+            <td><span class="semi">⚠️ API 市场</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="semi">⚠️</span></td>
+            <td><span class="cross">❌</span></td>
+          </tr>
+          <tr>
+            <td>Gensyn</td>
+            <td><span class="semi">⚠️ 算力网络</span></td>
+            <td><span class="cross">❌ 无 NFT</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="cross">❌</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="grid-3">
+      <div class="card card-sm" style="border-color:rgba(124,58,237,.4);text-align:center">
+        <div style="font-size:22px;margin-bottom:6px">🎯</div>
+        <div style="font-size:13px;font-weight:600;color:#fff">功能最完整</div>
+        <div class="desc" style="font-size:12px">买/租/部署+完整NFT市场</div>
+      </div>
+      <div class="card card-sm" style="border-color:rgba(16,185,129,.4);text-align:center">
+        <div style="font-size:22px;margin-bottom:6px">💰</div>
+        <div style="font-size:13px;font-weight:600;color:#fff">收益双路径</div>
+        <div class="desc" style="font-size:12px">代理租金 + BNB 持有分红</div>
+      </div>
+      <div class="card card-sm" style="border-color:rgba(240,185,11,.4);text-align:center">
+        <div style="font-size:22px;margin-bottom:6px">🌏</div>
+        <div style="font-size:13px;font-weight:600;color:#fff">亚洲市场深耕</div>
+        <div class="desc" style="font-size:12px">完整中文界面，社区优先</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="footer-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="footer-chain">Section 02 · Market Comparison</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 10 — 质押收益
+══════════════════════════════════════════ -->
+<div class="slide" id="s10">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="slide-tag">Section 03 · Staking</div>
+      <div class="slide-title">质押收益体系</div>
+      <div class="slide-sub">四档等级 · 最高 30% APY · 7天锁仓 · 持有时间越长收益越高</div>
+    </div>
+    <div class="grid-4" style="flex:1;align-content:start">
+      <div class="tier-card tier-bronze">
+        <div style="font-size:24px">🥉</div>
+        <div class="tier-name" style="color:#cd7f32">Bronze</div>
+        <div class="tier-apy" style="color:#cd7f32">18%</div>
+        <div style="font-size:10px;letter-spacing:.05em;color:#cd7f32">APY</div>
+        <div class="tier-req">≥ 1,000 CNOVA</div>
+        <div class="desc" style="font-size:12px;margin-top:6px">入门级质押，适合小额参与者</div>
+      </div>
+      <div class="tier-card tier-silver">
+        <div style="font-size:24px">🥈</div>
+        <div class="tier-name" style="color:#c0c0c0">Silver</div>
+        <div class="tier-apy" style="color:#c0c0c0">21%</div>
+        <div style="font-size:10px;letter-spacing:.05em;color:#c0c0c0">APY</div>
+        <div class="tier-req">≥ 10,000 CNOVA</div>
+        <div class="desc" style="font-size:12px;margin-top:6px">中等规模持仓，收益显著提升</div>
+      </div>
+      <div class="tier-card tier-gold">
+        <div style="font-size:24px">🥇</div>
+        <div class="tier-name" style="color:var(--yellow)">Gold</div>
+        <div class="tier-apy" style="color:var(--yellow)">24.5%</div>
+        <div style="font-size:10px;letter-spacing:.05em;color:var(--yellow)">APY</div>
+        <div class="tier-req">≥ 50,000 CNOVA</div>
+        <div class="desc" style="font-size:12px;margin-top:6px">大额持仓，当前主网标准收益</div>
+      </div>
+      <div class="tier-card tier-diamond">
+        <div style="font-size:24px">💎</div>
+        <div class="tier-name" style="color:var(--primary-light)">Diamond</div>
+        <div class="tier-apy" style="color:var(--primary-light)">30%</div>
+        <div style="font-size:10px;letter-spacing:.05em;color:var(--primary-light)">APY</div>
+        <div class="tier-req">≥ 200,000 CNOVA</div>
+        <div class="desc" style="font-size:12px;margin-top:6px">顶级持有者，最高质押收益率</div>
+      </div>
+    </div>
+    <div class="grid-2" style="gap:14px">
+      <div class="card">
+        <div class="h3">质押 APY vs 行业均值</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="bar-row"><span class="bar-label">CNOVA Diamond</span><div class="bar-wrap"><div class="bar-fill" style="width:100%;background:linear-gradient(90deg,var(--primary),#c4b5fd)"></div></div><span class="bar-pct">30%</span></div>
+          <div class="bar-row"><span class="bar-label">CNOVA Gold</span><div class="bar-wrap"><div class="bar-fill" style="width:82%"></div></div><span class="bar-pct">24.5%</span></div>
+          <div class="bar-row"><span class="bar-label">Pancake CAKE</span><div class="bar-wrap"><div class="bar-fill" style="width:53%;background:linear-gradient(90deg,#f0b90b,#fcd34d)"></div></div><span class="bar-pct">~16%</span></div>
+          <div class="bar-row"><span class="bar-label">普通 DeFi 均值</span><div class="bar-wrap"><div class="bar-fill" style="width:33%;background:linear-gradient(90deg,#6b7280,#9ca3af)"></div></div><span class="bar-pct">~10%</span></div>
+          <div class="bar-row"><span class="bar-label">银行理财 (年)</span><div class="bar-wrap"><div class="bar-fill" style="width:10%;background:#374151"></div></div><span class="bar-pct">3%</span></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="h3">质押机制亮点</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div class="icon-row">
+            <div class="icon-box" style="background:rgba(124,58,237,.15);font-size:16px">⏳</div>
+            <div class="icon-row-text"><h4>7天锁仓</h4><p>解质押有冷静期，防止短期套利，保护长期持有者利益</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-box" style="background:rgba(16,185,129,.15);font-size:16px">📈</div>
+            <div class="icon-row-text"><h4>复利效应</h4><p>奖励可再质押，实现收益复利，最大化长期回报</p></div>
+          </div>
+          <div class="icon-row">
+            <div class="icon-box" style="background:rgba(240,185,11,.15);font-size:16px">🔗</div>
+            <div class="icon-row-text"><h4>LP 质押（Phase 2）</h4><p>PancakeSwap LP 代币质押，额外获取 BNB 分红</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="footer-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="footer-chain">Section 03 · Staking Rewards</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 11 — 质押竞品对比
+══════════════════════════════════════════ -->
+<div class="slide" id="s11">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="slide-tag">Section 03 · Staking Comparison</div>
+      <div class="slide-title">质押收益竞品对比</div>
+      <div class="slide-sub">CNOVA 质押体系 vs. 主流 DeFi 协议</div>
+    </div>
+    <div class="card" style="overflow:auto;margin-bottom:16px">
+      <table class="cmp-table">
+        <thead>
+          <tr>
+            <th>平台</th>
+            <th>最高 APY</th>
+            <th>锁仓期</th>
+            <th>奖励代币</th>
+            <th>梯度等级</th>
+            <th>LP 奖励</th>
+            <th>AI 生态联动</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="hl">
+            <td><b>🟣 CNOVA</b></td>
+            <td><span class="green">30% APY</span></td>
+            <td>7天</td>
+            <td>CNOVA + BNB</td>
+            <td><span class="check">✅ 4档</span></td>
+            <td><span class="check">✅ Phase2</span></td>
+            <td><span class="check">✅ 代理收益</span></td>
+          </tr>
+          <tr>
+            <td>PancakeSwap CAKE</td>
+            <td>~16%</td>
+            <td>1–52周</td>
+            <td>CAKE</td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="check">✅</span></td>
+            <td><span class="cross">❌</span></td>
+          </tr>
+          <tr>
+            <td>Venus (BSC)</td>
+            <td>~12%</td>
+            <td>无锁定</td>
+            <td>XVS</td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="semi">⚠️</span></td>
+            <td><span class="cross">❌</span></td>
+          </tr>
+          <tr>
+            <td>Aave</td>
+            <td>~8%</td>
+            <td>10天</td>
+            <td>AAVE</td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="semi">⚠️</span></td>
+            <td><span class="cross">❌</span></td>
+          </tr>
+          <tr>
+            <td>Compound</td>
+            <td>~5%</td>
+            <td>无锁定</td>
+            <td>COMP</td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="cross">❌</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="grid-3">
+      <div class="card card-sm" style="border-color:rgba(124,58,237,.4);text-align:center">
+        <div class="big-num" style="font-size:32px">30%</div>
+        <div style="font-size:13px;font-weight:600;color:#fff">最高 APY</div>
+        <div class="desc" style="font-size:12px">Diamond 等级持有者</div>
+      </div>
+      <div class="card card-sm" style="border-color:rgba(16,185,129,.4);text-align:center">
+        <div style="font-size:28px;margin-bottom:4px">2x</div>
+        <div style="font-size:13px;font-weight:600;color:#fff">奖励来源</div>
+        <div class="desc" style="font-size:12px">CNOVA 质押收益 + BNB 持有分红</div>
+      </div>
+      <div class="card card-sm" style="border-color:rgba(240,185,11,.4);text-align:center">
+        <div style="font-size:28px;margin-bottom:4px;color:var(--yellow)">3x</div>
+        <div style="font-size:13px;font-weight:600;color:#fff">总收益路径</div>
+        <div class="desc" style="font-size:12px">质押 + 分红 + 代理租金</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="footer-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="footer-chain">Section 03 · Staking Comparison</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 12 — 跨链桥
+══════════════════════════════════════════ -->
+<div class="slide" id="s12">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="slide-tag">Section 04 · Cross-Chain Bridge</div>
+      <div class="slide-title">CNOVA 跨链桥</div>
+      <div class="slide-sub">EVM↔EVM 自动中继 · BSC ↔ Arbitrum ↔ Ethereum · 最低手续费</div>
+    </div>
+    <div class="grid-2" style="flex:1;align-content:start">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card">
+          <div class="h3">链路架构</div>
+          <div class="bridge-row" style="margin:12px 0">
+            <div class="chain-box">
+              <div style="font-size:22px">🟡</div>
+              <div class="chain-name">BSC</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <div class="arrow-line">⟷</div>
+              <div class="arrow-label">Auto Relay</div>
+            </div>
+            <div class="chain-box">
+              <div style="font-size:22px">🔵</div>
+              <div class="chain-name">Arbitrum</div>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:center">
+              <div class="arrow-line">⟷</div>
+              <div class="arrow-label">Auto Relay</div>
+            </div>
+            <div class="chain-box">
+              <div style="font-size:22px">🔷</div>
+              <div class="chain-name">Ethereum</div>
+            </div>
+          </div>
+          <div style="text-align:center;margin-top:4px">
+            <span class="badge badge-green">自动中继服务 24/7 运行</span>
+          </div>
+        </div>
+        <div class="card">
+          <div class="h3">路由手续费对比</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(124,58,237,.1)">
+              <span class="desc" style="font-size:13px">BSC → Arbitrum</span>
+              <div style="text-align:right"><span class="green" style="font-weight:600">0.25%</span><span class="desc" style="font-size:11px;margin-left:6px">~12min</span></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(124,58,237,.1)">
+              <span class="desc" style="font-size:13px">BSC → Ethereum</span>
+              <div style="text-align:right"><span class="yellow" style="font-weight:600">0.5%</span><span class="desc" style="font-size:11px;margin-left:6px">~20min</span></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0">
+              <span class="desc" style="font-size:13px">ARB ↔ ETH</span>
+              <div style="text-align:right"><span class="accent" style="font-weight:600">0.3%</span><span class="desc" style="font-size:11px;margin-left:6px">~7min</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="card">
+          <div class="h3">核心功能</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div class="icon-row">
+              <div class="icon-box" style="background:rgba(124,58,237,.15);font-size:16px">🤖</div>
+              <div class="icon-row-text"><h4>自动中继器</h4><p>服务器端 24/7 监听链上事件，自动完成跨链确认，用户无需手动操作</p></div>
+            </div>
+            <div class="icon-row">
+              <div class="icon-box" style="background:rgba(16,185,129,.15);font-size:16px">⚡</div>
+              <div class="icon-row-text"><h4>快速确认</h4><p>BSC→ARB 最快 8分钟确认，远低于行业平均 30+ 分钟</p></div>
+            </div>
+            <div class="icon-row">
+              <div class="icon-box" style="background:rgba(240,185,11,.15);font-size:16px">🔒</div>
+              <div class="icon-row-text"><h4>链上验证</h4><p>每笔跨链转账在智能合约中生成唯一 transferId，全程可追溯</p></div>
+            </div>
+            <div class="icon-row">
+              <div class="icon-box" style="background:rgba(59,130,246,.15);font-size:16px">🎯</div>
+              <div class="icon-row-text"><h4>自定义目标地址</h4><p>可发送到任意 EVM 地址，不限于连接的钱包</p></div>
+            </div>
+          </div>
+        </div>
+        <div class="card card-sm" style="background:rgba(59,130,246,.06);border-color:rgba(59,130,246,.3)">
+          <div style="display:flex;gap:8px;align-items:center">
+            <span style="font-size:18px">🌐</span>
+            <span class="desc" style="font-size:13px"><b style="color:var(--blue)">流动性优势：</b>CNOVA 可在 BSC/ARB/ETH 三链间自由流通，打破流动性孤岛，为代币创造更广阔的使用场景。</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="footer-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="footer-chain">Section 04 · Cross-Chain Bridge</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 13 — 跨链竞品对比
+══════════════════════════════════════════ -->
+<div class="slide" id="s13">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="slide-tag">Section 04 · Bridge Comparison</div>
+      <div class="slide-title">跨链桥竞争优势</div>
+      <div class="slide-sub">CNOVA Bridge vs. 主流跨链方案</div>
+    </div>
+    <div class="card" style="overflow:auto;margin-bottom:16px">
+      <table class="cmp-table">
+        <thead>
+          <tr>
+            <th>桥接方案</th>
+            <th>最低费率</th>
+            <th>确认时间</th>
+            <th>自动中继</th>
+            <th>需要原生 gas</th>
+            <th>4链支持</th>
+            <th>链上验证</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="hl">
+            <td><b>🟣 CNOVA Bridge</b></td>
+            <td><span class="green">0.25%</span></td>
+            <td><span class="green">~8 min</span></td>
+            <td><span class="check">✅ 内置</span></td>
+            <td><span class="check">✅ 无需</span></td>
+            <td><span class="check">✅</span></td>
+            <td><span class="check">✅</span></td>
+          </tr>
+          <tr>
+            <td>Stargate (LayerZero)</td>
+            <td>0.06%+gas</td>
+            <td>~15 min</td>
+            <td><span class="semi">⚠️ 需要</span></td>
+            <td><span class="cross">❌ 需要</span></td>
+            <td><span class="semi">⚠️ 部分</span></td>
+            <td><span class="check">✅</span></td>
+          </tr>
+          <tr>
+            <td>Multichain</td>
+            <td>0.1%+gas</td>
+            <td>~30 min</td>
+            <td><span class="semi">⚠️ 部分</span></td>
+            <td><span class="cross">❌ 需要</span></td>
+            <td><span class="semi">⚠️ 部分</span></td>
+            <td><span class="semi">⚠️ 部分</span></td>
+          </tr>
+          <tr>
+            <td>Wormhole</td>
+            <td>0.25%</td>
+            <td>~20 min</td>
+            <td><span class="cross">❌ 手动</span></td>
+            <td><span class="cross">❌ 需要</span></td>
+            <td><span class="semi">⚠️ 部分</span></td>
+            <td><span class="check">✅</span></td>
+          </tr>
+          <tr>
+            <td>Ronin Bridge</td>
+            <td>免费</td>
+            <td>~1 day</td>
+            <td><span class="cross">❌</span></td>
+            <td><span class="cross">❌ 需要</span></td>
+            <td><span class="cross">❌ 单链</span></td>
+            <td><span class="semi">⚠️</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="grid-4">
+      <div class="card card-sm" style="text-align:center;border-color:rgba(16,185,129,.4)">
+        <div style="font-size:22px;margin-bottom:4px">⚡</div>
+        <div style="font-size:13px;font-weight:600;color:#fff">最快 8 分钟</div>
+        <div class="desc" style="font-size:11px">BSC→ARB 确认</div>
+      </div>
+      <div class="card card-sm" style="text-align:center;border-color:rgba(124,58,237,.4)">
+        <div style="font-size:22px;margin-bottom:4px">🤖</div>
+        <div style="font-size:13px;font-weight:600;color:#fff">全自动中继</div>
+        <div class="desc" style="font-size:11px">无需手动操作</div>
+      </div>
+      <div class="card card-sm" style="text-align:center;border-color:rgba(59,130,246,.4)">
+        <div style="font-size:22px;margin-bottom:4px">💸</div>
+        <div style="font-size:13px;font-weight:600;color:#fff">无需目标链 gas</div>
+        <div class="desc" style="font-size:11px">费率已含中继费</div>
+      </div>
+      <div class="card card-sm" style="text-align:center;border-color:rgba(240,185,11,.4)">
+        <div style="font-size:22px;margin-bottom:4px">🔗</div>
+        <div style="font-size:13px;font-weight:600;color:#fff">BSC+ARB+ETH</div>
+        <div class="desc" style="font-size:11px">三链互联互通</div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="footer-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="footer-chain">Section 04 · Bridge Comparison</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 14 — 路线图
+══════════════════════════════════════════ -->
+<div class="slide" id="s14">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="slide-tag">Roadmap</div>
+      <div class="slide-title">项目路线图</div>
+      <div class="slide-sub">四阶段开发计划 · Phase 1 已完成上线</div>
+    </div>
+    <div class="grid-2" style="flex:1;align-content:start">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card" style="border-color:rgba(16,185,129,.3)">
+          <div style="margin-bottom:8px"><span class="road-phase phase-done">✅ PHASE 1 — 已完成</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="desc" style="font-size:13px">✓ CNOVA 代币部署 (BSC Mainnet)</div>
+            <div class="desc" style="font-size:13px">✓ HolderDividend 合约上线</div>
+            <div class="desc" style="font-size:13px">✓ LPRewardVault 合约部署</div>
+            <div class="desc" style="font-size:13px">✓ EVM 跨链桥上线 (BSC↔ARB↔ETH)</div>
+            <div class="desc" style="font-size:13px">✓ 代理市场 + 质押界面</div>
+            <div class="desc" style="font-size:13px">✓ Flap Portal Bonding Curve 交易</div>
+          </div>
+        </div>
+        <div class="card" style="border-color:rgba(240,185,11,.3)">
+          <div style="margin-bottom:8px"><span class="road-phase phase-now">🔥 PHASE 2 — 进行中</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="desc" style="font-size:13px">→ PancakeSwap 毕业 + LP 激活</div>
+            <div class="desc" style="font-size:13px">→ ReferralVault 推荐系统上线</div>
+            <div class="desc" style="font-size:13px">→ MarketingVault 营销预算启动</div>
+            <div class="desc" style="font-size:13px">→ CoinGecko / CMC 上线</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div class="card" style="border-color:rgba(124,58,237,.3)">
+          <div style="margin-bottom:8px"><span class="road-phase phase-next">🚀 PHASE 3 — Q3 2025</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="desc" style="font-size:13px">◦ AI 代理合约上链 (Anchor/Solidity)</div>
+            <div class="desc" style="font-size:13px">◦ 真实算力接入 (GPU 节点网络)</div>
+            <div class="desc" style="font-size:13px">◦ 推荐系统链上激活</div>
+            <div class="desc" style="font-size:13px">◦ 手机 App (iOS/Android)</div>
+          </div>
+        </div>
+        <div class="card" style="border-color:rgba(59,130,246,.2)">
+          <div style="margin-bottom:8px"><span class="road-phase" style="border-color:rgba(59,130,246,.4);color:var(--blue);background:rgba(59,130,246,.08)">🌐 PHASE 4 — Q4 2025+</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="desc" style="font-size:13px">◦ 多链 AI 代理部署 (ARB / ETH)</div>
+            <div class="desc" style="font-size:13px">◦ DAO 治理上线</div>
+            <div class="desc" style="font-size:13px">◦ 企业 API 接入</div>
+            <div class="desc" style="font-size:13px">◦ Solana 跨链桥恢复 (wCNOVA)</div>
+          </div>
+        </div>
+        <div class="card card-sm" style="background:rgba(124,58,237,.06)">
+          <div style="display:flex;gap:8px;align-items:center">
+            <span style="font-size:18px">📊</span>
+            <span class="desc" style="font-size:13px">当前处于 Phase 1→2 过渡期，Flap Portal 联合曲线阶段，<span class="accent">毕业后开启完整生态闭环。</span></span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="footer-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="footer-chain">Roadmap</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 15 — 综合优势
+══════════════════════════════════════════ -->
+<div class="slide" id="s15">
+  <div class="slide-inner">
+    <div class="slide-header">
+      <div class="slide-tag">Summary</div>
+      <div class="slide-title">CNOVA 综合竞争优势</div>
+      <div class="slide-sub">为什么选择 CNOVA？——三大核心差异化</div>
+    </div>
+    <div class="grid-3" style="flex:1;align-content:center;gap:20px">
+      <div class="card card-glow" style="border-color:rgba(124,58,237,.5);text-align:center;padding:28px 20px">
+        <div style="font-size:40px;margin-bottom:12px">💰</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:8px">三重收益来源</div>
+        <div class="desc" style="font-size:13px;margin-bottom:14px">质押 APY（最高30%）+ 链上 BNB 分红 + 代理租金收益，三条独立收益通道同时运转</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span class="badge badge-purple" style="justify-content:center">30% APY 质押</span>
+          <span class="badge badge-green" style="justify-content:center">BNB 链上分红</span>
+          <span class="badge badge-yellow" style="justify-content:center">AI 代理租金</span>
+        </div>
+      </div>
+      <div class="card card-glow" style="border-color:rgba(16,185,129,.4);text-align:center;padding:28px 20px">
+        <div style="font-size:40px;margin-bottom:12px">🤖</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:8px">AI 代理经济</div>
+        <div class="desc" style="font-size:13px;margin-bottom:14px">全球首个将 AI 算力代理 NFT 与链上税收分红结合的生态，代理既是工具又是资产</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span class="badge badge-green" style="justify-content:center">1,842 代理在线</span>
+          <span class="badge badge-blue" style="justify-content:center">6大功能类型</span>
+          <span class="badge badge-purple" style="justify-content:center">NFT 双重价值</span>
+        </div>
+      </div>
+      <div class="card card-glow" style="border-color:rgba(59,130,246,.4);text-align:center;padding:28px 20px">
+        <div style="font-size:40px;margin-bottom:12px">🌉</div>
+        <div style="font-family:'Orbitron',sans-serif;font-size:16px;font-weight:700;color:#fff;margin-bottom:8px">无边界流动性</div>
+        <div class="desc" style="font-size:13px;margin-bottom:14px">BSC / Arbitrum / Ethereum 三链自动中继，CNOVA 跟随用户走，不被任何单一链条束缚</div>
+        <div style="display:flex;flex-direction:column;gap:4px">
+          <span class="badge badge-blue" style="justify-content:center">0.25% 最低费率</span>
+          <span class="badge badge-green" style="justify-content:center">8分钟确认</span>
+          <span class="badge badge-yellow" style="justify-content:center">无需目标链 gas</span>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="background:rgba(124,58,237,.07);text-align:center;padding:18px">
+      <div style="font-family:'Orbitron',sans-serif;font-size:14px;font-weight:700;color:#fff;margin-bottom:6px">核心理念</div>
+      <div class="desc" style="font-size:14px">CNOVA 不是一个 Meme 币，也不是纯粹的 DeFi 代币——<span class="accent">它是连接 AI 算力经济与链上金融收益的新范式。</span></div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="footer-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="footer-chain">Summary · Competitive Advantage</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SLIDE 16 — CTA
+══════════════════════════════════════════ -->
+<div class="slide" id="s16">
+  <div class="cover-bg"></div>
+  <div class="scan-line"></div>
+  <div class="cover-content" style="align-items:center;text-align:center">
+    <img src="/chainnova_logo.png" alt="CNOVA" style="width:80px;height:80px;border-radius:50%;border:2px solid rgba(124,58,237,.5);padding:6px;background:rgba(124,58,237,.1);margin-bottom:20px" onerror="this.style.display='none'">
+    <div style="font-family:'Orbitron',sans-serif;font-size:13px;color:var(--primary-light);letter-spacing:.16em;margin-bottom:12px">READY TO JOIN THE ECOSYSTEM</div>
+    <div class="cover-title" style="font-size:clamp(28px,4vw,48px)">立即参与<br><span style="color:var(--primary-light)">CNOVA 生态</span></div>
+    <div class="cover-subtitle" style="font-size:16px;text-align:center;max-width:700px;margin:16px auto">持有 200K CNOVA → 注册分红 → 购买 AI 代理 → 质押获益 → 跨链扩展</div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-bottom:32px">
+      <a href="https://flap.sh" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:linear-gradient(135deg,#7c3aed,#6d28d9);border:1px solid rgba(139,92,246,.5);border-radius:10px;color:#fff;text-decoration:none;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em">
+        🚀 立即购买 CNOVA
+      </a>
+      <a href="https://bscscan.com/token/0x0a9c2e3cda80a828334bfa2577a75a85229f7777" target="_blank" style="display:inline-flex;align-items:center;gap:8px;padding:12px 24px;background:transparent;border:1px solid rgba(124,58,237,.4);border-radius:10px;color:var(--primary-light);text-decoration:none;font-family:'Orbitron',sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em">
+        📋 BSCScan 查看合约
+      </a>
+    </div>
+    <div class="cover-stat-row" style="justify-content:center">
+      <div class="cover-stat"><h2 style="color:var(--green)">0xF7D7…dDf0</h2><p>HolderDividend</p></div>
+      <div class="cover-stat"><h2 style="color:var(--blue)">BSC Mainnet</h2><p>Chain ID 56</p></div>
+      <div class="cover-stat"><h2 style="color:var(--yellow)">2025</h2><p>Whitepaper Version</p></div>
+    </div>
+  </div>
+  <div class="slide-footer">
+    <div class="footer-logo">CHAINNOVA · CNOVA WHITEPAPER 2025</div>
+    <div class="footer-chain">© 2025 ChainNova Agents V2</div>
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- ── Navigation ── -->
+<div class="nav">
+  <button class="nav-btn" id="prevBtn" onclick="go(-1)">&#8592;</button>
+  <div class="nav-dots" id="dots"></div>
+  <div class="slide-counter" id="counter">1 / 16</div>
+  <button class="nav-btn" id="nextBtn" onclick="go(1)">&#8594;</button>
+</div>
+
+<script>
+const slides = document.querySelectorAll('.slide');
+const total = slides.length;
+let cur = 0;
+
+const dotsEl = document.getElementById('dots');
+const counterEl = document.getElementById('counter');
+
+for(let i=0;i<total;i++){
+  const d = document.createElement('div');
+  d.className = 'nav-dot'+(i===0?' active':'');
+  d.onclick = ()=>goTo(i);
+  dotsEl.appendChild(d);
+}
+
+function goTo(n){
+  slides[cur].classList.remove('active');
+  slides[cur].classList.add('prev');
+  setTimeout(()=>slides[cur].classList.remove('prev'), 500);
+  cur = (n+total)%total;
+  slides[cur].classList.add('active');
+  const dots = dotsEl.querySelectorAll('.nav-dot');
+  dots.forEach((d,i)=>d.classList.toggle('active',i===cur));
+  counterEl.textContent = (cur+1)+' / '+total;
+}
+function go(dir){ goTo(cur+dir); }
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key==='ArrowDown'||e.key===' ') go(1);
+  if(e.key==='ArrowLeft'||e.key==='ArrowUp') go(-1);
+});
+
+let tx=0;
+document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX});
+document.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tx;
+  if(Math.abs(dx)>50) go(dx<0?1:-1);
+});
+</script>
+</body>
+</html>
