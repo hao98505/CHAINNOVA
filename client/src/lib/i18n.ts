@@ -441,7 +441,7 @@ export const translations = {
       networkAgents: "代理数",
     },
     header: {
-      network: "Solana 开发网",
+      network: "BSC主网",
       networkHome: "BSC 代币仪表盘",
       connectWallet: "连接钱包",
       copyAddress: "复制地址",
