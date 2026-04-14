@@ -31,10 +31,18 @@
  *   WATCHER_ADDRESS              — Public key of price signer (for BPV.setSigner in Phase B)
  *
  * CURRENT STATE:
- *   TaxReceiver v3  : 0x7c591F78b928Ca4C8FD49A2bC62027af13ad02cA ✅ DEPLOYED (Phase A)
- *   HolderDividend  : PENDING Phase B (needs new token address)
- *   BottomProtection: PENDING Phase B (needs new token address)
+ *   TaxReceiver v3  : 0x7c591F78b928Ca4C8FD49A2bC62027af13ad02cA ✅ DEPLOYED
+ *   HolderDividend  : 0xD8F999f525da8239323da874F945e86ee48d1268 ✅ DEPLOYED
+ *   BottomProtection: 0xbF0CF6de186c82eb79609428A58FF2D55D91BEC8 ✅ DEPLOYED
+ *   CNOVA token     : 0xf178e5b8cb9392813c10fbd7bc2854adc95f7777
  *   studioWallet    : 0x73c68029c2b66c8495c4d2943d39586e2a10c24e (immutable in TaxReceiver)
+ *
+ *   ⚠ PENDING OWNER ACTIONS (must call from 0x31bF8708... on BSCScan):
+ *     1. TaxReceiver.setHolderDividend("0xD8F999f525da8239323da874F945e86ee48d1268")
+ *     2. TaxReceiver.setBottomProtectionVault("0xbF0CF6de186c82eb79609428A58FF2D55D91BEC8")
+ *     3. TaxReceiver.flush()
+ *     4. HolderDividend.setTaxReceiver("0x7c591F78b928Ca4C8FD49A2bC62027af13ad02cA")
+ *     5. BottomProtectionVault.setSigner("<WATCHER_ADDRESS>")
  */
 
 // ─── Token ────────────────────────────────────────────────────────────────────
@@ -67,25 +75,25 @@ export const PORTAL_ADDRESS = (
  * Set TAX_RECEIVER_ADDRESS env var after Phase A deploy.
  */
 export const TAX_RECEIVER_ADDRESS = (
-  process.env.TAX_RECEIVER_ADDRESS || ""
+  process.env.TAX_RECEIVER_ADDRESS || "0x7c591F78b928Ca4C8FD49A2bC62027af13ad02cA"
 ) as `0x${string}`;
 
 /**
  * HolderDividend — receives 40 % of every TaxReceiver flush.
- * Phase B: deployed by scripts/deployDownstream.cjs once token address is known.
- * token address is immutable — must match the live ERC-20.
+ * token = 0xf178e5b8cb9392813c10fbd7bc2854adc95f7777 (immutable).
+ * ⚠ setTaxReceiver not yet called — pending owner action on BSCScan.
  */
 export const HOLDER_DIVIDEND_ADDRESS = (
-  process.env.HOLDER_DIVIDEND_ADDRESS || ""
+  process.env.HOLDER_DIVIDEND_ADDRESS || "0xD8F999f525da8239323da874F945e86ee48d1268"
 ) as `0x${string}`;
 
 /**
  * BottomProtectionVault — receives 30 % of every TaxReceiver flush.
- * Phase B: deployed by scripts/deployDownstream.cjs alongside HolderDividend.
- * Call setSigner(WATCHER_ADDRESS) after Phase B to enable price-attested redemptions.
+ * token = 0xf178e5b8cb9392813c10fbd7bc2854adc95f7777 (immutable).
+ * ⚠ setSigner not yet called — pending owner action on BSCScan.
  */
 export const BOTTOM_PROTECTION_ADDRESS = (
-  process.env.BOTTOM_PROTECTION_ADDRESS || ""
+  process.env.BOTTOM_PROTECTION_ADDRESS || "0xbF0CF6de186c82eb79609428A58FF2D55D91BEC8"
 ) as `0x${string}`;
 
 // ─── RPC ──────────────────────────────────────────────────────────────────────
