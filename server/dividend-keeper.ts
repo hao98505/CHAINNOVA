@@ -37,13 +37,13 @@ import * as fs from "fs";
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
+import { CNOVA_TOKEN, HOLDER_DIVIDEND_ADDRESS as HD_DEFAULT, BSC_RPC } from "./chainConfig";
+
 const KEEPER_KEY = (
   process.env.KEEPER_PRIVATE_KEY || process.env.PRIVATE_KEY
 ) as `0x${string}`;
 
-const DIVIDEND_ADDRESS = process.env.HOLDER_DIVIDEND_ADDRESS as Address;
-const CNOVA_TOKEN      = "0x0a9c2e3cda80a828334bfa2577a75a85229f7777" as Address;
-const BSC_RPC          = process.env.BSC_RPC_URL || "https://bsc-rpc.publicnode.com";
+const DIVIDEND_ADDRESS = (process.env.HOLDER_DIVIDEND_ADDRESS || HD_DEFAULT) as Address;
 
 const STATE_FILE = "./dividend-keeper-state.json";
 const POLL_MS    = 12_000;   // ~1 BSC block

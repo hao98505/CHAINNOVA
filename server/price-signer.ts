@@ -26,10 +26,9 @@
 
 import { ethers } from "ethers";
 
+import { CNOVA_TOKEN, PORTAL_ADDRESS, BSC_RPC } from "./chainConfig";
+
 // ─── Configuration ─────────────────────────────────────────────────────────
-const CNOVA_TOKEN             = "0x0a9c2e3cda80a828334bfa2577a75a85229f7777";
-const PORTAL_ADDRESS          = "0xe2ce6ab80874fa9fa2aae65d277dd6b8e65c9de0";
-const BSC_RPC                 = process.env.BSC_RPC_URL ?? "https://bsc-rpc.publicnode.com";
 const CHAIN_ID                = 56n;
 const SIGNATURE_TTL_SECONDS   = 120; // signature valid window
 const PRICE_REFRESH_MS        = 30_000; // refresh on-chain price every 30 s

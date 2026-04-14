@@ -10,6 +10,7 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import { bsc, arbitrum, mainnet } from "viem/chains";
 import * as fs from "fs";
+import { CNOVA_TOKEN as CNOVA_DEFAULT } from "./chainConfig";
 
 const RELAYER_KEY = (process.env.RELAYER_PRIVATE_KEY || process.env.PRIVATE_KEY) as `0x${string}`;
 const VALIDATOR_KEY = (process.env.VALIDATOR_PRIVATE_KEY || process.env.PRIVATE_KEY) as `0x${string}`;
@@ -37,7 +38,7 @@ if (process.env.BSC_BRIDGE) {
     viemChain: bsc,
     rpc: process.env.BSC_LOGS_RPC_URL || "https://bsc-rpc.publicnode.com",
     bridge: process.env.BSC_BRIDGE as Address,
-    token: (process.env.SOURCE_TOKEN_BSC || process.env.WRAPPED_CNOVA_BSC || "0x0a9c2e3cda80a828334bfa2577a75a85229f7777") as Address,
+    token: (process.env.SOURCE_TOKEN_BSC || process.env.WRAPPED_CNOVA_BSC || CNOVA_DEFAULT) as Address,
   });
 }
 if (process.env.ARBITRUM_BRIDGE && (process.env.WRAPPED_CNOVA_ARBITRUM || process.env.WRAPPED_FORGAI_ARBITRUM)) {

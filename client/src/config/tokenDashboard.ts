@@ -1,17 +1,30 @@
+/**
+ * Single source of truth for the CNOVA token address on the frontend.
+ * Override at build time with VITE_CNOVA_TOKEN env var.
+ *
+ * Switching to a new token:
+ *   1. Set VITE_CNOVA_TOKEN=0xNEW_ADDRESS in .env
+ *   2. All URL properties below are derived automatically.
+ *   3. Also update VAULT_CONTRACT_CONFIG with new contract addresses.
+ */
+const CNOVA_ADDRESS = (
+  import.meta.env.VITE_CNOVA_TOKEN || "0x0a9c2e3cda80a828334bfa2577a75a85229f7777"
+) as string;
+
 export const TOKEN_CONFIG = {
   name: "",
   symbol: "",
   decimals: 18,
-  contractAddress: "0x0a9c2e3cda80a828334bfa2577a75a85229f7777",
+  contractAddress: CNOVA_ADDRESS,
   chain: "BSC",
   chainId: 56,
-  rpcUrl: "https://bsc-rpc.publicnode.com",
-  explorerUrl: "https://bscscan.com/token/0x0a9c2e3cda80a828334bfa2577a75a85229f7777",
+  rpcUrl: import.meta.env.VITE_BSC_RPC_URL || "https://bsc-rpc.publicnode.com",
+  explorerUrl:    `https://bscscan.com/token/${CNOVA_ADDRESS}`,
   explorerAddressUrl: "https://bscscan.com/address",
-  dexScreenerUrl: "https://dexscreener.com/bsc/0x0a9c2e3cda80a828334bfa2577a75a85229f7777",
+  dexScreenerUrl: `https://dexscreener.com/bsc/${CNOVA_ADDRESS}`,
   /** Primary buy & chart link — GMGN aggregator */
-  buyUrl:   "https://gmgn.ai/bsc/token/0x0a9c2e3cda80a828334bfa2577a75a85229f7777",
-  chartUrl: "https://gmgn.ai/bsc/token/0x0a9c2e3cda80a828334bfa2577a75a85229f7777",
+  buyUrl:   `https://gmgn.ai/bsc/token/${CNOVA_ADDRESS}`,
+  chartUrl: `https://gmgn.ai/bsc/token/${CNOVA_ADDRESS}`,
   portalAddress: "0xe2ce6ab80874fa9fa2aae65d277dd6b8e65c9de0",
   tradingPlatform: "Flap Portal (Bonding Curve)",
   buyTaxPercent: 3,

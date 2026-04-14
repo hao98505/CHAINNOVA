@@ -37,7 +37,7 @@
 const hre = require("hardhat");
 require("dotenv/config");
 
-const CNOVA_TOKEN    = "0x0a9c2e3cda80a828334bfa2577a75a85229f7777";
+const CNOVA_TOKEN    = process.env.CNOVA_TOKEN || "0x0a9c2e3cda80a828334bfa2577a75a85229f7777";
 const CNOVA_DECIMALS = 18n;
 
 async function main() {
