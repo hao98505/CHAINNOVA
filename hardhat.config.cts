@@ -10,6 +10,7 @@ const config = {
     settings: {
       optimizer: { enabled: true, runs: 200 },
       evmVersion: "cancun",
+      viaIR: true,
     },
   },
   paths: {

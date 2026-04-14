@@ -6,26 +6,35 @@
  *   - All values default to the CURRENT test-token deployment.
  *   - Switching to a new token: set env vars below in .env, restart all workflows.
  *
+ * Two-phase deploy flow (Flap Portal compatible):
+ *   Phase A — Before token launch:
+ *     npx hardhat run scripts/deployTaxReceiver.cjs --network bsc
+ *     → Paste printed address into Flap "Tax Wallet" field.
+ *
+ *   Phase B — After token is live (one-click):
+ *     TAX_RECEIVER_ADDRESS=0x... CNOVA_TOKEN=0xNEW... \
+ *     npx hardhat run scripts/deployDownstream.cjs --network bsc
+ *     → Deploys HD + BPV, wires TaxReceiver, flushes any accumulated BNB.
+ *
  * Required .env keys for "production token" switch:
  *   CNOVA_TOKEN                  — ERC-20 token contract address
  *   PORTAL_ADDRESS               — Flap Portal bonding curve address
- *   HOLDER_DIVIDEND_ADDRESS      — HolderDividend contract (deployed by deployDividend.cjs)
- *   BOTTOM_PROTECTION_ADDRESS    — BottomProtectionVault contract (PENDING deploy)
- *   TAX_RECEIVER_ADDRESS         — TaxReceiver v2 contract (PENDING deploy)
- *   STUDIO_WALLET                — Studio wallet for 30 % route
+ *   HOLDER_DIVIDEND_ADDRESS      — HolderDividend contract (from Phase B)
+ *   BOTTOM_PROTECTION_ADDRESS    — BottomProtectionVault contract (from Phase B)
+ *   TAX_RECEIVER_ADDRESS         — TaxReceiver v3 contract (from Phase A)
  *   SIGNER_PRIVATE_KEY           — Watcher hot wallet for price attestation signing
  *   KEEPER_PRIVATE_KEY           — DividendKeeper transaction hot wallet
  *
  * Optional:
  *   BSC_RPC_URL                  — BSC RPC endpoint (default: public node)
  *   DIVIDEND_DEPLOY_BLOCK        — Deployment block of HolderDividend (for log indexing)
+ *   WATCHER_ADDRESS              — Public key of price signer (for BPV.setSigner in Phase B)
  *
- * CURRENT MAINNET STATE (test token phase):
- *   HolderDividend  : 0xF7D702DFCe841b164661F62D851b7DE85aD9dDf0  ✅ deployed
- *   TaxReceiver     : 0x8f2E4fF9CF43D8f1cF7c117870C06722919dF7F9  ⚠ OLD 4-vault version
- *   TaxReceiver v2  : not deployed yet (local only, run deployDividend.cjs)
- *   BottomProtection: not deployed (contract exists locally, see below)
- *   setTaxReceiver  : ❌ NOT called — HD.taxReceiver = address(0)
+ * CURRENT STATE:
+ *   TaxReceiver v3  : PENDING Phase A deploy (run deployTaxReceiver.cjs)
+ *   HolderDividend  : PENDING Phase B (needs new token address)
+ *   BottomProtection: PENDING Phase B (needs new token address)
+ *   studioWallet    : 0x73c68029c2b66c8495c4d2943d39586e2a10c24e (immutable in TaxReceiver)
  */
 
 // ─── Token ────────────────────────────────────────────────────────────────────

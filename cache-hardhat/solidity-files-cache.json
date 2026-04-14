@@ -13,6 +13,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -56,6 +57,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -94,6 +96,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -130,6 +133,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -168,6 +172,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -204,6 +209,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -243,6 +249,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -279,6 +286,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -320,6 +328,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -358,6 +367,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -397,6 +407,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -433,6 +444,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -471,6 +483,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -507,6 +520,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -546,6 +560,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -582,6 +597,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -618,6 +634,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -654,6 +671,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -692,6 +710,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -733,6 +752,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -771,6 +791,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -799,8 +820,8 @@
       ]
     },
     "/home/runner/workspace/contracts/TaxReceiver.sol": {
-      "lastModificationDate": 1775962697394,
-      "contentHash": "abf74be76d999d09225e3b86c7a654a2",
+      "lastModificationDate": 1776148715130,
+      "contentHash": "9207cebc21de9aa4f0c74725d73b1f86",
       "sourceName": "contracts/TaxReceiver.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -810,6 +831,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -849,6 +871,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -887,6 +910,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -923,6 +947,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -961,6 +986,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -1001,6 +1027,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -1026,8 +1053,8 @@
       ]
     },
     "/home/runner/workspace/contracts/ReferralVault.sol": {
-      "lastModificationDate": 1775881586976,
-      "contentHash": "0deaa148fa926c4c8c783b7f706657c8",
+      "lastModificationDate": 1776125170096,
+      "contentHash": "4f2cd5750645b38c09f28d0b7f74f536",
       "sourceName": "contracts/ReferralVault.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1037,6 +1064,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -1067,8 +1095,8 @@
       ]
     },
     "/home/runner/workspace/contracts/MarketingVault.sol": {
-      "lastModificationDate": 1775881593493,
-      "contentHash": "b3e456470e1dd282a64acda458ebdaf7",
+      "lastModificationDate": 1776125168588,
+      "contentHash": "7a0da4c74604664b16a881e5377c759f",
       "sourceName": "contracts/MarketingVault.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1078,6 +1106,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -1108,8 +1137,8 @@
       ]
     },
     "/home/runner/workspace/contracts/MasterVault.sol": {
-      "lastModificationDate": 1775881568538,
-      "contentHash": "7cf91d22ea1fe18f68088c6cefc7e713",
+      "lastModificationDate": 1776125171849,
+      "contentHash": "58d4643ccfb9445c86fc2ed79f3d250a",
       "sourceName": "contracts/MasterVault.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1119,6 +1148,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -1147,8 +1177,8 @@
       ]
     },
     "/home/runner/workspace/contracts/LPRewardVault.sol": {
-      "lastModificationDate": 1775968826256,
-      "contentHash": "ceeb1a10bc80d0b1115336a4ffc64768",
+      "lastModificationDate": 1776125167063,
+      "contentHash": "fb4295591a0047b5c64e421401994dd8",
       "sourceName": "contracts/LPRewardVault.sol",
       "solcConfig": {
         "version": "0.8.28",
@@ -1158,6 +1188,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -1199,6 +1230,7 @@
             "runs": 200
           },
           "evmVersion": "cancun",
+          "viaIR": true,
           "outputSelection": {
             "*": {
               "*": [
@@ -1225,6 +1257,47 @@
       ],
       "artifacts": [
         "HolderDividend"
+      ]
+    },
+    "/home/runner/workspace/contracts/BottomProtectionVault.sol": {
+      "lastModificationDate": 1776124792342,
+      "contentHash": "07c62243dbf62bee4676dfebdbb29353",
+      "sourceName": "contracts/BottomProtectionVault.sol",
+      "solcConfig": {
+        "version": "0.8.28",
+        "settings": {
+          "optimizer": {
+            "enabled": true,
+            "runs": 200
+          },
+          "evmVersion": "cancun",
+          "viaIR": true,
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "@openzeppelin/contracts/access/Ownable.sol",
+        "@openzeppelin/contracts/utils/ReentrancyGuard.sol",
+        "@openzeppelin/contracts/token/ERC20/IERC20.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "BottomProtectionVault"
       ]
     }
   }
