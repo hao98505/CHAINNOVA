@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT
+/// @custom:status ARCHIVED — replaced by direct studio wallet transfer in TaxReceiver v2.
+/// Do NOT deploy. Kept for historical reference only.
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";

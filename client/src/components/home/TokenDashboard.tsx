@@ -319,39 +319,43 @@ function GlobalVaultStatsSection() {
           </div>
         </div>
 
-        {/* Vault & contract status grid */}
+        {/* Vault & contract status grid (2-vault: 40/30/30 model) */}
         <div className="border-t border-purple-500/10 pt-4">
           <div className="text-xs text-purple-300/50 mb-3 uppercase tracking-wide font-semibold">{td.vaultStatusTitle}</div>
           <div className="grid grid-cols-2 gap-2.5 mb-3">
-            {/* Phase 1: HolderDividend */}
+            {/* HolderDividend (40 %) */}
             <div className="p-3 rounded-lg bg-purple-950/40 border border-green-500/20" data-testid="vault-holder-dividend">
-              <div className="text-xs text-purple-300/50 mb-1.5 uppercase tracking-wide">{td.holderDividendVault}</div>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border border-green-500/30 bg-green-500/8 text-green-300">
-                <CheckCircle2 className="w-2.5 h-2.5" /> {td.deployedPhase1}
-              </span>
-              <div className="mt-1 font-mono text-xs text-purple-400/50">{VAULT_CONTRACT_CONFIG.dividendContract.slice(0,8)}…</div>
+              <div className="text-xs text-purple-300/50 mb-1 uppercase tracking-wide">{td.holderDividendVault}</div>
+              <div className="text-xs text-purple-400/50 mb-1.5">40 %</div>
+              {VAULT_CONTRACT_CONFIG.dividendContract ? (
+                <>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border border-green-500/30 bg-green-500/8 text-green-300">
+                    <CheckCircle2 className="w-2.5 h-2.5" /> {td.deployedPhase1}
+                  </span>
+                  <div className="mt-1 font-mono text-xs text-purple-400/50">{VAULT_CONTRACT_CONFIG.dividendContract.slice(0,8)}…</div>
+                </>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border border-orange-500/25 bg-orange-500/5 text-orange-400/80">
+                  <AlertTriangle className="w-2.5 h-2.5" /> {td.pendingDeploy}
+                </span>
+              )}
             </div>
-            {/* Phase 1: LPRewardVault */}
-            <div className="p-3 rounded-lg bg-purple-950/40 border border-blue-500/20" data-testid="vault-lp-reward">
-              <div className="text-xs text-purple-300/50 mb-1.5 uppercase tracking-wide">{td.lpRewardVaultLabel}</div>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border border-blue-500/30 bg-blue-500/8 text-blue-300">
-                <Zap className="w-2.5 h-2.5" /> {td.lpDeployedNotActive}
-              </span>
-              <div className="mt-1 font-mono text-xs text-purple-400/50">{VAULT_CONTRACT_CONFIG.lpRewardVault.slice(0,8)}…</div>
-            </div>
-            {/* Phase 2: ReferralVault */}
-            <div className="p-3 rounded-lg bg-purple-950/40 border border-purple-500/10" data-testid="vault-referral">
-              <div className="text-xs text-purple-300/50 mb-1.5 uppercase tracking-wide">{td.referralVaultLabel}</div>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border border-orange-500/25 bg-orange-500/5 text-orange-400/80">
-                <AlertTriangle className="w-2.5 h-2.5" /> {td.phase2NotDeployed}
-              </span>
-            </div>
-            {/* Phase 2: MarketingVault */}
-            <div className="p-3 rounded-lg bg-purple-950/40 border border-purple-500/10" data-testid="vault-marketing">
-              <div className="text-xs text-purple-300/50 mb-1.5 uppercase tracking-wide">{td.marketingVaultLabel}</div>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border border-orange-500/25 bg-orange-500/5 text-orange-400/80">
-                <AlertTriangle className="w-2.5 h-2.5" /> {td.phase2NotDeployed}
-              </span>
+            {/* BottomProtectionVault (30 %) */}
+            <div className="p-3 rounded-lg bg-purple-950/40 border border-teal-500/20" data-testid="vault-bottom-protection">
+              <div className="text-xs text-purple-300/50 mb-1 uppercase tracking-wide">{td.bottomProtectionVaultLabel}</div>
+              <div className="text-xs text-purple-400/50 mb-1.5">30 %</div>
+              {VAULT_CONTRACT_CONFIG.bottomProtectionVault ? (
+                <>
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border border-teal-500/30 bg-teal-500/8 text-teal-300">
+                    <CheckCircle2 className="w-2.5 h-2.5" /> {td.deployedPhase1}
+                  </span>
+                  <div className="mt-1 font-mono text-xs text-purple-400/50">{VAULT_CONTRACT_CONFIG.bottomProtectionVault.slice(0,8)}…</div>
+                </>
+              ) : (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border border-orange-500/25 bg-orange-500/5 text-orange-400/80">
+                  <AlertTriangle className="w-2.5 h-2.5" /> {td.pendingDeploy}
+                </span>
+              )}
             </div>
           </div>
           {/* Current tax mechanism */}
@@ -597,23 +601,6 @@ function YourDividendSection() {
           </div>
         </div>
 
-        {/* Phase 2 reward fields — not deployed yet */}
-        <div className="border-t border-purple-500/10 pt-4 grid grid-cols-2 gap-3">
-          <div className="p-3 rounded-lg bg-purple-950/30 border border-purple-500/10" data-testid="field-lp-rewards-phase2">
-            <div className="text-xs text-purple-300/50 mb-2 uppercase tracking-wide">{td.lpRewardsPhase2}</div>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border border-orange-500/25 bg-orange-500/5 text-orange-400/80">
-              <AlertTriangle className="w-2.5 h-2.5" /> {td.phase2NotDeployed}
-            </span>
-            <div className="text-xs text-purple-400/40 mt-1 italic">{td.phase2ActivatesNote}</div>
-          </div>
-          <div className="p-3 rounded-lg bg-purple-950/30 border border-purple-500/10" data-testid="field-referral-rewards-phase2">
-            <div className="text-xs text-purple-300/50 mb-2 uppercase tracking-wide">{td.referralRewardsPhase2}</div>
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold border border-orange-500/25 bg-orange-500/5 text-orange-400/80">
-              <AlertTriangle className="w-2.5 h-2.5" /> {td.phase2NotDeployed}
-            </span>
-            <div className="text-xs text-purple-400/40 mt-1 italic">{td.phase2ActivatesNote}</div>
-          </div>
-        </div>
       </div>
     </GlowCard>
   );
@@ -817,81 +804,6 @@ function RegisterClaimSection() {
 }
 
 /* ─────────────────────────────────────────────
-   BLOCK 5: LP Status
-───────────────────────────────────────────── */
-function LPStatusSection() {
-  const { t } = useLanguage();
-  const td = t.tokenDashboard;
-  const lpVaultDeployed = !!VAULT_CONTRACT_CONFIG.lpRewardVault;
-
-  return (
-    <GlowCard delay={0.3}>
-      <div className="p-6 md:p-8">
-        <SectionTitle icon={Activity}>{td.lpStatus}</SectionTitle>
-
-        {/* Status banner */}
-        {lpVaultDeployed ? (
-          <div className="flex items-start gap-4 p-5 rounded-lg border border-blue-500/20 bg-blue-500/5 mb-5">
-            <div className="w-10 h-10 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
-              <Zap className="w-5 h-5 text-blue-400" />
-            </div>
-            <div>
-              <div className="text-sm font-bold text-blue-300 mb-1">{td.lpVaultDeployed} · {td.lpDeployedNotActive}</div>
-              <div className="text-sm text-blue-300/70">{td.lpAwaitingGraduation}</div>
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-start gap-4 p-5 rounded-lg border border-orange-500/20 bg-orange-500/5 mb-5">
-            <div className="w-10 h-10 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
-              <AlertTriangle className="w-5 h-5 text-orange-400" />
-            </div>
-            <div>
-              <div className="text-sm font-bold text-orange-300 mb-1">{td.lpNotStarted}</div>
-              <div className="text-sm text-orange-300/70">{td.lpStatusDesc}</div>
-            </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
-            <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.bondingCurveStatus}</div>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-green-400 status-dot" />
-              <span className="text-sm font-semibold text-green-300" data-testid="status-bonding-curve">{td.portalLive}</span>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
-            <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">DEX Pair</div>
-            <UnavailableBadge reason={td.notGraduated} />
-          </div>
-
-          <div className="p-4 rounded-lg bg-purple-950/40 border border-purple-500/15">
-            <div className="text-xs text-purple-300/60 mb-2 uppercase tracking-wide">{td.lpVaultDeployed}</div>
-            {lpVaultDeployed ? (
-              <div>
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-xs font-semibold border border-blue-500/30 bg-blue-500/8 text-blue-300">
-                  <Zap className="w-3 h-3" /> {td.lpDeployedNotActive}
-                </span>
-                <div className="mt-1 font-mono text-xs text-purple-400/60">
-                  {VAULT_CONTRACT_CONFIG.lpRewardVault.slice(0,10)}…
-                </div>
-              </div>
-            ) : (
-              <NotConnectedBadge reason={td.contractNotDeployed} />
-            )}
-          </div>
-        </div>
-
-        <div className="mt-4 p-3 rounded-lg border border-purple-500/15 bg-purple-950/20 text-xs text-purple-400/70">
-          {td.lpRewardInactive}
-        </div>
-      </div>
-    </GlowCard>
-  );
-}
-
-/* ─────────────────────────────────────────────
    ROOT EXPORT
 ───────────────────────────────────────────── */
 export function TokenDashboard() {
@@ -927,7 +839,6 @@ export function TokenDashboard() {
         <GlobalVaultStatsSection />
         <YourDividendSection />
         <RegisterClaimSection />
-        <LPStatusSection />
       </div>
     </section>
   );

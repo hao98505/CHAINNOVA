@@ -21,76 +21,53 @@ export const TOKEN_CONFIG = {
 };
 
 /**
- * Phase 1 contract addresses — fill after running scripts/deployDividend.cjs
+ * Contract addresses — backfill after running scripts/deployDividend.cjs
  *
- *   dividendContract  → HolderDividend.sol   (holder registration + BNB claim)
- *   masterVault       → TaxReceiver.sol       (BNB sink from token tax)
- *   lpRewardVault     → LPRewardVault.sol     (deployed Phase 1; activated Phase 2)
+ * Tax model (v2 — three-route, 40/30/30):
+ *   dividendContract      → HolderDividend.sol   (40 % of tax BNB)
+ *   bottomProtectionVault → BottomProtectionVault.sol (30 % of tax BNB)
+ *   masterVault           → TaxReceiver.sol v2   (BNB sink that routes 40/30/30)
  *
- * Phase 2 (post-graduation):
- *   referralVault     → ReferralVault.sol
- *   marketingVault    → MarketingVault.sol
+ * Studio wallet (30 %) receives BNB directly via TaxReceiver — NOT shown in UI.
  *
  * Deploy command:
  *   npx hardhat run scripts/deployDividend.cjs --network bsc
  */
 export const VAULT_CONTRACT_CONFIG = {
-  dividendContract: "0xF7D702DFCe841b164661F62D851b7DE85aD9dDf0",   // HolderDividend.sol
-  masterVault:      "0x8f2E4fF9CF43D8f1cF7c117870C06722919dF7F9",   // TaxReceiver.sol
-  lpRewardVault:    "0xeBe4C576C6BAd406Ee656B3B3eA978f4c4F0d0e9",   // LPRewardVault.sol (active=false until graduation)
-  referralVault:    "",   // Phase 2
-  marketingVault:   "",   // Phase 2
+  dividendContract:      "0xF7D702DFCe841b164661F62D851b7DE85aD9dDf0",  // HolderDividend.sol
+  masterVault:           "0x8f2E4fF9CF43D8f1cF7c117870C06722919dF7F9",  // TaxReceiver.sol v2
+  bottomProtectionVault: "",  // BottomProtectionVault.sol — fill after deploy
 };
 
 /**
- * Vault display config.
+ * Vault display config (v2 — two user-facing vaults only).
+ *
  * assetType:
  *   'bnb'   → read native ETH balance (eth_getBalance)
- *   'cnova' → read ERC-20 balanceOf (legacy vaults that hold tokens)
- * phase:
- *   1  → deployed in Phase 1 deploy script
- *   2  → Phase 2 (post-graduation)
+ *
+ * allocationPercent reflects the user-visible tax routing.
+ * Studio 30 % is intentionally omitted from this config.
  */
 export const VAULT_CONFIG = [
   {
     id: "holder-dividend",
     labelKey: "holderDividend" as const,
     address: VAULT_CONTRACT_CONFIG.dividendContract,
-    allocationPercent: 60,
+    allocationPercent: 40,
     color: "#A78BFA",
     icon: "Users" as const,
     assetType: "bnb" as const,
     phase: 1,
   },
   {
-    id: "lp-reward",
-    labelKey: "lpReward" as const,
-    address: VAULT_CONTRACT_CONFIG.lpRewardVault,
+    id: "bottom-protection",
+    labelKey: "bottomProtection" as const,
+    address: VAULT_CONTRACT_CONFIG.bottomProtectionVault,
     allocationPercent: 30,
     color: "#34D399",
-    icon: "Droplets" as const,
+    icon: "Shield" as const,
     assetType: "bnb" as const,
-    phase: 1,       // deployed Phase 1, activated Phase 2
-  },
-  {
-    id: "referral-commission",
-    labelKey: "referralCommission" as const,
-    address: VAULT_CONTRACT_CONFIG.referralVault,
-    allocationPercent: 7,
-    color: "#60A5FA",
-    icon: "Link" as const,
-    assetType: "bnb" as const,
-    phase: 2,
-  },
-  {
-    id: "marketing-budget",
-    labelKey: "marketingBudget" as const,
-    address: VAULT_CONTRACT_CONFIG.marketingVault,
-    allocationPercent: 3,
-    color: "#FBBF24",
-    icon: "Megaphone" as const,
-    assetType: "bnb" as const,
-    phase: 2,
+    phase: 1,
   },
 ];
 
@@ -98,18 +75,14 @@ export const TRANSPARENCY_CONFIG = {
   tokenContract: TOKEN_CONFIG.contractAddress,
   vaultAddresses: VAULT_CONFIG.map((v) => ({ label: v.labelKey, address: v.address })),
   vaultContracts: {
-    dividendContract: VAULT_CONTRACT_CONFIG.dividendContract,
-    masterVault:      VAULT_CONTRACT_CONFIG.masterVault,
-    lpRewardVault:    VAULT_CONTRACT_CONFIG.lpRewardVault,
-    referralVault:    VAULT_CONTRACT_CONFIG.referralVault,
-    marketingVault:   VAULT_CONTRACT_CONFIG.marketingVault,
+    dividendContract:      VAULT_CONTRACT_CONFIG.dividendContract,
+    masterVault:           VAULT_CONTRACT_CONFIG.masterVault,
+    bottomProtectionVault: VAULT_CONTRACT_CONFIG.bottomProtectionVault,
   },
-  marketingMultisig:  "",
-  reimbursementVault: "",
-  githubSource:   TOKEN_CONFIG.githubUrl,
-  auditStatus:    "pending" as "pending" | "completed" | "in-progress",
-  mintable:       false,
-  taxMutable:     false,
+  githubSource:    TOKEN_CONFIG.githubUrl,
+  auditStatus:     "pending" as "pending" | "completed" | "in-progress",
+  mintable:        false,
+  taxMutable:      false,
   adminWithdrawal: false,
 };
 

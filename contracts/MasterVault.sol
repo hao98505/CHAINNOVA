@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT
+/// @custom:status ARCHIVED — replaced by TaxReceiver.sol v2 (three-route 40/30/30).
+/// Do NOT deploy. Kept for historical reference only.
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";

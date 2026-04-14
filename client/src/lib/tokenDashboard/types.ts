@@ -95,11 +95,9 @@ export interface OnChainTokenMeta {
 }
 
 export interface RewardContractAddresses {
-  dividendContract: string;
-  masterVault:      string;
-  lpRewardVault:    string;
-  referralVault:    string;
-  marketingVault:   string;
+  dividendContract:      string;
+  masterVault:           string;
+  bottomProtectionVault: string;
 }
 
 export interface DexScreenerPair {

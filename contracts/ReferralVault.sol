@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: MIT
+/// @custom:status ARCHIVED — referral program not included in v2 tax model.
+/// Do NOT deploy. Kept for historical reference only.
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
